@@ -466,7 +466,7 @@ int main()
 		shader.SetUniformMatrix4fv("mvp", mvp);
 		shader.SetUniformMatrix4fv("model", model);
 
-		color = glm::vec4(0.6f/3, 0.4f/3, 0.2f, 1.0f);
+		color = glm::vec4(0.6f/1, 0.4f/1, 0.2f, 1.0f);
 		shader.SetUniform4fv("color", color);
 		
 		normal = glm::transpose(glm::inverse(model));
