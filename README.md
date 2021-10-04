@@ -1,3 +1,2 @@
 # newOpenGL
-Just learning the workings of openGL.
-Super basic renderer with some support for cubemaps and transparency.
+Just learning the workings of openGL by making a super janky renderer.
