@@ -101,30 +101,6 @@ int main()
 		"res/textures/Yokohama3/negz.jpg"
 	};
 	
-
-	/*float vertices[] = {
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, -0.5, -0.5, 1.0, 0.0,
-		-0.5, -0.5, -0.5, 0.0, 0.0,
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-		0.5, 0.5, 0.5, 0.0, 1.0,
-		0.5, -0.5, 0.5, 0.0, 0.0,
-		-0.5, -0.5, 0.5, 1.0, 0.0,
-		-0.5, 0.5, 0.5, 1.0, 1.0,
-		-0.5, 0.5, 0.5, 0.0, 0.0,
-		0.5, -0.5, 0.5, 2.0, 2.0,
-		0.5, 0.5, 0.5, 2.0, 0.0,
-		-0.5, -0.5, 0.5, 0.0, 2.0
-	};
-
-	unsigned int indices[] = {
-		0, 1, 3, 1, 2, 3,
-		0, 1, 4, 1, 4, 5,
-		2, 3, 7, 2, 6, 7,
-		4, 5, 7, 5, 6, 7,
-		0, 3, 10, 3, 10, 8,
-		1, 2, 9, 2, 9, 11
-	};*/
 	float vertices[] = {
 	//pos				 //normals				//uv
 	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,	0.0f, 0.0f,
@@ -181,14 +157,6 @@ int main()
 		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 
-	/*glm::vec3 cubepositions[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(1.0f, 2.0f, -2.0f),
-		glm::vec3(-2.0f, 1.0f, 3.0f),
-		glm::vec3(-3.0f, 3.0f, 0.0f),
-		glm::vec3(0.0f, -1.7f, -3.0f)
-	};*/
-
 	glm::vec3 cubepositions[] = {
 		glm::vec3(3.0f, 0.0f, 0.0f),
 		glm::vec3(1.5f, 0.0f, 0.0f),
@@ -237,11 +205,6 @@ int main()
 	quadLayout.Push<float>(2);
 	quadVA.AddBuffer(quadVB, quadLayout);
 	quadVA.Unbind();
-
-	//FrameBuffer fb;
-	//fb.GenTextureBuffer();
-	//fb.GenRenderBuffer();
-	//fb.CheckStatus();
 
 	//transparency framebuffers
 	unsigned int opaqueFB, transparentFB;
@@ -363,7 +326,6 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_ALWAYS, 1, 0xFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	//backface culling
@@ -388,43 +350,42 @@ int main()
 		//input
 		processInput(window);
 
-		//render
 		//renderer.Clear();
+		projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 
-		//Initimgui
+		//Init imgui
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		//bind framebuffer
-		//fb.Write();
-		glEnable(GL_DEPTH_TEST);
+		//set depth testing for opaque rendering
+		glEnable(GL_DEPTH_TEST); //<-- keep track
 		glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);
+		glDepthMask(GL_TRUE); //<-- start writing to depth buffer
 		glDisable(GL_BLEND);
 		glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
 
+		//bind opaque framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, opaqueFB);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		//opaque rendering begins
-
-		projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
-		//to centre cube around player and remove translation from cubemap
-		view = glm::mat4(glm::mat3(cam.GetViewMatrix()));
+		
+		//cubemap
+		view = glm::mat4(glm::mat3(cam.GetViewMatrix())); //<-- remove translation due to camera
 
 		vp = projection * view;
 		cubeMapShader.Bind();
 		cubeMapShader.SetUniformMatrix4fv("vp", vp);
 		
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		skybox.Render(cubeMapShader);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//skybox.Render(cubeMapShader);
 
-		//back to camera
-		view = cam.GetViewMatrix();
+		view = cam.GetViewMatrix(); //<-- add translation back to camera
 
-		//lights
+		//render lights
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF); //<-- Start writing to stencil buffer
+
 		lightShader.Bind();
 
 		model = glm::mat4(1.0f);
@@ -436,6 +397,22 @@ int main()
 
 		renderer.DrawArrays(lightVA, vb, lightShader);
 
+		//light stencil
+		glStencilMask(0x00); //<-- stop writing to stencil buffer
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glDisable(GL_DEPTH_TEST);
+		
+		model = glm::scale(model, glm::vec3(1.1f));
+		mvp = projection * view * model;
+		outlineShader.Bind();
+		outlineShader.SetUniformMatrix4fv("mvp", mvp);
+		renderer.DrawArrays(lightVA, vb, outlineShader);
+		
+		glEnable(GL_DEPTH_TEST);
+		glStencilMask(0x00);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+
+		//render cubes
 		model = glm::mat4(1.0f);
 		glm::vec4 color;
 
@@ -474,18 +451,7 @@ int main()
 
 		renderer.DrawArrays(va, vb, shader);
 
-		//glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		//glStencilMask(0x00);
-		//
-		//model = glm::scale(model, glm::vec3(1.1f));
-		//mvp = projection * view * model;
-		//outlineShader.Bind();
-		//outlineShader.SetUniformMatrix4fv("mvp", mvp);
-		//renderer.DrawArrays(lightVA, vb, outlineShader);
-		//
-		//glStencilMask(0xFF);
-		//glStencilFunc(GL_ALWAYS, 1, 0xFF);
-
+		//prepare for switching framebuffers
 		glDepthMask(GL_FALSE);
 		glEnable(GL_BLEND);
 		glBlendFunci(0, GL_ONE, GL_ONE);
@@ -496,23 +462,10 @@ int main()
 
 		glClearBufferfv(GL_COLOR, 0, &zeroFillerVec[0]);
 		glClearBufferfv(GL_COLOR, 1, &oneFillerVec[0]);
+
 		experimental.Bind();
 
 		model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
-		//model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
-		//model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-		//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		//experimental.SetUniformMatrix4fv("model", model);
-
-		//normal = glm::transpose(glm::inverse(model));
-		//experimental.SetUniformMatrix4fv("normalMatrix", normal);
-		//
-		//mvp = projection * view * model;
-		//experimental.SetUniformMatrix4fv("mvp", mvp);
-		
-		experimental.Bind();
 
 		experimental.SetUniform1f("near", near);
 		experimental.SetUniform1f("far", far);
@@ -558,14 +511,11 @@ int main()
 		//setting up for transparent experimental
 
 		//transparent rendering begins
-		//transparentShader.Bind();
 
 		for (int i = 0; i < 5; i++)
 		{
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, cubepositions[i]);
-			//float angle = 40.0f * (1 + i);
-			//model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
 			color = glm::vec4(0.6/(i+1), 0.4/(1+i), 0.1*i, 0.4);
 
@@ -600,7 +550,7 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 		glDisable(GL_DEPTH_TEST);
-		glDepthMask(GL_TRUE); // enable depth writes so glClear won't ignore clearing the depth buffer
+		glDepthMask(GL_TRUE); //<-- enable depth writes so glClear clears the depth buffer
 		glDisable(GL_BLEND);
 		
 		// bind backbuffer
@@ -616,11 +566,6 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, opaqueBuffer);
 		quadVA.Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		
-
-		/*fb.Unbind();
-		fb.Render(frameBufferShader);*/
 
 		//multiple lights
 		/*for (int i = 0; i < 4; i++)
@@ -675,7 +620,6 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
-float a = 0;
 void processInput(GLFWwindow * window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -701,14 +645,10 @@ void processInput(GLFWwindow * window)
 		pointLightPosition += cam.GetCamRight() * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		pointLightPosition.y += lightSpeed;
-		a = pointLightPosition.y;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		pointLightPosition.y -= lightSpeed;
-		a = pointLightPosition.y;
 	}
-
-	//pointLightPosition.y = a;
 
 	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS && inputFlag == 0) 
 	{
