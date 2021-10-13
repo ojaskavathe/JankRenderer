@@ -125,7 +125,7 @@ vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
 	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rgb * light.color * attenuation;
 	vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;
 
-	return ambientColor + diffuseColor;// + specularColor;
+	return ambientColor + diffuseColor + specularColor;
 }
 
 vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)

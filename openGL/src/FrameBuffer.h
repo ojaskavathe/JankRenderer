@@ -7,8 +7,6 @@ class FrameBuffer
 {
 private:
 	unsigned int m_RendererID;
-	unsigned int texColorBuffer;
-	unsigned int rbo;
 	VertexArray quadVA;
 
 	//quad to feed texture
@@ -25,11 +23,13 @@ private:
 	
 public:
 	FrameBuffer();
-	void GenTextureBuffer();
-	void GenRenderBuffer();
+	void GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment);
+	void attachTextureBuffer(GLenum attachment, unsigned int& buffer);
+	void GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type);
 	void CheckStatus();
-	void Write();
+	void Bind();
 	void Unbind();
-	void Render(Shader &shader);
+	//void Render(Shader &shader);
+	inline unsigned int getID() const { return m_RendererID;  }
 };
 

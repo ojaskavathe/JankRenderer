@@ -79,15 +79,15 @@ int main()
 	//init experimental
 	Shader shader("res/shaders/shaderv.vert", "res/shaders/shaderf.frag");
 	//Shader shader("res/shaders/basicv.vert", "res/shaders/basicf.frag");
-	Shader frameBufferShader("res/shaders/frameBufferv.vert", "res/shaders/frameBufferf.frag");
+	//Shader frameBufferShader("res/shaders/frameBufferv.vert", "res/shaders/frameBufferf.frag");
 	Shader outlineShader("res/shaders/basicv.vert", "res/shaders/stencilOutline.frag");
 
 	Shader lightShader("res/shaders/lightShaderv.vert", "res/shaders/LightShaderf.frag");
 
 	Shader cubeMapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag");
 
-	Shader solidShader("res/shaders/solidShaderv.vert", "res/shaders/solidShaderf.frag");
-	Shader transparentShader("res/shaders/transparentShaderv.vert", "res/shaders/transparentShaderf.frag");
+	//Shader solidShader("res/shaders/solidShaderv.vert", "res/shaders/solidShaderf.frag");
+	//Shader transparentShader("res/shaders/transparentShaderv.vert", "res/shaders/transparentShaderf.frag");
 	Shader compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag");
 	Shader screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag");
 	Shader experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag");
@@ -146,6 +146,7 @@ int main()
 	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 	0.0f, 1.0f 
 	};
 
+	//for framebuffers
 	float quadVerts[24] = {
 		// positions   // texCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
@@ -197,6 +198,7 @@ int main()
 	lightVA.AddBuffer(vb, lightLayout);
 	lightVA.Unbind();
 
+	//render target for framebuffers
 	VertexArray quadVA;
 	quadVA.Bind();
 	VertexBuffer quadVB(quadVerts, unsigned int(sizeof(quadVerts)));
@@ -206,57 +208,26 @@ int main()
 	quadVA.AddBuffer(quadVB, quadLayout);
 	quadVA.Unbind();
 
-	//transparency framebuffers
-	unsigned int opaqueFB, transparentFB;
-	glGenFramebuffers(1, &opaqueFB);
-	glGenFramebuffers(1, &transparentFB);
+	//setting up framebuffers for transparency
+	FrameBuffer opaqueFB;
+	unsigned int opaqueBuffer, depthBuffer;
 
-	unsigned int opaqueBuffer;
-	glGenTextures(1, &opaqueBuffer);
-	glBindTexture(GL_TEXTURE_2D, opaqueBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	opaqueFB.GenTextureBuffer(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0);
+	opaqueFB.GenTextureBuffer(depthBuffer, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT);
 
-	unsigned int depthBuffer;
-	glGenTextures(1, &depthBuffer);
-	glBindTexture(GL_TEXTURE_2D, depthBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	//bind opaque attachments to framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, opaqueFB);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, opaqueBuffer, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//transparent buffers
+	FrameBuffer transparentFB;
 	unsigned int accumTexture, revealTexture;
-	glGenTextures(1, &accumTexture);
-	glBindTexture(GL_TEXTURE_2D, accumTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenTextures(1, &revealTexture);
-	glBindTexture(GL_TEXTURE_2D, revealTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	
-	//bind transparent attachments
-	glBindFramebuffer(GL_FRAMEBUFFER, transparentFB);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumTexture, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, revealTexture, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer, 0);
+	//transparentFB has 3 attachments: 2 draw buffers for color, 1 depth buffer for... well, depth lmao
+	transparentFB.GenTextureBuffer(accumTexture, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0);
+	transparentFB.GenTextureBuffer(revealTexture, GL_R8, GL_RED, GL_FLOAT, GL_COLOR_ATTACHMENT1);
+	transparentFB.attachTextureBuffer(GL_DEPTH_ATTACHMENT, depthBuffer); //<-the transparent framebuffer also uses the depth texture as it's order independent
 
 	//explicitly telling opengl we have 2 draw buffers for the transparent framebuffer
+	transparentFB.Bind();
 	const GLenum transparentDrawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, transparentDrawBuffers);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	transparentFB.Unbind();
 
 	glm::vec4 zeroFillerVec(0.0f);
 	glm::vec4 oneFillerVec(1.0f);
@@ -311,11 +282,11 @@ int main()
 	glm::vec3 pointLightDiffuse  (1.0f, 1.0f, 1.0f);
 	glm::vec3 pointLightSpecular (1.0f, 1.0f, 1.0f);
 
-	glm::vec3 dirLightColor(1.0f, 1.0f, 1.0f);
-	glm::vec3 dirLightDirection	  (-0.2f, -1.0f, -0.3f);
-	glm::vec3 dirLightAmbient (0.05f,  0.05f, 0.05f);
-	glm::vec3 dirLightDiffuse (0.4f,  0.4f,  0.4f);
-	glm::vec3 dirLightSpecular(0.0f,  0.0f,  0.0f);
+	glm::vec3 dirLightColor		( 1.0f,  1.0f,  1.0f);
+	glm::vec3 dirLightDirection	(-0.2f, -1.0f, -0.3f);
+	glm::vec3 dirLightAmbient	(0.05f, 0.05f, 0.05f);
+	glm::vec3 dirLightDiffuse	( 0.4f,  0.4f,  0.4f);
+	glm::vec3 dirLightSpecular	( 0.0f,  0.0f,  0.0f);
 
 	glm::vec3 matDiffuse (1.0f, 1.0f, 1.0f);
 	glm::vec3 matSpecular(0.5f, 0.5f, 0.5f);
@@ -366,7 +337,7 @@ int main()
 		glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
 
 		//bind opaque framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, opaqueFB);
+		opaqueFB.Bind();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		//opaque rendering begins
@@ -378,7 +349,7 @@ int main()
 		cubeMapShader.Bind();
 		cubeMapShader.SetUniformMatrix4fv("vp", vp);
 		
-		//skybox.Render(cubeMapShader);
+		skybox.Render(cubeMapShader);
 
 		view = cam.GetViewMatrix(); //<-- add translation back to camera
 
@@ -395,7 +366,7 @@ int main()
 		lightShader.SetUniformMatrix4fv("mvp", mvp);
 		lightShader.SetUniform3fv("lightColor", pointLightColor);
 
-		renderer.DrawArrays(lightVA, vb, lightShader);
+		renderer.DrawArrays(lightVA, lightShader);
 
 		//light stencil
 		glStencilMask(0x00); //<-- stop writing to stencil buffer
@@ -406,7 +377,7 @@ int main()
 		mvp = projection * view * model;
 		outlineShader.Bind();
 		outlineShader.SetUniformMatrix4fv("mvp", mvp);
-		renderer.DrawArrays(lightVA, vb, outlineShader);
+		renderer.DrawArrays(lightVA, outlineShader);
 		
 		glEnable(GL_DEPTH_TEST);
 		glStencilMask(0x00);
@@ -449,7 +420,7 @@ int main()
 		normal = glm::transpose(glm::inverse(model));
 		shader.SetUniformMatrix4fv("normalMatrix", normal);
 
-		renderer.DrawArrays(va, vb, shader);
+		renderer.DrawArrays(va, shader);
 
 		//prepare for switching framebuffers
 		glDepthMask(GL_FALSE);
@@ -458,23 +429,17 @@ int main()
 		glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		glBlendEquation(GL_FUNC_ADD);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, transparentFB);
+		transparentFB.Bind();
 
 		glClearBufferfv(GL_COLOR, 0, &zeroFillerVec[0]);
 		glClearBufferfv(GL_COLOR, 1, &oneFillerVec[0]);
 
-		experimental.Bind();
-
 		model = glm::mat4(1.0f);
+
+		experimental.Bind();
 
 		experimental.SetUniform1f("near", near);
 		experimental.SetUniform1f("far", far);
-
-		//glStencilMask(0x00);
-
-		//subject.Draw(experimental, cam.GetCamPosition());
-
-		//glStencilMask(0xFF);
 
 		experimental.SetUniform3fv("viewPosition", cam.GetCamPosition());
 
@@ -508,8 +473,6 @@ int main()
 
 		experimental.SetUniform1f("mat.shininess", matShininess);
 
-		//setting up for transparent experimental
-
 		//transparent rendering begins
 
 		for (int i = 0; i < 5; i++)
@@ -517,7 +480,7 @@ int main()
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, cubepositions[i]);
 
-			color = glm::vec4(0.6/(i+1), 0.4/(1+i), 0.1*i, 0.4);
+			color = glm::vec4(0.6f / (i + 1.0f), 0.4f / (i + 1.0f), 0.1f * i, 0.4f);
 
 			mvp = projection * view * model;
 			experimental.SetUniformMatrix4fv("mvp", mvp);
@@ -527,16 +490,15 @@ int main()
 			normal = glm::transpose(glm::inverse(model));
 			experimental.SetUniformMatrix4fv("normalMatrix", normal);
 
-			if(i != 2) renderer.DrawArrays(va, vb, experimental);
+			if(i != 2) renderer.DrawArrays(va, experimental);
 		}
 
 		glDepthFunc(GL_ALWAYS);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, opaqueFB);
-
 		//transparent rendering ends
+		opaqueFB.Bind();
 
 		// use composite shader
 		compositeShader.Bind();
