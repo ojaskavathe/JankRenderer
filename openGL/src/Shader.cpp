@@ -1,5 +1,9 @@
 #include "Shader.h"
 
+Shader::Shader()
+{
+}
+
 Shader::Shader(const char * vertexPath, const char * fragmentPath)
 {
 	std::string vertexCode;
@@ -95,7 +99,7 @@ void Shader::SetUniformMatrix4fv(const std::string name, glm::mat4 value) {
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::CheckCompileErrors(unsigned int Shader, std::string type)
+void Shader::CheckCompileErrors(unsigned int Shader, const std::string type)
 {
 	int success;
 	char infolog[1024];

@@ -29,7 +29,6 @@ public:
 	void CheckStatus();
 	void Bind();
 	void Unbind();
-	//void Render(Shader &shader);
 	inline unsigned int getID() const { return m_RendererID;  }
 };
 

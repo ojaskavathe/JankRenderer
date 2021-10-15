@@ -55,14 +55,3 @@ void FrameBuffer::Unbind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-
-//void FrameBuffer::Render(Shader &shader)
-//{
-//	shader.Bind();
-//	quadVA.Bind();
-//	//glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-//	//glDrawArrays(GL_TRIANGLES, 0, 6);
-//
-//	//Unbinding causes the shader to recompile???? idk why
-//	//quadVA.Unbind();
-//}

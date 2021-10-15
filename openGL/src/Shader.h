@@ -13,11 +13,12 @@
 class Shader
 {
 private:
-	void CheckCompileErrors(unsigned int Shader, std::string type);
+	void CheckCompileErrors(unsigned int Shader, const std::string type);
 
 public:
 
 	unsigned int m_RendererID;
+	Shader();
 	Shader(const char* vertexPath, const char* fragmentPath);
 	~Shader();
 
