@@ -133,15 +133,15 @@ namespace test {
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection;
+		glm::mat4 projection = glm::mat4(1.0f);
 
 		float near = 0.1f;
 		float far = 100.0f;
 
-		glm::mat4 normal;
+		glm::mat4 normal = glm::mat4(1.0f);
 
-		glm::mat4 mvp;
-		glm::mat4 vp;
+		glm::mat4 mvp = glm::mat4(1.0f);
+		glm::mat4 vp = glm::mat4(1.0f);
 
 		Renderer renderer;
 
