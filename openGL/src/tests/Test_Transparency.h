@@ -97,6 +97,15 @@ namespace test {
 			 1.0f,  1.0f,  1.0f, 1.0f
 		};
 
+		std::vector<std::string> skyboxFaces{
+		"res/textures/Yokohama3/posx.jpg",
+		"res/textures/Yokohama3/negx.jpg",
+		"res/textures/Yokohama3/posy.jpg",
+		"res/textures/Yokohama3/negy.jpg",
+		"res/textures/Yokohama3/posz.jpg",
+		"res/textures/Yokohama3/negz.jpg"
+		};
+
 		Shader shader;
 		Shader outlineShader;
 		

@@ -1,28 +1,11 @@
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
 
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
 #include <iostream>
 
 #include "Camera.h"
 
-#include "Shader.h"
-#include "TextureFile.h"
-
 #include "Renderer.h"
-
-#include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
-#include "FrameBuffer.h"
-
-#include "Cubemap.h"
-
-#include "Model.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"

@@ -67,36 +67,36 @@ void Shader::Unbind()
 	glUseProgram(0);
 }
 
-void Shader::SetUniform1i(const std::string name, int value)
+void Shader::SetUniform1i(const std::string& name, int value)
 {
 	glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
 }
 
-void Shader::SetUniform1f(const std::string name, float value)
+void Shader::SetUniform1f(const std::string& name, float value)
 {
 	glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
 }
 
-void Shader::SetUniform3fv(const std::string name, glm::vec3 value)
+void Shader::SetUniform3fv(const std::string& name, glm::vec3 value)
 {
 	glUniform3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform4fv(const std::string name, glm::vec4 value)
+void Shader::SetUniform4fv(const std::string& name, glm::vec4 value)
 {
 	glUniform4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform1fv(const std::string name, glm::vec3 value)
+void Shader::SetUniform1fv(const std::string& name, glm::vec3 value)
 {
 	glUniform1fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniformMatrix4fv(const std::string name, glm::mat4 value) {
+void Shader::SetUniformMatrix4fv(const std::string& name, glm::mat4 value) {
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::CheckCompileErrors(unsigned int Shader, const std::string type)
+const void Shader::CheckCompileErrors (unsigned int Shader, const std::string& type)
 {
 	int success;
 	char infolog[1024];

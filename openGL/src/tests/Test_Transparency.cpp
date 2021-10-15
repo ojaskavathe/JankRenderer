@@ -11,26 +11,6 @@ test::Test_Transparency::Test_Transparency()
 	 screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
 	 experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag")
 {
-	//shader("res/shaders/shaderv.vert", "res/shaders/shaderf.frag");
-	//outlineShader = Shader("res/shaders/basicv.vert", "res/shaders/stencilOutline.frag");
-	//
-	//lightShader = Shader("res/shaders/lightShaderv.vert", "res/shaders/LightShaderf.frag");
-	//
-	//cubeMapShader = Shader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag");
-	//
-	//compositeShader = Shader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag");
-	//screenShader = Shader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag");
-	//experimental = Shader("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag");
-
-	std::vector<std::string> skyboxFaces{
-		"res/textures/Yokohama3/posx.jpg",
-		"res/textures/Yokohama3/negx.jpg",
-		"res/textures/Yokohama3/posy.jpg",
-		"res/textures/Yokohama3/negy.jpg",
-		"res/textures/Yokohama3/posz.jpg",
-		"res/textures/Yokohama3/negz.jpg"
-	};
-
 	//init arrays and buffers
 	VertexBuffer vb(vertices, unsigned int(sizeof(vertices)));
 	VertexBufferLayout layout;
