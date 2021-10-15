@@ -1,6 +1,6 @@
 #pragma once
-#include "Test.h"
 #include "Renderer.h"
+#include "Test.h"
 #include "FrameBuffer.h"
 #include "Cubemap.h"
 #include "Camera.h"
@@ -16,15 +16,23 @@ namespace test {
 		Test_Transparency();
 		~Test_Transparency();
 
-		void OnUpdate(float deltaTime) override;
+		void OnUpdate(float deltaTime, GLFWwindow* window) override;
 		void OnRender() override;
 		void OnImGuiRender() override;
+
+		void CursorInput(double xPos, double yPos) override;
+		void ScrollInput(double xOffset, double yOffset) override;
 
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
 		Camera cam;
 
 	private:
+
+		int cameraLock = 0;
+		int inputFlag = 0;
+		int mouseCtrl = 0;
+
 		float vertices[288] = {
 			//pos				 //normals				//uv
 			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,	0.0f, 0.0f,

@@ -86,8 +86,57 @@ test::Test_Transparency::~Test_Transparency()
 {
 }
 
-void test::Test_Transparency::OnUpdate(float deltaTime)
+void test::Test_Transparency::OnUpdate(float deltaTime, GLFWwindow* window)
 {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	float lightSpeed = 5.0f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cam.ProcessMovement(cam.FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cam.ProcessMovement(cam.BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cam.ProcessMovement(cam.RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cam.ProcessMovement(cam.LEFT, deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		pointLightPosition += cam.GetCamFront() * lightSpeed;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		pointLightPosition -= cam.GetCamFront() * lightSpeed;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		pointLightPosition -= cam.GetCamRight() * lightSpeed;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		pointLightPosition += cam.GetCamRight() * lightSpeed;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		pointLightPosition.y += lightSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		pointLightPosition.y -= lightSpeed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS && inputFlag == 0)
+	{
+		switch (cameraLock) {
+		case 0:
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			cameraLock = 1;
+			mouseCtrl = 1;
+			break;
+
+		case 1:
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			cameraLock = 0;
+			mouseCtrl = 0;
+			cam.SetMouseFirst();
+			break;
+		}
+
+		inputFlag = 1;
+	}
+	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_RELEASE)
+		inputFlag = 0;
 }
 //
 void test::Test_Transparency::OnRender()
@@ -299,4 +348,15 @@ void test::Test_Transparency::OnImGuiRender()
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
+}
+
+void test::Test_Transparency::CursorInput(double xPos, double yPos)
+{
+	if(mouseCtrl == 1)
+		cam.ProcessMouseInput(xPos, yPos);
+}
+
+void test::Test_Transparency::ScrollInput(double xOffset, double yOffset)
+{
+	cam.ProcessScroll(xOffset, yOffset);
 }

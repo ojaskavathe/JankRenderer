@@ -1,5 +1,5 @@
-#include "Test_ClearColor.h"
 #include "Renderer.h"
+#include "Test_ClearColor.h"
 #include "imgui/imgui.h"
 
 test::Test_ClearColor::Test_ClearColor()
@@ -11,7 +11,7 @@ test::Test_ClearColor::~Test_ClearColor()
 {
 }
 
-void test::Test_ClearColor::OnUpdate(float deltaTime)
+void test::Test_ClearColor::OnUpdate(float deltaTime, GLFWwindow* window)
 {
 }
 
@@ -25,3 +25,12 @@ void test::Test_ClearColor::OnImGuiRender()
 {
 	ImGui::ColorEdit4("Clear Color", m_ClearColor);
 }
+
+void test::Test_ClearColor::CursorInput(double xPos, double yPos)
+{
+}
+
+void test::Test_ClearColor::ScrollInput(double xOffset, double yOffset)
+{
+}
+
