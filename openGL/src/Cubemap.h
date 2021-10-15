@@ -53,7 +53,7 @@ class Cubemap
 	VertexArray vao;
 public:
 	Cubemap();
-	void Load(std::vector<std::string> faces);
+	void Load(std::vector<std::string>& faces);
 	void Render(Shader &shader);
 };
 

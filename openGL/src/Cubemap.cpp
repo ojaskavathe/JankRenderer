@@ -6,7 +6,7 @@ Cubemap::Cubemap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 }
 
-void Cubemap::Load(std::vector<std::string> faces)
+void Cubemap::Load(std::vector<std::string>& faces)
 {
 	stbi_set_flip_vertically_on_load(false);
 
