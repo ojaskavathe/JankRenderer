@@ -5,7 +5,6 @@
 test::Test_ClearColor::Test_ClearColor()
 	: m_ClearColor{0.2f, 0.1f, 0.6f, 1.0f}
 {
-
 }
 
 test::Test_ClearColor::~Test_ClearColor()

@@ -44,7 +44,7 @@ public:
 	unsigned int m_Blend;
 
 	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, unsigned int &blend);
-	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material &material, unsigned int &blend);
+	//Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material &material, unsigned int &blend);
 	void Draw(Shader &shader);
 
 private:

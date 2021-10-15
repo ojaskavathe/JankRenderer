@@ -7,19 +7,6 @@ class FrameBuffer
 {
 private:
 	unsigned int m_RendererID;
-	VertexArray quadVA;
-
-	//quad to feed texture
-	float quadVerts[24] = {
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
-	};
 	
 public:
 	FrameBuffer();

@@ -18,7 +18,6 @@ private:
 public:
 
 	unsigned int m_RendererID;
-	Shader();
 	Shader(const char* vertexPath, const char* fragmentPath);
 	~Shader();
 
