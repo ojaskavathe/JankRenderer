@@ -13,6 +13,7 @@
 
 #include "tests/Test_ClearColor.h"
 #include "tests/Test_Transparency.h"
+#include "tests/Test_Points.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -55,8 +56,8 @@ int main()
 
 	//enable gl debugging
 	SetDebugCallback();
+	test::Test_Transparency test1;
 
-	test::Test_ClearColor test1;
 	mTest = &test1;
 	//test::Test_ClearColor test1;
 	Renderer renderer;

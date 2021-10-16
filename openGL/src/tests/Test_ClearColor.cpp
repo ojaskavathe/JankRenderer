@@ -11,10 +11,6 @@ test::Test_ClearColor::~Test_ClearColor()
 {
 }
 
-void test::Test_ClearColor::OnUpdate(float deltaTime, GLFWwindow* window)
-{
-}
-
 void test::Test_ClearColor::OnRender()
 {
 	glClearColor(m_ClearColor[0], m_ClearColor[1], m_ClearColor[2], m_ClearColor[3]);
@@ -26,11 +22,4 @@ void test::Test_ClearColor::OnImGuiRender()
 	ImGui::ColorEdit4("Clear Color", m_ClearColor);
 }
 
-void test::Test_ClearColor::CursorInput(double xPos, double yPos)
-{
-}
-
-void test::Test_ClearColor::ScrollInput(double xOffset, double yOffset)
-{
-}
 

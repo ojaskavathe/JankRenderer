@@ -10,11 +10,11 @@
 #include <glm\gtc\type_ptr.hpp>
 
 namespace test {
-	class Test_Transparency : public Test
+	class Test_Points : public Test
 	{
 	public:
-		Test_Transparency();
-		~Test_Transparency();
+		Test_Points();
+		~Test_Points();
 
 		void OnUpdate(float deltaTime, GLFWwindow* window) override;
 		void OnRender() override;
@@ -22,8 +22,6 @@ namespace test {
 
 		void CursorInput(double xPos, double yPos) override;
 		void ScrollInput(double xOffset, double yOffset) override;
-
-		glm::vec3 pointLightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
 		Camera cam;
 
@@ -48,28 +46,28 @@ namespace test {
 			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,	1.0f,	1.0f, 1.0f,
 			-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,	1.0f,	0.0f, 1.0f,
 			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,	1.0f,	0.0f, 0.0f,
-
+			
 			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
 			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
 			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
-
+			
 			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
 			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
-
+			
 			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,	0.0f, 1.0f,
 			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,	1.0f, 1.0f,
 			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	1.0f, 0.0f,
 			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	1.0f, 0.0f,
 			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,	0.0f, 0.0f,
 			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,	0.0f, 1.0f,
-
+			
 			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,	0.0f, 1.0f,
 			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,	1.0f, 0.0f,
 			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,	1.0f, 1.0f,
@@ -86,57 +84,9 @@ namespace test {
 			glm::vec3(-3.0f, 0.0f, 0.0f)
 		};
 
-		glm::vec3 pointLightPositions[4] = {
-			glm::vec3(0.7f,  0.2f,  2.0f),
-			glm::vec3(2.3f, -3.3f, -4.0f),
-			glm::vec3(-4.0f,  2.0f, -12.0f),
-			glm::vec3(0.0f,  0.0f, -3.0f)
-		};
-
-		//for framebuffers
-		float quadVerts[24] = {
-			// positions   // texCoords
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			-1.0f, -1.0f,  0.0f, 0.0f,
-			 1.0f, -1.0f,  1.0f, 0.0f,
-
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			 1.0f, -1.0f,  1.0f, 0.0f,
-			 1.0f,  1.0f,  1.0f, 1.0f
-		};
-
-		std::vector<std::string> skyboxFaces{
-			"res/textures/Yokohama3/posx.jpg",
-			"res/textures/Yokohama3/negx.jpg",
-			"res/textures/Yokohama3/posy.jpg",
-			"res/textures/Yokohama3/negy.jpg",
-			"res/textures/Yokohama3/posz.jpg",
-			"res/textures/Yokohama3/negz.jpg"
-		};
-
 		Shader shader;
 
-		Shader outlineShader;
-		Shader lightShader;
-		
-		Shader cubeMapShader;
-		
-		Shader compositeShader;
-		Shader screenShader;
-		Shader experimental;
-
 		VertexArray va;
-		VertexArray lightVA;
-		VertexArray quadVA;
-
-		FrameBuffer opaqueFB;
-		unsigned int opaqueBuffer, depthBuffer;
-		
-		FrameBuffer transparentFB;
-		unsigned int accumTexture, revealTexture;
-
-		glm::vec4 zeroFillerVec = glm::vec4(0.0f);
-		glm::vec4 oneFillerVec = glm::vec4(1.0f);
 
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
@@ -152,29 +102,5 @@ namespace test {
 		glm::mat4 vp = glm::mat4(1.0f);
 
 		Renderer renderer;
-
-		const float radius = 5.0f;
-
-		Cubemap skybox;
-		
-		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 pointLightAmbient = glm::vec3(0.2f, 0.2f, 0.2f);
-		glm::vec3 pointLightDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-
-		glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
-		glm::vec3 dirLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
-		glm::vec3 dirLightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
-		glm::vec3 dirLightSpecular = glm::vec3(0.0f, 0.0f, 0.0f);
-
-		glm::vec3 matDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 matSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
-		float matShininess = 32.0f;
-
-		glm::vec3 attenuationParams = glm::vec3(1.0f, 0.3f, 0.072f);
-
-		int kuwahara_radius = 7;
 	};
 }

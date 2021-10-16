@@ -4,8 +4,8 @@
 
 test::Test_Transparency::Test_Transparency()
 	:shader("res/shaders/shaderv.vert", "res/shaders/shaderf.frag"),
-	 outlineShader("res/shaders/lightShaderv.vert", "res/shaders/LightShaderf.frag"),
-	 lightShader("res/shaders/lightShaderv.vert", "res/shaders/LightShaderf.frag"),
+	 outlineShader("res/shaders/lightShaderv.vert", "res/shaders/stencilOutline.frag"),
+	 lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	 cubeMapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag"),
 	 compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag"),
 	 screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
@@ -157,6 +157,9 @@ void test::Test_Transparency::OnRender()
 
 	//opaque rendering begins
 	glStencilMask(0x00);
+
+	glEnable(GL_CULL_FACE); //<- Enable face culling for opaque rendering
+	glCullFace(GL_BACK);
 	
 	//cubemap
 	view = glm::mat4(glm::mat3(cam.GetViewMatrix())); //<-- remove translation due to camera
@@ -275,6 +278,7 @@ void test::Test_Transparency::OnRender()
 	experimental.SetUniform1f("mat.shininess", matShininess);
 	
 	//transparent rendering begins
+	glDisable(GL_CULL_FACE); //<-disable face culling fro transparent rendering
 
 	for (int i = 0; i < 5; i++)
 	{
