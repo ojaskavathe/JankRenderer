@@ -3,7 +3,7 @@
 #include "imgui/imgui.h"
 
 test::Test_GeometryShader::Test_GeometryShader()
-	:shader("res/shaders/basicv.vert", "res/shaders/basicf.frag")
+	:shader("res/shaders/basicv.vert", "res/shaders/basicf.frag", "res/shaders/lines.geom")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, unsigned int(sizeof(vertices)));
@@ -92,7 +92,8 @@ void test::Test_GeometryShader::OnRender()
 	shader.SetUniform3fv("color", glm::vec3(1.0f, 0.0f, 0.0f));
 
 	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_POINTS, 0, 36);
 }
 
 void test::Test_GeometryShader::OnImGuiRender()

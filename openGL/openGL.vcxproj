@@ -85,6 +85,7 @@
     <None Include="res\shaders\frameBufferv.vert" />
     <None Include="res\shaders\lightShaderf.frag" />
     <None Include="res\shaders\lightShaderv.vert" />
+    <None Include="res\shaders\lines.geom" />
     <None Include="res\shaders\postProcess\kuwahara.frag" />
     <None Include="res\shaders\screenShaderf.frag" />
     <None Include="res\shaders\screenShaderv.vert" />
