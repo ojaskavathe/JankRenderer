@@ -1,12 +1,13 @@
 #include "Shader.h"
 
-
-Shader::Shader(const char * vertexPath, const char * fragmentPath)
+Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* geometryPath)
 {
 	std::string vertexCode;
 	std::string fragmentCode;
+	std::string geometryCode;
 	std::ifstream vShaderFile;
 	std::ifstream fShaderFile;
+	std::ifstream gShaderFile;
 
 	//exceptions
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -21,6 +22,14 @@ Shader::Shader(const char * vertexPath, const char * fragmentPath)
 
 		vertexCode = vShaderStream.str();
 		fragmentCode = fShaderStream.str();
+
+		if (geometryPath != nullptr)
+		{
+			gShaderFile.open(geometryPath);
+			std::stringstream gShaderStream;
+			gShaderStream << gShaderFile.rdbuf();
+			geometryCode = gShaderStream.str();
+		}
 	}
 	catch (std::ifstream::failure)
 	{
@@ -36,11 +45,21 @@ Shader::Shader(const char * vertexPath, const char * fragmentPath)
 	m_RendererID = glCreateProgram();
 	glAttachShader(m_RendererID, vertex);
 	glAttachShader(m_RendererID, fragment);
+
+	unsigned int geometry;
+	if (geometryPath != nullptr)
+	{
+		const char* gShaderCode = geometryCode.c_str();
+		geometry = CompileShader(gShaderCode, GL_GEOMETRY_SHADER);
+		glAttachShader(m_RendererID, geometry);
+	}
+
 	glLinkProgram(m_RendererID);
 	CheckCompileErrors(m_RendererID, "m_RendererID");
 
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+	if (geometryPath != nullptr) glDeleteShader(geometry);
 }
 
 Shader::~Shader()
@@ -96,7 +115,7 @@ void Shader::SetUniformMatrix4fv(const std::string& name, glm::mat4 value) {
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-const void Shader::CheckCompileErrors (unsigned int Shader, const std::string& type)
+const void Shader::CheckCompileErrors(unsigned int Shader, const std::string& type)
 {
 	int success;
 	char infolog[1024];
@@ -107,7 +126,7 @@ const void Shader::CheckCompileErrors (unsigned int Shader, const std::string& t
 		if (!success)
 		{
 			glGetShaderInfoLog(Shader, 1024, NULL, infolog);
-			std::cout << "[Shader]: Compiler Error. \n" << infolog << "\n" << std::endl;
+			std::cout << "[Shader]: Compiler Error. \n" << infolog << "\n\n";
 		}
 	}
 	else {
@@ -115,7 +134,7 @@ const void Shader::CheckCompileErrors (unsigned int Shader, const std::string& t
 		if (!success)
 		{
 			glGetProgramInfoLog(Shader, 1024, NULL, infolog);
-			std::cout << "[Shader]: Linker Error. \n" << infolog << "\n" << std::endl;
+			std::cout << "[Shader]: Linker Error. \n" << infolog << "\n\n";
 		}
 	}
 }

@@ -1,8 +1,8 @@
-#include "Test_Points.h"
+#include "Test_GeometryShader.h"
 #include "VertexBufferLayout.h"
 #include "imgui/imgui.h"
 
-test::Test_Points::Test_Points()
+test::Test_GeometryShader::Test_GeometryShader()
 	:shader("res/shaders/basicv.vert", "res/shaders/basicf.frag")
 {
 	//init arrays and buffers
@@ -38,9 +38,9 @@ test::Test_Points::Test_Points()
 	glCullFace(GL_BACK);
 }
 
-test::Test_Points::~Test_Points(){}
+test::Test_GeometryShader::~Test_GeometryShader(){}
 
-void test::Test_Points::OnUpdate(float deltaTime, GLFWwindow* window)
+void test::Test_GeometryShader::OnUpdate(float deltaTime, GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -78,7 +78,7 @@ void test::Test_Points::OnUpdate(float deltaTime, GLFWwindow* window)
 		inputFlag = 0;
 }
 
-void test::Test_Points::OnRender()
+void test::Test_GeometryShader::OnRender()
 {
 	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 	view = cam.GetViewMatrix();
@@ -95,18 +95,18 @@ void test::Test_Points::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-void test::Test_Points::OnImGuiRender()
+void test::Test_GeometryShader::OnImGuiRender()
 {
 	
 }
 
-void test::Test_Points::CursorInput(double xPos, double yPos)
+void test::Test_GeometryShader::CursorInput(double xPos, double yPos)
 {
 	if(mouseCtrl == 1)
 		cam.ProcessMouseInput(xPos, yPos);
 }
 
-void test::Test_Points::ScrollInput(double xOffset, double yOffset)
+void test::Test_GeometryShader::ScrollInput(double xOffset, double yOffset)
 {
 	cam.ProcessScroll(xOffset, yOffset);
 }

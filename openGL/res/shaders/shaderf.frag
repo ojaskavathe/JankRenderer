@@ -13,9 +13,9 @@ uniform samplerCube skybox;
 
 struct Material 
 {
-	sampler2D texture_diffuse1;
+	//sampler2D texture_diffuse1;
 	//vec3 diffuse;
-	sampler2D texture_specular1;
+	//sampler2D texture_specular1;
 	vec3 specular;
 	float shininess;
 };
@@ -46,8 +46,8 @@ uniform Material mat;
 uniform PointLight pointLight;
 uniform DirectionalLight dirLight;
 
-vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
-vec4 specularTex = texture(mat.texture_specular1, texCoord);
+//vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
+//vec4 specularTex = texture(mat.texture_specular1, texCoord);
 
 vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir);
 vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir);
