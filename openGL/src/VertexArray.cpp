@@ -3,6 +3,7 @@
 #include "Renderer.h"
 
 VertexArray::VertexArray()
+	:currentPos(0)
 {
 	glGenVertexArrays(1, &m_RendererID);
 	glBindVertexArray(m_RendererID);
@@ -14,20 +15,22 @@ VertexArray::~VertexArray()
 	//glDeleteVertexArrays(1, &m_RendererID);
 }
 
-void VertexArray::AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
+void VertexArray::AddBuffer(const VertexBuffer& vb, VertexBufferLayout& layout)
 {
 	Bind();
 	vb.Bind();
 	const auto& elements = layout.getElements();
 	unsigned int offset = 0;
 
-	for (unsigned int i = 0; i < elements.size(); i++)
+	for (unsigned int i = currentPos; i < elements.size(); i++)
 	{
 		const auto& element = elements[i];
-		glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.getStride(), (const void*)((size_t)offset));
 		glEnableVertexAttribArray(i);
+		glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.getStride(), (const void*)((size_t)offset));
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
+		currentPos++;
 	}
+	layout.resetStride(); //-> if we add attributes from another buffer
 }
 
 void VertexArray::Bind() const

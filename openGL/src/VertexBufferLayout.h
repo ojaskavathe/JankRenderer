@@ -61,4 +61,5 @@ public:
 	inline unsigned int getStride() const { return m_Stride; }
 	inline const std::vector<VertexBufferElement> getElements() const& { return m_Elements; }
 	inline void strideOverride(int strideOffset, unsigned int type) { m_Stride += strideOffset * VertexBufferElement::GetSizeOfType(type);  }
+	inline void resetStride() { m_Stride = 0; }
 };
