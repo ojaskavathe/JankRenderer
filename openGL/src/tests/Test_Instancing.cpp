@@ -1,11 +1,10 @@
 #include "Test_Instancing.h"
 #include "VertexBufferLayout.h"
 #include "imgui/imgui.h"
+#include <random>
 
 test::Test_Instancing::Test_Instancing()
-	:shader("res/shaders/basicv.vert", "res/shaders/basicf.frag"),
-	 modelMatrices(new glm::mat4[amount]),
-	 color(new glm::vec3[amount])
+	:shader("res/shaders/instancingv.vert", "res/shaders/basicf.frag")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, unsigned int(sizeof(vertices)));
@@ -22,9 +21,17 @@ test::Test_Instancing::Test_Instancing()
 
 	va.AddBuffer(vb, layout);
 
-	srand(glfwGetTime());
-	float radius = 10.0f;
-	float offset = 2.5f;
+	std::vector<glm::mat4> modelMatrices;
+	std::vector<glm::vec3> modelColor;
+
+	//set rng
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(0, 1000);
+
+	srand((unsigned int)glfwGetTime());
+	float radius = 50.0f;
+	float offset = 25.0f;
 	for (unsigned int i = 0; i < amount; i++)
 	{
 		glm::mat4 model = glm::mat4(1.0f);
@@ -39,19 +46,38 @@ test::Test_Instancing::Test_Instancing()
 		model = glm::translate(model, glm::vec3(x, y, z));
 
 		// 2. scale: scale between 0.05 and 0.25f
-		float scale = (rand() % 20) / 100.0f + 0.05;
+		float scale = (float)((rand() % 20) / 100.0f + 0.05);
 		model = glm::scale(model, glm::vec3(scale));
 
 		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
-		float rotAngle = (rand() % 360);
+		float rotAngle = (float)(rand() % 360);
 		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
 		// 4. now add to list of matrices
-		modelMatrices[i] = model;
-		color[i] = glm::vec3(rand()/2550, rand()/2550, rand()/2550);
+		modelMatrices.push_back(model);
+		modelColor.push_back(glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
 	}
 
-	//glVertexAttribDivisor(2, 1);
+	VertexBuffer cubeInstanceVB(&modelMatrices[0], (unsigned int)modelMatrices.size() * sizeof(glm::mat4));
+
+	layout.Push<float>(4);
+	layout.Push<float>(4);
+	layout.Push<float>(4);
+	layout.Push<float>(4);
+	va.AddBuffer(cubeInstanceVB, layout);
+
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+
+	unsigned int num = sizeof(glm::vec3);
+
+	VertexBuffer cubeColorVB(&modelColor[0], (unsigned int)modelColor.size() * sizeof(glm::vec3));
+	layout.Push<float>(3);
+	va.AddBuffer(cubeColorVB, layout);
+	
+	glVertexAttribDivisor(7, 1);
 
 	va.Unbind();
 
@@ -63,14 +89,14 @@ test::Test_Instancing::Test_Instancing()
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	glEnable(GL_PROGRAM_POINT_SIZE);
-
 	//backface culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 }
 
-test::Test_Instancing::~Test_Instancing(){}
+test::Test_Instancing::~Test_Instancing(){
+	
+}
 
 void test::Test_Instancing::OnUpdate(float deltaTime, GLFWwindow* window)
 {
@@ -114,28 +140,20 @@ void test::Test_Instancing::OnRender()
 {
 	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 	view = cam.GetViewMatrix();
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+
+	vp = projection * view;
 
 	va.Bind();
 	shader.Bind();
-	for (unsigned int i = 0; i < amount; i++)
-	{
-		model = modelMatrices[i];
-		mvp = projection * view * model;
-		shader.SetUniformMatrix4fv("mvp", mvp);
-		shader.SetUniform3fv("color", color[i]);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
 
+	shader.SetUniformMatrix4fv("vp", vp);
 
-	//glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 36, amount);
 }
 
 void test::Test_Instancing::OnImGuiRender()
 {
-	ImGui::Begin("color");
+	ImGui::Begin("Instancing");
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();

@@ -78,9 +78,7 @@ namespace test {
 
 		VertexArray va;
 
-		unsigned int amount = 1000;
-		glm::mat4* modelMatrices;
-		glm::vec3* color;
+		unsigned int amount = 100000;
 
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
@@ -88,7 +86,7 @@ namespace test {
 		glm::mat4 projection = glm::mat4(1.0f);
 
 		float near = 0.1f;
-		float far = 100.0f;
+		float far = 300.0f;
 
 		glm::mat4 normal = glm::mat4(1.0f);
 
