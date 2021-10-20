@@ -35,12 +35,24 @@ struct PointLight
 	vec3 atten;
 };
 
+struct DirectionalLight
+{
+	vec3 direction;
+
+	vec3 color;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
 uniform Material mat;
 uniform PointLight pointLight;
+uniform DirectionalLight dirLight;
 //vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
 //vec4 specularTex = texture(mat.texture_specular1, texCoord);
 
 vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir);
+vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir);
 
 uniform float near; 
 uniform float far; 
@@ -65,6 +77,7 @@ void main()
 
 	vec3 result = vec3(0);
 	//result = texture(skybox, R).rgb;
+	result += CalcDirLight(dirLight, norm, viewDir);
 	result += CalcPointLight(pointLight, norm, viewDir);
 
 	float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
@@ -74,19 +87,39 @@ void main()
 	reveal = color.a;
 }
 
+//for models without textures
 vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
 {
 	vec3 lightDir =	normalize(FragPosition - light.position);
 	float lightDist = length(FragPosition - light.position);
 
+	vec3 halfwayDir = normalize(-lightDir - viewDir);
+
 	vec3 reflectDir = (reflect(lightDir, norm));
 	float attenuation = 1.0f/(light.atten.r + (light.atten.g * lightDist) + (light.atten.b * lightDist * lightDist));
 
+	//vec3 ambientColor	= light.ambient * mat.diffuse * light.color * attenuation;
 	vec3 ambientColor	= light.ambient * color.rgb * light.color * attenuation;
 	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rgb * light.color * attenuation;
-	vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;
+	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;// <- Blinn-Phong
+	//vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation; // <-Phong
 
-	//return diffuseColor;
+	return ambientColor + diffuseColor + specularColor;
+}
+
+vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
+{
+	vec3 lightDir =	normalize(light.direction);
+	vec3 reflectDir = (reflect(lightDir, norm));
+
+	vec3 halfwayDir = normalize(-lightDir - viewDir);
+
+	//vec3 ambientColor	= light.ambient * mat.diffuse * light.color;
+	vec3 ambientColor	= light.ambient * color.rgb * light.color;
+	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rbg * light.color;
+	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
+	//vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color; // <- Phong
+
 	return ambientColor + diffuseColor + specularColor;
 }
 
@@ -118,34 +151,6 @@ vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
 //	return ambientColor + diffuseColor + specularColor;
 //}
 
-/*for models without textures
-vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
-{
-	vec3 lightDir =	normalize(FragPosition - light.position);
-	float lightDist = length(FragPosition - light.position);
-
-	vec3 reflectDir = (reflect(lightDir, norm));
-	float attenuation = 1.0f/(light.atten.r + (light.atten.g * lightDist) + (light.atten.b * lightDist * lightDist));
-
-	vec3 ambientColor	= light.ambient *mat.diffuse * light.color * attenuation;
-	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * mat.diffuse * light.color * attenuation;
-	vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * mat.specular * light.color * attenuation;
-
-	return ambientColor + diffuseColor + specularColor;
-}
-
-for models without textures
-vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
-{
-	vec3 lightDir =	normalize(light.direction);
-	vec3 reflectDir = (reflect(lightDir, norm));
-
-	vec3 ambientColor	= light.ambient * mat.diffuse * light.color;
-	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * mat.diffuse * light.color;
-	vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * mat.specular * light.color;
-
-	return ambientColor + diffuseColor + specularColor;
-}*/
 
 /*for reflections and refractions using cubemaps
 vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
