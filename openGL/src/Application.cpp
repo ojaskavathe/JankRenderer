@@ -13,6 +13,7 @@
 
 #include "tests/Test_ClearColor.h"
 #include "tests/Test_Transparency.h"
+#include "tests/Test_MSTransparency.h"
 #include "tests/Test_Instancing.h"
 #include "tests/Test_msFB.h"
 
@@ -59,7 +60,7 @@ int main()
 
 	//enable gl debugging
 	SetDebugCallback();
-	test::Test_Instancing test1;
+	test::Test_MSTransparency test1;
 
 	mTest = &test1;
 	//test::Test_ClearColor test1;
