@@ -19,10 +19,31 @@ void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFo
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void FrameBuffer::GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int samples)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+	glGenTextures(1, &buffer);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//assigns the texture to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, buffer, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void FrameBuffer::attachTextureBuffer(GLenum attachment, unsigned int& buffer)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, buffer, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void FrameBuffer::attachTextureBufferMS(GLenum attachment, unsigned int& buffer)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, buffer, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

@@ -12,7 +12,7 @@ test::Test_Transparency::Test_Transparency()
 	 experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag")
 {
 	//init arrays and buffers
-	VertexBuffer vb(vertices, unsigned int(sizeof(vertices)));
+	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
 	VertexBufferLayout layout;
 
 	//position
@@ -36,7 +36,7 @@ test::Test_Transparency::Test_Transparency()
 
 	//render target for framebuffers
 	quadVA.Bind();
-	VertexBuffer quadVB(quadVerts, unsigned int(sizeof(quadVerts)));
+	VertexBuffer quadVB(quadVerts, (unsigned int)sizeof(quadVerts));
 	VertexBufferLayout quadLayout;
 	quadLayout.Push<float>(2);
 	quadLayout.Push<float>(2);
@@ -46,12 +46,12 @@ test::Test_Transparency::Test_Transparency()
 	//setting up framebuffers for transparency
 
 	opaqueFB.GenTextureBuffer(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0);
-	opaqueFB.GenTextureBuffer(depthBuffer, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT);
+	opaqueFB.GenTextureBuffer(depthBuffer, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_STENCIL_ATTACHMENT);
 
 	//transparentFB has 3 attachments: 2 draw buffers for color, 1 depth buffer for... well, depth lmao
 	transparentFB.GenTextureBuffer(accumTexture, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0);
 	transparentFB.GenTextureBuffer(revealTexture, GL_R8, GL_RED, GL_FLOAT, GL_COLOR_ATTACHMENT1);
-	transparentFB.attachTextureBuffer(GL_DEPTH_ATTACHMENT, depthBuffer); //<-the transparent framebuffer also uses the depth texture as it's order independent
+	transparentFB.attachTextureBuffer(GL_DEPTH_STENCIL_ATTACHMENT, depthBuffer); //<-the transparent framebuffer also uses the depth texture as it's order independent
 
 	//explicitly telling opengl we have 2 draw buffers for the transparent framebuffer
 	transparentFB.Bind();
@@ -323,7 +323,7 @@ void test::Test_Transparency::OnRender()
 	// bind backbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// use screen shader
 	screenShader.Bind();

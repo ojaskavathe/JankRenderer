@@ -11,7 +11,9 @@ private:
 public:
 	FrameBuffer();
 	void GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment);
+	void GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int samples);
 	void attachTextureBuffer(GLenum attachment, unsigned int& buffer);
+	void attachTextureBufferMS(GLenum attachment, unsigned int& buffer);
 	void GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type);
 	void CheckStatus();
 	void Bind();

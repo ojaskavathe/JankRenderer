@@ -13,9 +13,8 @@
 
 #include "tests/Test_ClearColor.h"
 #include "tests/Test_Transparency.h"
-#include "tests/Test_Points.h"
-#include "tests/Test_GeometryShader.h"
 #include "tests/Test_Instancing.h"
+#include "tests/Test_msFB.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
