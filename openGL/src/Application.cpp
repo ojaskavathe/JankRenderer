@@ -11,11 +11,11 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#include "tests/Test_ClearColor.h"
-#include "tests/Test_Transparency.h"
 #include "tests/Test_MSTransparency.h"
+#include "tests/Test_Transparency.h"
 #include "tests/Test_Instancing.h"
 #include "tests/Test_msFB.h"
+#include "tests/Test_ShadowMapping.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -60,7 +60,7 @@ int main()
 
 	//enable gl debugging
 	SetDebugCallback();
-	test::Test_MSTransparency test1;
+	test::Test_ShadowMapping test1;
 
 	mTest = &test1;
 	//test::Test_ClearColor test1;

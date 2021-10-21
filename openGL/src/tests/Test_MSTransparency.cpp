@@ -43,6 +43,9 @@ test::Test_MSTransparency::Test_MSTransparency()
 	quadVA.AddBuffer(quadVB, quadLayout);
 	quadVA.Unbind();
 
+	//planeVA
+
+
 	//setting up framebuffers for transparency
 
 	opaqueFB.GenTextureBufferMS(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0, 4);
@@ -172,7 +175,7 @@ void test::Test_MSTransparency::OnRender()
 	cubeMapShader.Bind();
 	cubeMapShader.SetUniformMatrix4fv("vp", vp);
 
-	skybox.Render(cubeMapShader);
+	//skybox.Render(cubeMapShader);
 
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
 
@@ -205,7 +208,7 @@ void test::Test_MSTransparency::OnRender()
 	glEnable(GL_DEPTH_TEST);
 	glStencilMask(0x00);
 	glStencilFunc(GL_ALWAYS, 1, 0xFF);
-
+	
 	//render cubes
 	model = glm::mat4(1.0f);
 
@@ -236,8 +239,6 @@ void test::Test_MSTransparency::OnRender()
 	shader.SetUniformMatrix4fv("mvp", mvp);
 	shader.SetUniformMatrix4fv("model", model);
 
-	//color = glm::vec4(0.6f / 3, 0.4f / 3, 0.2f, 1.0f);
-	//color = glm::vec4(0.1f, 0.0f, 0.0f, 1.0f);
 	shader.SetUniform4fv("color", color);
 
 	normal = glm::transpose(glm::inverse(model));
@@ -322,7 +323,6 @@ void test::Test_MSTransparency::OnRender()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//transparent rendering ends
-	//opaqueFB.Bind();
 	opaqueScreenFB.Bind();
 
 	// use composite shader
@@ -347,7 +347,7 @@ void test::Test_MSTransparency::OnRender()
 
 	// use screen shader
 	screenShader.Bind();
-	screenShader.SetUniform1f("gamma", 2.2);
+	screenShader.SetUniform1f("gamma", 2.2f);
 
 	// draw final screen quad
 	glActiveTexture(GL_TEXTURE0);
