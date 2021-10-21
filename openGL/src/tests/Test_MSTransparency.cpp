@@ -208,7 +208,6 @@ void test::Test_MSTransparency::OnRender()
 
 	//render cubes
 	model = glm::mat4(1.0f);
-	glm::vec4 color;
 
 	shader.Bind();
 
@@ -237,7 +236,8 @@ void test::Test_MSTransparency::OnRender()
 	shader.SetUniformMatrix4fv("mvp", mvp);
 	shader.SetUniformMatrix4fv("model", model);
 
-	color = glm::vec4(0.6f / 3, 0.4f / 3, 0.2f, 1.0f);
+	//color = glm::vec4(0.6f / 3, 0.4f / 3, 0.2f, 1.0f);
+	//color = glm::vec4(0.1f, 0.0f, 0.0f, 1.0f);
 	shader.SetUniform4fv("color", color);
 
 	normal = glm::transpose(glm::inverse(model));
@@ -293,13 +293,13 @@ void test::Test_MSTransparency::OnRender()
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, cubepositions[i]);
 
-		color = glm::vec4(0.6f / (i + 1.0f), 0.4f / (i + 1.0f), 0.1f * i, 0.4f);
+		glm::vec4 tColor = glm::vec4(0.6f / (i + 1.0f), 0.4f / (i + 1.0f), 0.1f * i, 0.4f);
 
 		mvp = projection * view * model;
 		experimental.SetUniformMatrix4fv("mvp", mvp);
 		experimental.SetUniformMatrix4fv("model", model);
 
-		experimental.SetUniform4fv("color", color);
+		experimental.SetUniform4fv("color", tColor);
 		normal = glm::transpose(glm::inverse(model));
 		experimental.SetUniformMatrix4fv("normalMatrix", normal);
 
@@ -347,6 +347,7 @@ void test::Test_MSTransparency::OnRender()
 
 	// use screen shader
 	screenShader.Bind();
+	screenShader.SetUniform1f("gamma", 2.2);
 
 	// draw final screen quad
 	glActiveTexture(GL_TEXTURE0);
@@ -366,7 +367,7 @@ void test::Test_MSTransparency::OnImGuiRender()
 
 		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
 		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
-		ImGui::ColorEdit3("lightColor", (float*)&pointLightColor);
+		ImGui::ColorEdit3("color", (float*)&color);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

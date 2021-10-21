@@ -179,8 +179,9 @@ namespace test {
 		glm::vec3 matSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
 		float matShininess = 32.0f;
 
-		glm::vec3 attenuationParams = glm::vec3(1.0f, 0.3f, 0.072f);
+		glm::vec3 attenuationParams = glm::vec3(1.0f, 0.3f, 0.44f);
 
 		int kuwahara_radius = 7;
+		glm::vec4 color = glm::vec4(0.1f, 0.0f, 0.0f, 1.0f);;
 	};
 }
