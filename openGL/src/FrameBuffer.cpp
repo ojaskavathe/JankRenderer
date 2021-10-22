@@ -5,12 +5,12 @@ FrameBuffer::FrameBuffer()
 	glGenFramebuffers(1, &m_RendererID);
 }
 
-void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment)
+void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int width, unsigned int height)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenTextures(1, &buffer);
 	glBindTexture(GL_TEXTURE_2D, buffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, WINDOW_WIDTH, WINDOW_HEIGHT, 0, format, type, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

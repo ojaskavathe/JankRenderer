@@ -52,9 +52,7 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	planeVA.Unbind();
 
 	//shadowmap
-	depthMapFB.GenTextureBuffer(depthMap, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT);
-	//glReadBuffer(GL_NONE);
-	//glDrawBuffer(GL_NONE);
+	depthMapFB.GenTextureBuffer(depthMap, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, SHADOW_WIDTH, SHADOW_HEIGHT);
 	depthMapFB.Unbind();
 
 	stbi_set_flip_vertically_on_load(true);
@@ -70,6 +68,10 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	//backface culling
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
+
+	shader.Bind();
+	shader.SetUniform1i("shadowMap", 0);
+	shader.Unbind();
 
 	//blending
 	glEnable(GL_BLEND);
@@ -148,105 +150,139 @@ void test::Test_ShadowMapping::OnRender()
 	depthMapShader.Bind();
 	depthMapShader.SetUniformMatrix4fv("lightVP", lightVP);
 
+	//Framebuffer: ShadowMap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	depthMapFB.Bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	//ground
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(5.0f, 1.0f, 5.0f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	//cube
+	//cubes
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, cubepositions[2]);
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//rendering to backbuffer
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//Framebuffer: Backbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	screenShader.Bind();
+	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
+	view = cam.GetViewMatrix(); //<-- add translation back to camera
+
+	lightShader.Bind();
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, pointLightPosition);
+	model = glm::scale(model, glm::vec3(0.2f));
+	mvp = projection * view * model;
+	lightShader.SetUniformMatrix4fv("mvp", mvp);
+	lightShader.SetUniform3fv("lightColor", pointLightColor);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
-	quadVA.Bind();
+	renderer.DrawArrays(lightVA, lightShader);
+	
+	model = glm::mat4(1.0f);
+
+	shader.Bind();
+
+	shader.SetUniformMatrix4fv("lightVP", lightVP);
+	shader.SetUniform1f("near", near);
+	shader.SetUniform1f("far", far);
+
+	shader.SetUniform3fv("viewPosition", cam.GetCamPosition());
+
+	shader.SetUniform3fv("dirLight.color", dirLightColor);
+	shader.SetUniform3fv("dirLight.direction", dirLightDirection);
+	shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
+	shader.SetUniform3fv("dirLight.diffuse", dirLightDiffuse);
+	shader.SetUniform3fv("dirLight.specular", dirLightSpecular);
+
+	shader.SetUniform3fv("pointLight.color", pointLightColor);
+	shader.SetUniform3fv("pointLight.position", pointLightPosition);
+	shader.SetUniform3fv("pointLight.ambient", pointLightAmbient);
+	shader.SetUniform3fv("pointLight.diffuse", pointLightDiffuse);
+	shader.SetUniform3fv("pointLight.specular", pointLightSpecular);
+	shader.SetUniform3fv("pointLight.atten", attenuationParams);
+
+	shader.SetUniform1f("mat.shininess", matShininess);
+
+	shader.SetUniform4fv("color", color);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+
+	//render ground
+	model = glm::mat4(1.0f);
+	shader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	shader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	shader.SetUniformMatrix4fv("normalMatrix", normal);
+	shader.SetUniform4fv("color", glm::vec4(0.5f));
+	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	//projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
-	//view = cam.GetViewMatrix(); //<-- add translation back to camera
+	//render cubes
+	shader.SetUniform4fv("color", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
+	va.Bind();
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	shader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	shader.SetUniformMatrix4fv("normalMatrix", normal);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//lightShader.Bind();
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	shader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	shader.SetUniformMatrix4fv("normalMatrix", normal);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//model = glm::mat4(1.0f);
-	//model = glm::translate(model, pointLightPosition);
-	//model = glm::scale(model, glm::vec3(0.2f));
-	//mvp = projection * view * model;
-	//lightShader.SetUniformMatrix4fv("mvp", mvp);
-	//lightShader.SetUniform3fv("lightColor", pointLightColor);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	shader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	shader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	shader.SetUniformMatrix4fv("normalMatrix", normal);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//renderer.DrawArrays(lightVA, lightShader);
-	//
-	////render cubes
-	//model = glm::mat4(1.0f);
-
-	//shader.Bind();
-
-	//shader.SetUniform1f("near", near);
-	//shader.SetUniform1f("far", far);
-
-	//shader.SetUniform3fv("viewPosition", cam.GetCamPosition());
-
-	//shader.SetUniform3fv("dirLight.color", dirLightColor);
-	//shader.SetUniform3fv("dirLight.direction", dirLightDirection);
-	//shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
-	//shader.SetUniform3fv("dirLight.diffuse", dirLightDiffuse);
-	//shader.SetUniform3fv("dirLight.specular", dirLightSpecular);
-
-	//shader.SetUniform3fv("pointLight.color", pointLightColor);
-	//shader.SetUniform3fv("pointLight.position", pointLightPosition);
-	//shader.SetUniform3fv("pointLight.ambient", pointLightAmbient);
-	//shader.SetUniform3fv("pointLight.diffuse", pointLightDiffuse);
-	//shader.SetUniform3fv("pointLight.specular", pointLightSpecular);
-	//shader.SetUniform3fv("pointLight.atten", attenuationParams);
-
-	//shader.SetUniform1f("mat.shininess", matShininess);
-
-	//model = glm::translate(model, cubepositions[2]);
-	//mvp = projection * view * model;
-	//shader.SetUniformMatrix4fv("mvp", mvp);
-	//shader.SetUniformMatrix4fv("model", model);
-
-	//shader.SetUniform4fv("color", color);
-
-	//normal = glm::transpose(glm::inverse(model));
-	//shader.SetUniformMatrix4fv("normalMatrix", normal);
-
-	//renderer.DrawArrays(va, shader);
-
-	////render ground
-	//model = glm::mat4(1.0f);
-	//model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
-	//model = glm::scale(model, glm::vec3(5.0f, 1.0f, 5.0f));
-	//mvp = projection * view * model;
-	//shader.SetUniformMatrix4fv("mvp", mvp);
-	//shader.SetUniformMatrix4fv("model", model);
-
-	//glDisable(GL_CULL_FACE);
-	//shader.SetUniform4fv("color", glm::vec4(0.5f));
-
-	//normal = glm::transpose(glm::inverse(model));
-	//shader.SetUniformMatrix4fv("normalMatrix", normal);
-	//
-	//planeVA.Bind();
-	//glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void test::Test_ShadowMapping::OnImGuiRender()

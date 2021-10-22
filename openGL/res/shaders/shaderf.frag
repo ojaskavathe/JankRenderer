@@ -2,14 +2,15 @@
 
 out vec4 FragColor;
 
-in vec3 FragPosition;
-in vec2 texCoord;
 in vec3 Normal;
+in vec2 texCoord;
+in vec3 FragPosition;
+in vec4 lightSpaceFragPos;
 
 uniform vec3 objectColor;
 uniform vec3 viewPosition;
 
-uniform samplerCube skybox;
+//uniform samplerCube skybox;
 
 struct Material 
 {
@@ -46,16 +47,18 @@ uniform Material mat;
 uniform PointLight pointLight;
 uniform DirectionalLight dirLight;
 
-//vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
-//vec4 specularTex = texture(mat.texture_specular1, texCoord);
-
-vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir);
-vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir);
+uniform sampler2D shadowMap;
 
 uniform float near; 
 uniform float far; 
 uniform vec4 color;
 
+//vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
+//vec4 specularTex = texture(mat.texture_specular1, texCoord);
+
+vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir);
+vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir);
+float CalcShadow();
   
 float LinearizeDepth(float depth) 
 {
@@ -116,7 +119,19 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 	//vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color; // <- Phong
 
-	return ambientColor + diffuseColor + specularColor;
+	return ambientColor + (1.0f - CalcShadow())*(diffuseColor + specularColor);
+}
+
+float CalcShadow()
+{
+	vec3 projected = lightSpaceFragPos.xyz / lightSpaceFragPos.w;
+	projected = projected * 0.5f + 0.5f;
+	float firstHitDist = texture(shadowMap, projected.xy).r; // -> first fragment hit (to be lit)
+	float currentHitDist = projected.z;
+
+	float shadow = currentHitDist > firstHitDist ? 1.0f : 0.0f;
+
+	return shadow;
 }
 
 ////models with textures

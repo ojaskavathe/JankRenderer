@@ -103,6 +103,8 @@
     <None Include="res\shaders\solidShaderf.frag" />
     <None Include="res\shaders\solidShaderv.vert" />
     <None Include="res\shaders\stencilOutline.frag" />
+    <None Include="res\shaders\test\shadowTestf.frag" />
+    <None Include="res\shaders\test\shadowTestv.vert" />
     <None Include="res\shaders\transparentShaderf.frag" />
     <None Include="res\shaders\transparentShaderv.vert" />
   </ItemGroup>
