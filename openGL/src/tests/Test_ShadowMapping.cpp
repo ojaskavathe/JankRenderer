@@ -141,8 +141,10 @@ void test::Test_ShadowMapping::OnUpdate(float deltaTime, GLFWwindow* window)
 void test::Test_ShadowMapping::OnRender()
 {
 	//rendering to shadowmap
+	//lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
+
 	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, shadowNear, shadowFar);
-	lightView = glm::lookAt(lightPosition, 
+	lightView = glm::lookAt(lightPosition,
 							lightPosition + dirLightDirection, 
 							glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -287,6 +289,13 @@ void test::Test_ShadowMapping::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	screenShader.Bind();
+	screenShader.SetUniform1i("screenTexture", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	
+	quadVA.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void test::Test_ShadowMapping::OnImGuiRender()
@@ -300,7 +309,7 @@ void test::Test_ShadowMapping::OnImGuiRender()
 
 		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
 		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
-		ImGui::SliderFloat3("light", (float*)&dirLightDirection, -5.0f, 5.0f);
+		ImGui::SliderFloat3("light", (float*)&dirLightDirection, -1.0f, 1.0f);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

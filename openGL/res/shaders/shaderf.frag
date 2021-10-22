@@ -132,7 +132,7 @@ float CalcShadow()
 	float bias = max(0.01f * (1.0f - dot(norm, -normalize(dirLight.direction))), 0.00f);
 
 	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
-	//if(projected.z > 1.0f) shadow = 0.0f;
+	if(projected.z > 1.0f) shadow = 0.0f;
 
 	return shadow;
 }

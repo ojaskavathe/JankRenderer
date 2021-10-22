@@ -148,7 +148,8 @@ namespace test {
 
 		TextureFile wood;
 
-		glm::vec3 lightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
+		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
+		glm::vec3 lightPosition = glm::vec3(0.0f, 5.0f, 0.0f);
 
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
