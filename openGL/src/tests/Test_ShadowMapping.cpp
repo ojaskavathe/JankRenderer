@@ -6,7 +6,8 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	:shader("res/shaders/shaderv.vert", "res/shaders/shaderf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
-	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag")
+	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
+	wood("res/textures/wood.png")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
@@ -66,8 +67,8 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	//backface culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	shader.Bind();
 	shader.SetUniform1i("shadowMap", 0);
@@ -100,9 +101,9 @@ void test::Test_ShadowMapping::OnUpdate(float deltaTime, GLFWwindow* window)
 		cam.ProcessMovement(cam.LEFT, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		pointLightPosition += cam.GetCamFront() * lightSpeed;
+		pointLightPosition += glm::cross(glm::vec3(0.0f, 1.0f, 0.0f) ,cam.GetCamRight())  * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		pointLightPosition -= cam.GetCamFront() * lightSpeed;
+		pointLightPosition -= glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		pointLightPosition -= cam.GetCamRight() * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
@@ -141,8 +142,8 @@ void test::Test_ShadowMapping::OnRender()
 {
 	//rendering to shadowmap
 	lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, shadowNear, shadowFar);
-	lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), 
-							glm::vec3(0.0f, 0.0f, 0.0f), 
+	lightView = glm::lookAt(lightPosition, 
+							lightPosition + dirLightDirection, 
 							glm::vec3(0.0f, 1.0f, 0.0f));
 
 	lightVP = lightProjection * lightView;
@@ -154,6 +155,7 @@ void test::Test_ShadowMapping::OnRender()
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	depthMapFB.Bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glCullFace(GL_FRONT);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -162,18 +164,17 @@ void test::Test_ShadowMapping::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//cubes
+	va.Bind();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	model = glm::mat4(1.0f);
@@ -181,8 +182,15 @@ void test::Test_ShadowMapping::OnRender()
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, pointLightPosition);
+	model = glm::scale(model, glm::vec3(0.2f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	glCullFace(GL_BACK);
 
 	//Framebuffer: Backbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -231,10 +239,6 @@ void test::Test_ShadowMapping::OnRender()
 	shader.SetUniform3fv("pointLight.atten", attenuationParams);
 
 	shader.SetUniform1f("mat.shininess", matShininess);
-
-	shader.SetUniform4fv("color", color);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
 
 	//render ground
 	model = glm::mat4(1.0f);
@@ -296,7 +300,7 @@ void test::Test_ShadowMapping::OnImGuiRender()
 
 		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
 		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
-		ImGui::ColorEdit3("color", (float*)&color);
+		ImGui::SliderFloat3("light", (float*)&dirLightDirection, -5.0f, 5.0f);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

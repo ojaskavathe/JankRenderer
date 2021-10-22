@@ -66,11 +66,11 @@ float LinearizeDepth(float depth)
     return (2.0 * near * far) / (far + near - z * (far - near));	
 }
 
+vec3 norm = normalize(Normal);
 void main()
 {
 	//if(diffuseTex.a < 0.1) discard;
 
-	vec3 norm = normalize(Normal);
 
 	//float refractiveIndex = 1/1.53;
 
@@ -129,7 +129,10 @@ float CalcShadow()
 	float firstHitDist = texture(shadowMap, projected.xy).r; // -> first fragment hit (to be lit)
 	float currentHitDist = projected.z;
 
-	float shadow = currentHitDist > firstHitDist ? 1.0f : 0.0f;
+	float bias = max(0.01f * (1.0f - dot(norm, -normalize(dirLight.direction))), 0.00f);
+
+	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
+	//if(projected.z > 1.0f) shadow = 0.0f;
 
 	return shadow;
 }

@@ -4,6 +4,7 @@
 #include "FrameBuffer.h"
 #include "Cubemap.h"
 #include "Camera.h"
+#include "TextureFile.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -108,11 +109,11 @@ namespace test {
 		float planeVerts[48] = {
 			// positions            // normals         // texcoords
 			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+		   -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 		   -25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-		   -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
 
-			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
 		   -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+			25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
 			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 
@@ -144,6 +145,10 @@ namespace test {
 
 		float shadowNear = 1.0f;
 		float shadowFar = 7.5f;
+
+		TextureFile wood;
+
+		glm::vec3 lightPosition = glm::vec3(-2.0f, 4.0f, -1.0f);
 
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
