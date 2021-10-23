@@ -129,7 +129,7 @@ float CalcShadow()
 	float firstHitDist = texture(shadowMap, projected.xy).r; // -> first fragment hit (to be lit)
 	float currentHitDist = projected.z;
 
-	float bias = max(0.01f * (1.0f - dot(norm, -normalize(dirLight.direction))), 0.00f);
+	float bias = max(0.001f * (1.0f - dot(norm, -normalize(dirLight.direction))), 0.00f);
 
 	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
 	if(projected.z > 1.0f) shadow = 0.0f;

@@ -7,6 +7,7 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
+	basicShader("res/shaders/basicv.vert", "res/shaders/basicf.frag"),
 	wood("res/textures/wood.png")
 {
 	//init arrays and buffers
@@ -56,7 +57,7 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	depthMapFB.GenTextureBuffer(depthMap, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, SHADOW_WIDTH, SHADOW_HEIGHT);
 	depthMapFB.Unbind();
 
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 
 	//wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -204,6 +205,7 @@ void test::Test_ShadowMapping::OnRender()
 	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
 
+	//render pointlight
 	lightShader.Bind();
 
 	model = glm::mat4(1.0f);
@@ -289,13 +291,13 @@ void test::Test_ShadowMapping::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	screenShader.Bind();
+	/*screenShader.Bind();
 	screenShader.SetUniform1i("screenTexture", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	
 	quadVA.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, 6);*/
 }
 
 void test::Test_ShadowMapping::OnImGuiRender()
@@ -313,6 +315,10 @@ void test::Test_ShadowMapping::OnImGuiRender()
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		ImGui::Text("Directional Light Direction %.2f, %.2f, %.2f", v[1].x, v[1].y, v[1].z);
+
+		ImGui::Text("point light %.2f, %.2f, %.2f", pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
 		ImGui::End();
 	}
 }

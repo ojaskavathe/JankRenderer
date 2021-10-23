@@ -24,7 +24,6 @@ namespace test {
 		void CursorInput(double xPos, double yPos) override;
 		void ScrollInput(double xOffset, double yOffset) override;
 
-		glm::vec3 pointLightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 
 		Camera cam;
 
@@ -87,13 +86,6 @@ namespace test {
 			glm::vec3(-3.0f, 0.0f, 0.0f)
 		};
 
-		glm::vec3 pointLightPositions[4] = {
-			glm::vec3(0.7f,  0.2f,  2.0f),
-			glm::vec3(2.3f, -3.3f, -4.0f),
-			glm::vec3(-4.0f,  2.0f, -12.0f),
-			glm::vec3(0.0f,  0.0f, -3.0f)
-		};
-
 		//for framebuffers
 		float quadVerts[24] = {
 			// positions   // texCoords
@@ -117,19 +109,11 @@ namespace test {
 			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 
-		std::vector<std::string> skyboxFaces{
-			"res/textures/Yokohama3/posx.jpg",
-			"res/textures/Yokohama3/negx.jpg",
-			"res/textures/Yokohama3/posy.jpg",
-			"res/textures/Yokohama3/negy.jpg",
-			"res/textures/Yokohama3/posz.jpg",
-			"res/textures/Yokohama3/negz.jpg"
-		};
-
 		Shader shader;
 		Shader lightShader;
 		Shader screenShader;
 		Shader depthMapShader;
+		Shader basicShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -145,6 +129,8 @@ namespace test {
 
 		float shadowNear = 1.0f;
 		float shadowFar = 7.5f;
+
+		glm::vec3 v[8];
 
 		TextureFile wood;
 
@@ -168,7 +154,7 @@ namespace test {
 
 		Renderer renderer;
 		
-		Cubemap skybox;
+		glm::vec3 pointLightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
 		
 		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
