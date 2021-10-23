@@ -7,8 +7,7 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
-	basicShader("res/shaders/basicv.vert", "res/shaders/basicf.frag"),
-	wood("res/textures/wood.png")
+	basicShader("res/shaders/basicv.vert", "res/shaders/basicf.frag")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
@@ -242,6 +241,8 @@ void test::Test_ShadowMapping::OnRender()
 	shader.SetUniform3fv("pointLight.specular", pointLightSpecular);
 	shader.SetUniform3fv("pointLight.atten", attenuationParams);
 
+	shader.SetUniform1i("halfkernelWidth", halfkernelWidth);
+
 	shader.SetUniform1f("mat.shininess", matShininess);
 
 	//render ground
@@ -312,13 +313,13 @@ void test::Test_ShadowMapping::OnImGuiRender()
 		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
 		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
 		ImGui::SliderFloat3("light", (float*)&dirLightDirection, -1.0f, 1.0f);
+		ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::Text("Directional Light Direction %.2f, %.2f, %.2f", v[1].x, v[1].y, v[1].z);
 
-		ImGui::Text("point light %.2f, %.2f, %.2f", pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
 		ImGui::End();
 	}
 }

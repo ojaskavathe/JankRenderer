@@ -53,6 +53,8 @@ uniform float near;
 uniform float far; 
 uniform vec4 color;
 
+uniform int halfkernelWidth = 1;
+
 //vec4 diffuseTex = texture(mat.texture_diffuse1, texCoord);
 //vec4 specularTex = texture(mat.texture_specular1, texCoord);
 
@@ -133,7 +135,6 @@ float CalcShadow()
 
 	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-	const int halfkernelWidth = 1;
 	for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
 	{
 		for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)

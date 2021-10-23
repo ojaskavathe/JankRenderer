@@ -132,7 +132,7 @@ namespace test {
 
 		glm::vec3 v[8];
 
-		TextureFile wood;
+		int halfkernelWidth = 3;
 
 		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
 		glm::vec3 lightPosition = glm::vec3(0.0f, 5.0f, 0.0f);
