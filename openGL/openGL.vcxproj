@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Cubemap.cpp" />
+    <ClCompile Include="src\Debug.cpp" />
     <ClCompile Include="src\FrameBuffer.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
@@ -51,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Cubemap.h" />
+    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\FrameBuffer.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Mesh.h" />
@@ -88,6 +90,8 @@
     <None Include="res\shaders\compositeShaderv.vert" />
     <None Include="res\shaders\cubemapf.frag" />
     <None Include="res\shaders\cubemapv.vert" />
+    <None Include="res\shaders\debug\debugf.frag" />
+    <None Include="res\shaders\debug\debugv.vert" />
     <None Include="res\shaders\depthMap\depthMapf.frag" />
     <None Include="res\shaders\depthMap\depthMapv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
@@ -103,8 +107,6 @@
     <None Include="res\shaders\solidShaderf.frag" />
     <None Include="res\shaders\solidShaderv.vert" />
     <None Include="res\shaders\stencilOutline.frag" />
-    <None Include="res\shaders\test\shadowTestf.frag" />
-    <None Include="res\shaders\test\shadowTestv.vert" />
     <None Include="res\shaders\transparentShaderf.frag" />
     <None Include="res\shaders\transparentShaderv.vert" />
   </ItemGroup>

@@ -201,8 +201,11 @@ void test::Test_ShadowMapping::OnRender()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
+	projection = glm::perspective(glm::radians(cam.GetFov()), (float) WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
+	vp = projection * view;
+
+	Debug::SetViewProj(vp);
 
 	//render pointlight
 	lightShader.Bind();
@@ -292,6 +295,8 @@ void test::Test_ShadowMapping::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 10, 0));
+
 	/*screenShader.Bind();
 	screenShader.SetUniform1i("screenTexture", 0);
 	glActiveTexture(GL_TEXTURE0);
@@ -312,13 +317,11 @@ void test::Test_ShadowMapping::OnImGuiRender()
 
 		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
 		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
-		ImGui::SliderFloat3("light", (float*)&dirLightDirection, -1.0f, 1.0f);
+		ImGui::SliderFloat3("light direction", (float*)&dirLightDirection, -1.0f, 1.0f);
 		ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-		ImGui::Text("Directional Light Direction %.2f, %.2f, %.2f", v[1].x, v[1].y, v[1].z);
 
 		ImGui::End();
 	}
