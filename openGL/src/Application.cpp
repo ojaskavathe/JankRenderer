@@ -12,9 +12,6 @@
 #include "imgui/imgui_impl_glfw.h"
 
 #include "tests/Test_MSTransparency.h"
-#include "tests/Test_Transparency.h"
-#include "tests/Test_Instancing.h"
-#include "tests/Test_msFB.h"
 #include "tests/Test_ShadowMapping.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);

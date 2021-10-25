@@ -6,6 +6,8 @@
 #include "Camera.h"
 #include "TextureFile.h"
 
+#include "Debug.h"
+
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
@@ -23,7 +25,6 @@ namespace test {
 
 		void CursorInput(double xPos, double yPos) override;
 		void ScrollInput(double xOffset, double yOffset) override;
-
 
 		Camera cam;
 
@@ -122,20 +123,19 @@ namespace test {
 
 		FrameBuffer depthMapFB;
 		unsigned int depthMap;
-		unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+		unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
 		float near = 0.1f;
 		float far = 100.0f;
 
 		float shadowNear = 1.0f;
-		float shadowFar = 7.5f;
-
-		glm::vec3 v[8];
+		float shadowFar = 15.f;
 
 		int halfkernelWidth = 3;
 
 		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
-		glm::vec3 lightPosition = glm::vec3(0.0f, 5.0f, 0.0f);
+		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
 
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
