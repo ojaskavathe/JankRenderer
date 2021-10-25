@@ -26,6 +26,51 @@ namespace Debug {
 		glm::mat4 mvp = vp * model;
 		shader.SetUniformMatrix4fv("mvp", mvp);
 
+		glLineWidth(3);
 		glDrawArrays(GL_LINES, 0, 2);
+	}
+
+	void DrawOrthProj(glm::mat4& viewProj)
+	{
+		glm::mat4 inv = glm::inverse(viewProj);
+
+		glm::vec4 ndc[8] =
+		{
+			// near face
+			glm::vec4(1, 1, -1, 1.f),
+			glm::vec4(-1, 1, -1, 1.f),
+			glm::vec4(1, -1, -1, 1.f),
+			glm::vec4(-1, -1, -1, 1.f),
+
+			// far face
+			glm::vec4(1, 1, 1, 1.f),
+			glm::vec4(-1, 1, 1, 1.f),
+			glm::vec4(1, -1, 1, 1.f),
+			glm::vec4(-1, -1, 1, 1.f),
+		};
+
+		glm::vec3 v[8];
+		for (int i = 0; i < 8; i++)
+		{
+			glm::vec4 wc = inv * ndc[i];
+			v[i].x = wc.x / wc.w;
+			v[i].y = wc.y / wc.w;
+			v[i].z = wc.z / wc.w;
+		}
+
+		DrawLine(v[0], v[1]);
+		DrawLine(v[0], v[2]);
+		DrawLine(v[3], v[1]);
+		DrawLine(v[3], v[2]);
+		
+		DrawLine(v[4], v[5]);
+		DrawLine(v[4], v[6]);
+		DrawLine(v[7], v[5]);
+		DrawLine(v[7], v[6]);
+		
+		DrawLine(v[0], v[4]);
+		DrawLine(v[1], v[5]);
+		DrawLine(v[3], v[7]);
+		DrawLine(v[2], v[6]);
 	}
 }

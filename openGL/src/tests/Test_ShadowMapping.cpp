@@ -295,7 +295,8 @@ void test::Test_ShadowMapping::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	Debug::DrawLine(glm::vec3(0, 0, 0), glm::vec3(0, 10, 0));
+	Debug::DrawOrthProj(lightVP);
+	//Debug::DrawLine(glm::vec3(0, 0, 0), pointLightPosition);
 
 	/*screenShader.Bind();
 	screenShader.SetUniform1i("screenTexture", 0);
