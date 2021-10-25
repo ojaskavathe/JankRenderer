@@ -295,7 +295,10 @@ void test::Test_ShadowMapping::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	glDisable(GL_CULL_FACE);
 	Debug::DrawOrthProj(lightVP);
+	glEnable(GL_CULL_FACE);
+
 	//Debug::DrawLine(glm::vec3(0, 0, 0), pointLightPosition);
 
 	/*screenShader.Bind();
@@ -316,9 +319,13 @@ void test::Test_ShadowMapping::OnImGuiRender()
 
 		ImGui::Begin("color");
 
-		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
-		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
+		//ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
+		//ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
 		ImGui::SliderFloat3("light direction", (float*)&dirLightDirection, -1.0f, 1.0f);
+
+		ImGui::SliderFloat("shadow far", &shadowFar, 15.f, 30.0f);
+		ImGui::SliderFloat("shadow near", &shadowNear, 1.0f, 3.0f);
+
 		ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 

@@ -11,7 +11,7 @@ VertexArray::VertexArray()
 
 VertexArray::~VertexArray()
 {
-	//same problem as deleting textures, gotta find a way around it
+	//vertex arrays have to last longer than their scope usually so delete them manually if you have to
 	//glDeleteVertexArrays(1, &m_RendererID);
 }
 

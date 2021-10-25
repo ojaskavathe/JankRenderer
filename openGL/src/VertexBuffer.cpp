@@ -16,7 +16,7 @@ VertexBuffer::VertexBuffer(const void * data, unsigned int size)
 VertexBuffer::~VertexBuffer()
 {
 	//buffer gets deleted at the end of its scope which doesn't work with radeon drivers but somehow works with nvidia drivers???
-	//glDeleteBuffers(1, &m_RendererID);
+	glDeleteBuffers(1, &m_RendererID);
 }
 
 void VertexBuffer::BindData(const void * data, unsigned int size)

@@ -91,6 +91,7 @@
     <None Include="res\shaders\cubemapf.frag" />
     <None Include="res\shaders\cubemapv.vert" />
     <None Include="res\shaders\debug\debugf.frag" />
+    <None Include="res\shaders\debug\debugLinef.frag" />
     <None Include="res\shaders\debug\debugv.vert" />
     <None Include="res\shaders\depthMap\depthMapf.frag" />
     <None Include="res\shaders\depthMap\depthMapv.vert" />
