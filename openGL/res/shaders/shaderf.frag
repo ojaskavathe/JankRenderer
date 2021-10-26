@@ -71,9 +71,6 @@ float LinearizeDepth(float depth)
 vec3 norm = normalize(Normal);
 void main()
 {
-	//if(diffuseTex.a < 0.1) discard;
-
-
 	//float refractiveIndex = 1/1.53;
 
 	vec3 viewDir = normalize(FragPosition - viewPosition);

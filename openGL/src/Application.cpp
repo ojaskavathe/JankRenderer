@@ -57,10 +57,11 @@ int main()
 
 	//enable gl debugging
 	SetDebugCallback();
+
+	//set current test
 	test::Test_ShadowMapping test1;
 
 	mTest = &test1;
-	//test::Test_ClearColor test1;
 	Renderer renderer;
 
 	const char* glsl_version = "#version 460";
