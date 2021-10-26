@@ -175,7 +175,7 @@ void test::Test_MSTransparency::OnRender()
 	cubeMapShader.Bind();
 	cubeMapShader.SetUniformMatrix4fv("vp", vp);
 
-	//skybox.Render(cubeMapShader);
+	skybox.Render(cubeMapShader);
 
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
 
