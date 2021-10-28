@@ -35,6 +35,7 @@
     <ClCompile Include="src\tests\Test_MSTransparency.cpp" />
     <ClCompile Include="src\tests\Test_Points.cpp" />
     <ClCompile Include="src\tests\Test_ShadowMapping.cpp" />
+    <ClCompile Include="src\tests\Test_ShadowMappingOmni.cpp" />
     <ClCompile Include="src\tests\Test_Transparency.cpp" />
     <ClCompile Include="src\TextureFile.cpp" />
     <ClCompile Include="src\vendor\glad.c" />
@@ -67,6 +68,7 @@
     <ClInclude Include="src\tests\Test_MSTransparency.h" />
     <ClInclude Include="src\tests\Test_Points.h" />
     <ClInclude Include="src\tests\Test_ShadowMapping.h" />
+    <ClInclude Include="src\tests\Test_ShadowMappingOmni.h" />
     <ClInclude Include="src\tests\Test_Transparency.h" />
     <ClInclude Include="src\TextureFile.h" />
     <ClInclude Include="src\vendor\imgui\imconfig.h" />
@@ -95,6 +97,8 @@
     <None Include="res\shaders\debug\debugv.vert" />
     <None Include="res\shaders\depthMap\depthMapf.frag" />
     <None Include="res\shaders\depthMap\depthMapv.vert" />
+    <None Include="res\shaders\depthMap\Lshaderf.frag" />
+    <None Include="res\shaders\depthMap\Lshaderv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
     <None Include="res\shaders\instancingv.vert" />
     <None Include="res\shaders\lightShaderf.frag" />
