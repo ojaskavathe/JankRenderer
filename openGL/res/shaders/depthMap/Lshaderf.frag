@@ -43,16 +43,22 @@ uniform PointLight pointLight;
 uniform DirectionalLight dirLight;
 
 uniform sampler2D shadowMap;
+uniform samplerCube shadowCubemap;
 
+//directional light projection near and far plane
 uniform float near; 
 uniform float far; 
+
 uniform vec4 color;
+
+uniform float oFar; // <- omnidirection shadowmap projection far plane
 
 uniform int halfkernelWidth = 1;
 
 vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir);
 vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir);
-float CalcShadow();
+float CalcDirShadow();
+float CalcPointShadow();
   
 float LinearizeDepth(float depth) 
 {
@@ -67,8 +73,9 @@ void main()
 
 	vec3 result = vec3(0);
 	result += CalcDirLight(dirLight, norm, viewDir);
+	result += CalcPointLight(pointLight, norm, viewDir);
 	
-	FragColor = vec4((result), 1.0f);
+	FragColor = vec4(result, 1.0f);
 }
 
 //for models without textures
@@ -86,7 +93,8 @@ vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
 	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rgb * light.color * attenuation;
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;// <- Blinn-Phong
 
-	return ambientColor + diffuseColor + specularColor;
+	return ambientColor + (1.0f - CalcPointShadow())*(diffuseColor + specularColor);
+	//return ambientColor + diffuseColor + specularColor;
 }
 
 vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
@@ -100,10 +108,11 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rbg * light.color;
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 
-	return ambientColor + (1.0f - CalcShadow())*(diffuseColor + specularColor);
+	//return ambientColor + (1.0f - CalcDirShadow())*(diffuseColor + specularColor);
+	return ambientColor + (diffuseColor + specularColor);
 }
 
-float CalcShadow()
+float CalcDirShadow()
 {
 	vec3 projected = lightSpaceFragPos.xyz / lightSpaceFragPos.w;
 	projected = projected * 0.5f + 0.5f;
@@ -126,6 +135,21 @@ float CalcShadow()
 
 	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
 	if(projected.z > 1.0f) shadow = 0.0f;
+
+	return shadow;
+}
+
+float CalcPointShadow()
+{
+	vec3 lightToFrag = FragPosition - pointLight.position;
+	float firstHitDist = texture(shadowCubemap, lightToFrag).r;
+
+	firstHitDist *= oFar;
+
+	float currentHitDist = length(lightToFrag);
+
+	float bias = 0.05;
+	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
 
 	return shadow;
 }

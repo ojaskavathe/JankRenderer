@@ -54,6 +54,9 @@ test::Test_ShadowMapping::Test_ShadowMapping()
 
 	//shadowmap
 	depthMapFB.GenTextureBuffer(depthMap, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, SHADOW_WIDTH, SHADOW_HEIGHT);
+	depthMapFB.Bind();
+	glDrawBuffer(GL_NONE);	// <- technically you have to specify there's no color buffer but it seems to work without as well
+	glReadBuffer(GL_NONE);
 	depthMapFB.Unbind();
 
 	//stbi_set_flip_vertically_on_load(true);

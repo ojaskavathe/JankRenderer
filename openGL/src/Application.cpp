@@ -12,6 +12,7 @@
 #include "imgui/imgui_impl_glfw.h"
 
 #include "tests/Test_ShadowMappingOmni.h"
+#include "tests/Test_ShadowMapping.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);

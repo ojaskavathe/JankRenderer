@@ -115,24 +115,21 @@ namespace test {
 		Shader screenShader;
 		Shader depthMapShader;
 		Shader basicShader;
+		Shader omniDepthShader;
 
 		VertexArray va;
 		VertexArray lightVA;
 		VertexArray quadVA;
 		VertexArray planeVA;
 
+		//shadowmap
 		FrameBuffer depthMapFB;
 		unsigned int depthMap;
 
-		unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
 		float near = 0.1f;
 		float far = 100.0f;
 
-		float shadowNear = 1.0f;
-		float shadowFar = 15.f;
-
-		int halfkernelWidth = 3;
 
 		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
 		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
@@ -140,7 +137,7 @@ namespace test {
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
 
 		glm::mat4 mvp = glm::mat4(1.0f);
 		glm::mat4 vp = glm::mat4(1.0f);
@@ -151,6 +148,23 @@ namespace test {
 		glm::mat4 lightProjection = glm::mat4(1.0f);
 		glm::mat4 lightView = glm::mat4(1.0f);
 		glm::mat4 lightVP = glm::mat4(1.0f);
+		
+		unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+		
+		float shadowNear = 1.0f;
+		float shadowFar = 15.f;
+
+		int halfkernelWidth = 3;
+
+		//Omnidirectional Shadowmap
+		unsigned int oDepthMapFB; // <- Can't use FB class as we gotta use texture not texture2D for cubemap
+		unsigned int depthCubemap;
+
+		float oAspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
+		float oNear = 1.0f;
+		float oFar = 25.0f;
+		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), oAspect, oNear, oFar);
+		std::vector<glm::mat4> oLightVP;
 
 		Renderer renderer;
 		
