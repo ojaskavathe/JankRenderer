@@ -280,13 +280,6 @@ void test::Test_ShadowMappingOmni::OnRender()
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//render pointlight
-	//model = glm::mat4(1.0f);
-	//model = glm::translate(model, pointLightPosition);
-	//model = glm::scale(model, glm::vec3(0.2f));
-	//omniDepthShader.SetUniformMatrix4fv("model", model);
-	//glDrawArrays(GL_TRIANGLES, 0, 36);
-
 	glCullFace(GL_BACK);
 
 	//Framebuffer: Backbuffer
@@ -302,8 +295,8 @@ void test::Test_ShadowMappingOmni::OnRender()
 	Debug::SetViewProj(vp);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	//glBindTexture(GL_TEXTURE_2D, depthMap);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);

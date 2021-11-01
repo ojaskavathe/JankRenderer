@@ -110,7 +110,7 @@ float CalcDirShadow()
 		for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
 		{
 			float pcfDepth = texture(shadowMap, projected.xy + vec2(x, y) * texelSize).r;
-			shadow += currentHitDist - bias > pcfDepth ? 1.0 : 0.0;
+			shadow += currentHitDist - bias > pcfDepth ? 0.4 : 0.0;
 		}
 	}
 	shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
@@ -136,20 +136,40 @@ vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;// <- Blinn-Phong
 
 	return ambientColor + (1.0f - CalcPointShadow())*(diffuseColor + specularColor);
-	//return ambientColor + diffuseColor + specularColor;
 }
 
 float CalcPointShadow()
 {
 	vec3 lightToFrag = FragPosition - pointLight.position;
-	float firstHitDist = texture(shadowCubemap, lightToFrag).r;
-
-	firstHitDist *= oFar;
 	
 	float currentHitDist = length(lightToFrag);
 	
 	float bias = max(0.001f * (1.0f - dot(norm, -normalize(lightToFrag))), 0.00f);;
-	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
+	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
+
+	vec3 sampleOffsetDirections[20] = vec3[]
+	(
+	   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+	   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+	   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+	   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+	);   
+
+
+	//pcf
+	float shadow = 0.0;
+	int samples  = 20;
+	float viewDistance = length(viewPosition - FragPosition);
+	float diskRadius = (1.0 + (viewDistance / oFar)) / 100.0;  
+	for(int i = 0; i < samples; ++i)
+	{
+		float firstHitDist = texture(shadowCubemap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
+		firstHitDist *= oFar;   // undo mapping [0;1]
+		if(currentHitDist - bias > firstHitDist)
+			shadow += 1.0;
+	}
+	shadow /= float(samples);  
 	
 	return shadow;
 }
