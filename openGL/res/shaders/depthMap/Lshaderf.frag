@@ -148,7 +148,7 @@ float CalcPointShadow()
 	
 	float currentHitDist = length(lightToFrag);
 	
-	float bias = 0.05;
+	float bias = max(0.001f * (1.0f - dot(norm, -normalize(lightToFrag))), 0.00f);;
 	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
 	
 	return shadow;
