@@ -164,11 +164,10 @@ namespace test {
 		float oNear = 1.0f;
 		float oFar = 25.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), oAspect, oNear, oFar);
-		std::vector<glm::mat4> oLightVP;
 
 		Renderer renderer;
 		
-		glm::vec3 pointLightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+		glm::vec3 pointLightPosition = glm::vec3(4.2f, 3.0f, 2.0f);
 		
 		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);

@@ -146,12 +146,10 @@ void test::Test_ShadowMappingOmni::OnUpdate(float deltaTime, GLFWwindow* window)
 		pointLightPosition -= cam.GetCamRight() * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		pointLightPosition += cam.GetCamRight() * lightSpeed;
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		pointLightPosition.y += lightSpeed;
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		pointLightPosition.y -= lightSpeed;
-	}
 
 	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS && inputFlag == 0)
 	{
@@ -193,7 +191,6 @@ void test::Test_ShadowMappingOmni::OnRender()
 
 	//Framebuffer: ShadowMap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	//glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
 
 	depthMapFB.Bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -233,11 +230,10 @@ void test::Test_ShadowMappingOmni::OnRender()
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
-	//render to omni shadowmap
+	//Framebuffer: Omni Shadowmap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
+	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB); 
 
-	//depthMapFB.Bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glCullFace(GL_FRONT);
 
@@ -245,7 +241,7 @@ void test::Test_ShadowMappingOmni::OnRender()
 	omniDepthShader.SetUniform3fv("lightPos", pointLightPosition);
 	omniDepthShader.SetUniform1f("far_plane", oFar);
 
-	//AAAAAAAAAAAAAAAAAAAAAAAA SOMETHINGS WRONG WITH SHADOWMAP PROJECTIONS FIX IT
+	std::vector<glm::mat4> oLightVP;
 
 	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
 	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
@@ -285,11 +281,11 @@ void test::Test_ShadowMappingOmni::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//render pointlight
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, pointLightPosition);
-	model = glm::scale(model, glm::vec3(0.2f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//model = glm::mat4(1.0f);
+	//model = glm::translate(model, pointLightPosition);
+	//model = glm::scale(model, glm::vec3(0.2f));
+	//omniDepthShader.SetUniformMatrix4fv("model", model);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	glCullFace(GL_BACK);
 
@@ -306,6 +302,7 @@ void test::Test_ShadowMappingOmni::OnRender()
 	Debug::SetViewProj(vp);
 
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	//glBindTexture(GL_TEXTURE_2D, depthMap);
 
 	glActiveTexture(GL_TEXTURE1);
@@ -386,9 +383,9 @@ void test::Test_ShadowMappingOmni::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//debug Shadowmap
-	glDisable(GL_CULL_FACE);
-	Debug::DrawOrthProj(lightVP);
-	glEnable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
+	//Debug::DrawOrthProj(lightVP);
+	//glEnable(GL_CULL_FACE);
 }
 
 void test::Test_ShadowMappingOmni::OnImGuiRender()

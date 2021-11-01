@@ -78,24 +78,6 @@ void main()
 	FragColor = vec4(result, 1.0f);
 }
 
-//for models without textures
-vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
-{
-	vec3 lightDir =	normalize(FragPosition - light.position);
-	float lightDist = length(FragPosition - light.position);
-
-	vec3 halfwayDir = normalize(-lightDir - viewDir);
-
-	vec3 reflectDir = (reflect(lightDir, norm));
-	float attenuation = 1.0f/(light.atten.r + (light.atten.g * lightDist) + (light.atten.b * lightDist * lightDist));
-
-	vec3 ambientColor	= light.ambient * color.rgb * light.color * attenuation;
-	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rgb * light.color * attenuation;
-	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;// <- Blinn-Phong
-
-	return ambientColor + (1.0f - CalcPointShadow())*(diffuseColor + specularColor);
-	//return ambientColor + diffuseColor + specularColor;
-}
 
 vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 {
@@ -108,8 +90,8 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rbg * light.color;
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 
-	//return ambientColor + (1.0f - CalcDirShadow())*(diffuseColor + specularColor);
-	return ambientColor + (diffuseColor + specularColor);
+	return ambientColor + (1.0f - CalcDirShadow())*(diffuseColor + specularColor);
+	//return ambientColor + (diffuseColor + specularColor);
 }
 
 float CalcDirShadow()
@@ -139,17 +121,35 @@ float CalcDirShadow()
 	return shadow;
 }
 
+vec3 CalcPointLight(PointLight light, vec3 norm, vec3 viewDir)
+{
+	vec3 lightDir =	normalize(FragPosition - light.position);
+	float lightDist = length(FragPosition - light.position);
+
+	vec3 halfwayDir = normalize(-lightDir - viewDir);
+
+	vec3 reflectDir = (reflect(lightDir, norm));
+	float attenuation = 1.0f/(light.atten.r + (light.atten.g * lightDist) + (light.atten.b * lightDist * lightDist));
+
+	vec3 ambientColor	= light.ambient * color.rgb * light.color * attenuation;
+	vec3 diffuseColor	= max(dot(norm, -lightDir), 0.0f) * light.diffuse * color.rgb * light.color * attenuation;
+	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color * attenuation;// <- Blinn-Phong
+
+	return ambientColor + (1.0f - CalcPointShadow())*(diffuseColor + specularColor);
+	//return ambientColor + diffuseColor + specularColor;
+}
+
 float CalcPointShadow()
 {
 	vec3 lightToFrag = FragPosition - pointLight.position;
 	float firstHitDist = texture(shadowCubemap, lightToFrag).r;
 
 	firstHitDist *= oFar;
-
+	
 	float currentHitDist = length(lightToFrag);
-
+	
 	float bias = 0.05;
 	float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
-
+	
 	return shadow;
 }
