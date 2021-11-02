@@ -13,11 +13,11 @@
 #include <glm\gtc\type_ptr.hpp>
 
 namespace test {
-	class Test_ShadowMappingOmni : public Test
+	class Test_TransparencyShadows : public Test
 	{
 	public:
-		Test_ShadowMappingOmni();
-		~Test_ShadowMappingOmni();
+		Test_TransparencyShadows();
+		~Test_TransparencyShadows();
 
 		void OnUpdate(float deltaTime, GLFWwindow* window) override;
 		void OnRender() override;
@@ -79,14 +79,6 @@ namespace test {
 			-1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f, 	0.0f, 1.0f
 		};
 
-		glm::vec3 cubepositions[5] = {
-			glm::vec3(3.0f, 0.0f, 0.0f),
-			glm::vec3(1.5f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(-1.5f, 0.0f, 0.0f),
-			glm::vec3(-3.0f, 0.0f, 0.0f)
-		};
-
 		//for framebuffers
 		float quadVerts[24] = {
 			// positions   // texCoords
@@ -112,10 +104,13 @@ namespace test {
 
 		Shader shader;
 		Shader lightShader;
-		Shader screenShader;
+
 		Shader depthMapShader;
-		Shader basicShader;
 		Shader omniDepthShader;
+
+		Shader experimental;
+		Shader compositeShader;
+		Shader screenShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -126,10 +121,23 @@ namespace test {
 		FrameBuffer depthMapFB;
 		unsigned int depthMap;
 
+		FrameBuffer opaqueFB;
+		unsigned int opaqueBuffer, depthBuffer;
+
+		FrameBuffer transparentFB;
+		unsigned int accumTexture, revealTexture;
+
+		FrameBuffer opaqueScreenFB;
+		unsigned int opaqueScreenTex;
+
+		FrameBuffer transparentScreenFB;
+		unsigned int accumScreenTex, revealScreenTex;
+
+		glm::vec4 zeroFillerVec = glm::vec4(0.0f);
+		glm::vec4 oneFillerVec = glm::vec4(1.0f);
 
 		float near = 0.1f;
 		float far = 100.0f;
-
 
 		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
 		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
@@ -161,15 +169,16 @@ namespace test {
 		unsigned int depthCubemap;
 
 		float oAspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
-		float oNear = 1.0f;
+		float oNear = 0.1f;
 		float oFar = 25.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), oAspect, oNear, oFar);
 
 		Renderer renderer;
 		
+		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
 		
-		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 pointLightAmbient = glm::vec3(0.2f);
 		glm::vec3 pointLightDiffuse = glm::vec3(1.0f);

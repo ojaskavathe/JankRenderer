@@ -13,6 +13,7 @@
 
 #include "tests/Test_ShadowMappingOmni.h"
 #include "tests/Test_ShadowMapping.h"
+#include "tests/Test_TransparencyShadows.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -59,7 +60,7 @@ int main()
 	SetDebugCallback();
 
 	//set current test
-	test::Test_ShadowMappingOmni test1;
+	test::Test_TransparencyShadows test1;
 
 	mTest = &test1;
 	Renderer renderer;
