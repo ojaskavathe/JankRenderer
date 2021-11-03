@@ -327,8 +327,6 @@ void test::Test_TransparencyShadows::OnRender()
 
 	glCullFace(GL_BACK);
 
-	//Framebuffer: Opaque
-
 	//set depth testing for opaque rendering
 	glEnable(GL_DEPTH_TEST); //<-- keep track
 	glDepthFunc(GL_LESS);
@@ -336,6 +334,7 @@ void test::Test_TransparencyShadows::OnRender()
 	glDisable(GL_BLEND);
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 
+	//Framebuffer: Opaque
 	opaqueFB.Bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -358,7 +357,6 @@ void test::Test_TransparencyShadows::OnRender()
 
 	//render pointlight
 	lightShader.Bind();
-
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, pointLightPosition);
 	model = glm::scale(model, glm::vec3(0.2f));
@@ -366,9 +364,8 @@ void test::Test_TransparencyShadows::OnRender()
 	lightShader.SetUniformMatrix4fv("mvp", mvp);
 	lightShader.SetUniform3fv("lightColor", pointLightColor);
 	renderer.DrawArrays(lightVA, lightShader);
-	
-	model = glm::mat4(1.0f);
 
+	//set shader uniforms
 	shader.Bind();
 
 	shader.SetUniformMatrix4fv("lightVP", lightVP);
@@ -424,6 +421,7 @@ void test::Test_TransparencyShadows::OnRender()
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, opaqueFB.getID());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, opaqueScreenFB.getID());
+
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	//prepare for switching framebuffers
@@ -512,6 +510,7 @@ void test::Test_TransparencyShadows::OnRender()
 	// use screen shader
 	screenShader.Bind();
 	screenShader.SetUniform1f("gamma", 2.2f);
+	screenShader.SetUniform1f("exposure", exposure);
 
 	// draw final screen quad
 	glActiveTexture(GL_TEXTURE0);
@@ -541,6 +540,7 @@ void test::Test_TransparencyShadows::OnImGuiRender()
 		ImGui::SliderFloat3("pointLight color", (float*)&pointLightColor, 0.0f, 1.0f);
 
 		ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
+		ImGui::SliderFloat("exposure", &exposure, 0.f, 1.f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
