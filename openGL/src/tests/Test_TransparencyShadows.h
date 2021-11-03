@@ -186,7 +186,7 @@ namespace test {
 
 		glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
-		glm::vec3 dirLightAmbient = glm::vec3(0.5f);
+		glm::vec3 dirLightAmbient = glm::vec3(0.1f);
 		glm::vec3 dirLightDiffuse = glm::vec3(0.4f);
 		glm::vec3 dirLightSpecular = glm::vec3(0.4f);
 
