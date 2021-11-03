@@ -96,7 +96,7 @@ int main()
 		test1.OnImGuiRender();
 
 		ImGui::Render();
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		//swap buffers and poll events
 		glfwSwapBuffers(window);
