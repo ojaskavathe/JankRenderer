@@ -110,7 +110,7 @@ float CalcDirShadow()
 		for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
 		{
 			float pcfDepth = texture(shadowMap, projected.xy + vec2(x, y) * texelSize).r;
-			shadow += currentHitDist - bias > pcfDepth ? 0.4 : 0.0;
+			shadow += currentHitDist - bias > pcfDepth ? 0.5 : 0.0;
 		}
 	}
 	shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
