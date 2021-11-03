@@ -44,9 +44,8 @@ test::Test_TransparencyShadows::Test_TransparencyShadows()
 	quadVA.Unbind();
 
 	//planeVA
-	VertexBuffer planeVB(planeVerts, (unsigned int)sizeof(planeVerts));
-
 	planeVA.Bind();
+	VertexBuffer planeVB(planeVerts, (unsigned int)sizeof(planeVerts));
 	VertexBufferLayout planeLayout;
 	planeLayout.Push<float>(3);
 	planeLayout.Push<float>(3);
@@ -56,12 +55,12 @@ test::Test_TransparencyShadows::Test_TransparencyShadows()
 
 	//setting up framebuffers for transparency
 	opaqueFB.GenTextureBufferMS(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0, 4);
-	opaqueFB.GenTextureBufferMS(depthBuffer, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_STENCIL_ATTACHMENT, 4);
+	opaqueFB.GenTextureBufferMS(depthBuffer, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT, 4);
 
 	//transparentFB has 3 attachments: 2 draw buffers for color, 1 depth buffer for... well, depth lmao
 	transparentFB.GenTextureBufferMS(accumTexture, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0, 4);
 	transparentFB.GenTextureBufferMS(revealTexture, GL_R8, GL_RED, GL_FLOAT, GL_COLOR_ATTACHMENT1, 4);
-	transparentFB.attachTextureBufferMS(GL_DEPTH_STENCIL_ATTACHMENT, depthBuffer); //<-the transparent framebuffer also uses the depth texture as it's order independent
+	transparentFB.attachTextureBufferMS(GL_DEPTH_ATTACHMENT, depthBuffer); //<-the transparent framebuffer also uses the depth texture as it's order independent
 
 	//explicitly telling opengl we have 2 draw buffers for the transparent framebuffer
 	transparentFB.Bind();
@@ -124,6 +123,7 @@ test::Test_TransparencyShadows::Test_TransparencyShadows()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	//default shader uniforms
 	shader.Bind();
 	shader.SetUniform3fv("dirLight.color", dirLightColor);
 	shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
@@ -217,7 +217,6 @@ void test::Test_TransparencyShadows::OnUpdate(float deltaTime, GLFWwindow* windo
 void test::Test_TransparencyShadows::OnRender()
 {
 	//rendering to shadowmap
-
 	glEnable(GL_DEPTH_TEST); //<-- keep track
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE); //<-- start writing to depth buffer
@@ -286,8 +285,8 @@ void test::Test_TransparencyShadows::OnRender()
 	omniDepthShader.SetUniform3fv("lightPos", pointLightPosition);
 	omniDepthShader.SetUniform1f("far_plane", oFar);
 
+	//set light view projection matrices
 	std::vector<glm::mat4> oLightVP;
-
 	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
 	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
 	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
@@ -336,7 +335,7 @@ void test::Test_TransparencyShadows::OnRender()
 
 	//Framebuffer: Opaque
 	opaqueFB.Bind();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_CULL_FACE); //<- Enable face culling for opaque rendering
 	glCullFace(GL_BACK);
@@ -349,7 +348,6 @@ void test::Test_TransparencyShadows::OnRender()
 	Debug::SetViewProj(vp);
 
 	glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, 0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 
 	glActiveTexture(GL_TEXTURE1);
@@ -362,8 +360,9 @@ void test::Test_TransparencyShadows::OnRender()
 	model = glm::scale(model, glm::vec3(0.2f));
 	mvp = projection * view * model;
 	lightShader.SetUniformMatrix4fv("mvp", mvp);
-	lightShader.SetUniform3fv("lightColor", pointLightColor);
-	renderer.DrawArrays(lightVA, lightShader);
+	lightShader.SetUniform3fv("lightColor", pointLightColor); // <- keep in mind MSAA won't work for values > 1
+	lightVA.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//set shader uniforms
 	shader.Bind();
@@ -452,7 +451,7 @@ void test::Test_TransparencyShadows::OnRender()
 
 	experimental.SetUniform1f("mat.shininess", matShininess);
 
-	glDisable(GL_CULL_FACE); //<-disable face culling fro transparent rendering
+	glDisable(GL_CULL_FACE); //<-disable face culling for transparent rendering
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
