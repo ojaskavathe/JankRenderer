@@ -70,6 +70,7 @@ void FrameBuffer::CheckStatus()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "[FrameBuffer]: Framebuffer not complete." << std::endl;
+		std::cout << "[FrameBuffer]: " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

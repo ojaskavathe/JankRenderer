@@ -125,6 +125,8 @@ void test::Test_msFB::OnRender()
 	glDisable(GL_DEPTH_TEST);
 	quadVA.Bind();
 	FBshader.Bind();
+	FBshader.SetUniform1f("gamma", 2.2f);
+	FBshader.SetUniform1f("exposure", 1.0f);
 	glBindTexture(GL_TEXTURE_2D, screenTex);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
