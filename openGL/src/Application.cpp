@@ -11,11 +11,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#include "tests/Test_ShadowMappingOmni.h"
-#include "tests/Test_ShadowMapping.h"
-#include "tests/Test_TransparencyShadows.h"
-#include "tests/Test_MSTransparency.h"
-#include "tests/Test_msFB.h"
+#include "tests/Test_PBR.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -62,7 +58,7 @@ int main()
 	SetDebugCallback();
 
 	//set current test
-	test::Test_TransparencyShadows test1;
+	test::Test_PBR test1;
 
 	mTest = &test1;
 	Renderer renderer;
