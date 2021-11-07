@@ -80,7 +80,7 @@ void main()
 	vec3 result = vec3(0);
 	//result = texture(skybox, R).rgb;
 	result += CalcDirLight(dirLight, norm, viewDir);
-	//result += CalcPointLight(pointLight, norm, viewDir);
+	result += CalcPointLight(pointLight, norm, viewDir);
 
 	FragColor = vec4((result), 1.0f);
 }
@@ -118,7 +118,7 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 	//vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color; // <- Phong
 
-	return ambientColor + (1.0f - CalcShadow())*(diffuseColor + specularColor);
+	return ambientColor + (diffuseColor + specularColor);
 }
 
 float CalcShadow()

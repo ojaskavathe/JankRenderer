@@ -43,9 +43,6 @@ test::Test_MSTransparency::Test_MSTransparency()
 	quadVA.AddBuffer(quadVB, quadLayout);
 	quadVA.Unbind();
 
-	//planeVA
-
-
 	//setting up framebuffers for transparency
 
 	opaqueFB.GenTextureBufferMS(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0, 4);
@@ -156,7 +153,7 @@ void test::Test_MSTransparency::OnRender()
 	glClearColor(0.3f, 0.2f, 0.3f, 1.0f);
 
 	//set projection matrix
-	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
+	//projection = glm::perspective(glm::radians(cam.GetFov()), (float)WINDOW_WIDTH/WINDOW_HEIGHT, near, far);
 
 	//bind opaque framebuffer
 	opaqueFB.Bind();
@@ -348,6 +345,7 @@ void test::Test_MSTransparency::OnRender()
 	// use screen shader
 	screenShader.Bind();
 	screenShader.SetUniform1f("gamma", 2.2f);
+	screenShader.SetUniform1f("exposure", 1.0f);
 
 	// draw final screen quad
 	glActiveTexture(GL_TEXTURE0);
@@ -365,8 +363,8 @@ void test::Test_MSTransparency::OnImGuiRender()
 
 		ImGui::Begin("color");
 
-		ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
-		ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
+		//ImGui::SliderFloat("near", &near, 0.0f, 1.0f);
+		//ImGui::SliderFloat("far", &far, 50.0f, 100.0f);
 		ImGui::ColorEdit3("color", (float*)&color);
 		//ImGui::InputInt("Kuwahara Radius", &kuwahara_radius);
 

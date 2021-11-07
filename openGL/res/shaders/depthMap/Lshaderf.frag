@@ -91,7 +91,6 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 
 	return ambientColor + (1.0f - CalcDirShadow())*(diffuseColor + specularColor);
-	//return ambientColor + (diffuseColor + specularColor);
 }
 
 float CalcDirShadow()
@@ -162,7 +161,7 @@ float CalcPointShadow()
 	int samples  = 20;
 	float viewDistance = length(viewPosition - FragPosition);
 	float diskRadius = (1.0 + (viewDistance / oFar)) / 100.0;  
-	for(int i = 0; i < samples; ++i)
+	for(int i = 0; i < samples; i++)
 	{
 		float firstHitDist = texture(shadowCubemap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
 		firstHitDist *= oFar;   // undo mapping [0;1]

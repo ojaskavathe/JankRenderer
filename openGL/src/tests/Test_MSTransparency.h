@@ -144,13 +144,14 @@ namespace test {
 		glm::vec4 zeroFillerVec = glm::vec4(0.0f);
 		glm::vec4 oneFillerVec = glm::vec4(1.0f);
 
+		float near = 0.1f;
+		float far = 100.0f;
+		
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
 
-		float near = 0.1f;
-		float far = 100.0f;
 
 		glm::mat4 normal = glm::mat4(1.0f);
 
