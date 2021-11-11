@@ -112,10 +112,15 @@ namespace test {
 		Shader compositeShader;
 		Shader screenShader;
 
+		Shader PBRShader;
+
 		VertexArray va;
 		VertexArray lightVA;
 		VertexArray quadVA;
 		VertexArray planeVA;
+
+		unsigned int sphereVAO;
+		unsigned int indexCount;
 
 		//shadowmap
 		FrameBuffer depthMapFB;

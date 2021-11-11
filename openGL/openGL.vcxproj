@@ -111,6 +111,8 @@
     <None Include="res\shaders\omniDepthShader\oDepthMapf.frag" />
     <None Include="res\shaders\omniDepthShader\oDepthMapg.geom" />
     <None Include="res\shaders\omniDepthShader\oDepthMapv.vert" />
+    <None Include="res\shaders\PBR\PBRf.frag" />
+    <None Include="res\shaders\PBR\PBRv.vert" />
     <None Include="res\shaders\postProcess\kuwahara.frag" />
     <None Include="res\shaders\screenShaderf.frag" />
     <None Include="res\shaders\screenShaderv.vert" />
