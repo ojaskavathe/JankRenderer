@@ -9,10 +9,10 @@ out vec2 TexCoord;
 out vec3 Normal;
 //out vec4 lightSpaceFragPos;
 
-uniform mat4 mvp;
 uniform mat4 model;
+uniform mat4 mvp;
 uniform mat4 normalMatrix;
-uniform mat4 lightVP;
+//uniform mat4 lightVP;
 
 void main()
 {

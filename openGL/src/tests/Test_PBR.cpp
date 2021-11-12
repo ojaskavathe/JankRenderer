@@ -338,7 +338,9 @@ void test::Test_PBR::OnRender()
 	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(sphereVAO);
 	model = glm::mat4(1.0f);
@@ -397,7 +399,9 @@ void test::Test_PBR::OnRender()
 	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(sphereVAO);
 	model = glm::mat4(1.0f);
@@ -474,8 +478,64 @@ void test::Test_PBR::OnRender()
 
 	shader.SetUniform1i("halfkernelWidth", halfkernelWidth);
 
+	PBRShader.Bind();
+	PBRShader.SetUniform1f("metallic", metallic);
+	PBRShader.SetUniform1f("roughness", roughness);
+	PBRShader.SetUniform1f("ao", 1.f);
+
+	PBRShader.SetUniform3fv("lightPos", pointLightPosition);
+	PBRShader.SetUniform3fv("lightColor", pointLightColor);
+	PBRShader.SetUniform3fv("camPos", cam.GetCamPosition());
+
 	//render ground
+	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f));
 	model = glm::mat4(1.0f);
+	PBRShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	PBRShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
+	PBRShader.SetUniform4fv("color", glm::vec4(0.5f));
+	planeVA.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//spheres
+	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	PBRShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	PBRShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	PBRShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	PBRShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	PBRShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	PBRShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	//
+	/*model = glm::mat4(1.0f);
 	shader.SetUniformMatrix4fv("model", model);
 	mvp = projection * view * model;
 	shader.SetUniformMatrix4fv("mvp", mvp);
@@ -485,9 +545,7 @@ void test::Test_PBR::OnRender()
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	//render cubes
 	shader.SetUniform4fv("color", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
-	va.Bind();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
@@ -496,8 +554,11 @@ void test::Test_PBR::OnRender()
 	shader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
+	shader.Bind();
+	shader.SetUniform4fv("color", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
@@ -506,9 +567,8 @@ void test::Test_PBR::OnRender()
 	shader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
-	
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);*/
 	
 	//va.Bind();
 	//glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -627,14 +687,17 @@ void test::Test_PBR::OnImGuiRender()
 
 		ImGui::Begin("color");
 
-		ImGui::SliderFloat3("light direction", (float*)&dirLightDirection, -1.0f, 1.0f);
-		ImGui::SliderFloat3("clear color", (float*)&clearColor, 0.0f, 1.0f);
-
-		ImGui::SliderFloat3("dirLight color", (float*)&dirLightColor, 0.0f, 1.0f);
-		ImGui::SliderFloat3("pointLight color", (float*)&pointLightColor, 0.0f, 1.0f);
-
-		ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
+		//ImGui::SliderFloat3("light direction", (float*)&dirLightDirection, -1.0f, 1.0f);
+		//ImGui::SliderFloat3("clear color", (float*)&clearColor, 0.0f, 1.0f);
+		//
+		//ImGui::SliderFloat3("dirLight color", (float*)&dirLightColor, 0.0f, 1.0f);
+		ImGui::SliderFloat3("pointLight color", (float*)&pointLightColor, 0.0f, 30.0f);
+		//
+		//ImGui::SliderInt("half kernel width", &halfkernelWidth, 0, 10);
 		ImGui::SliderFloat("exposure", &exposure, 0.f, 1.f);
+
+		ImGui::SliderFloat("metallic", &metallic, 0.f, 1.f);
+		ImGui::SliderFloat("roughness", &roughness, 0.f, 1.f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

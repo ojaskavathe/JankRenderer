@@ -180,6 +180,9 @@ namespace test {
 
 		Renderer renderer;
 		
+		float metallic = 0.2f;
+		float roughness = 0.2f;
+
 		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
