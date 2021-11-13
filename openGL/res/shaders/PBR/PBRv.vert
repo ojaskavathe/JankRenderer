@@ -20,7 +20,6 @@ void main()
 	
 	FragPos = vec3(model * vec4(aPosition, 1.0f));
 	TexCoord = aTexCoord;
-	Normal = mat3(model) * aNormal;
-	//Normal = mat3(normalMatrix) * aNormal;
+	Normal = mat3(normalMatrix) * aNormal;
 	//lightSpaceFragPos = lightVP * vec4(FragPosition, 1.0f);
 }
