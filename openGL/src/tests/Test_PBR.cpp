@@ -116,6 +116,22 @@ void test::Test_PBR::OnUpdate(float deltaTime, GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.ProcessMovement(cam.LEFT, deltaTime);
 
+	for (int i = 0; i < 4; i++)
+	{
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			lightPositions[i] += glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			lightPositions[i] -= glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			lightPositions[i] -= cam.GetCamRight() * lightSpeed;
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			lightPositions[i] += cam.GetCamRight() * lightSpeed;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+			lightPositions[i].y += lightSpeed;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+			lightPositions[i].y -= lightSpeed;
+	}
+
 	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS && inputFlag == 0)
 	{
 		switch (cameraLock) {
@@ -151,7 +167,6 @@ void test::Test_PBR::OnRender()
 	PBRShader.SetUniform1f("ao", 1.f);
 
 	PBRShader.SetUniform3fv("camPos", cam.GetCamPosition());
-	PBRShader.SetUniformMatrix4fv("normalMatrix", glm::transpose(glm::inverse(model)));
 	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 
 	glm::mat4 model = glm::mat4(1.0f);
@@ -171,6 +186,7 @@ void test::Test_PBR::OnRender()
 				0.0f
 			));
 			PBRShader.SetUniformMatrix4fv("model", model);
+			PBRShader.SetUniformMatrix4fv("normalMatrix", glm::transpose(glm::inverse(model)));
 			PBRShader.SetUniformMatrix4fv("mvp", projection * view * model);
 			glBindVertexArray(sphereVAO);
 			glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
@@ -180,6 +196,8 @@ void test::Test_PBR::OnRender()
 	// render light source (simply re-render sphere at light positions)
 	// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
 	// keeps the codeprint small.
+	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.5f, 0.5f));
+
 	for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
 	{
 		glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
@@ -191,6 +209,7 @@ void test::Test_PBR::OnRender()
 		model = glm::translate(model, newPos);
 		model = glm::scale(model, glm::vec3(0.5f));
 		PBRShader.SetUniformMatrix4fv("model", model);
+		PBRShader.SetUniformMatrix4fv("normalMatrix", glm::transpose(glm::inverse(model)));
 		PBRShader.SetUniformMatrix4fv("mvp", projection * view * model);
 		glBindVertexArray(sphereVAO);
 		glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);

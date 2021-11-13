@@ -37,7 +37,7 @@ void main()
 		vec3 L = normalize(lightPositions[i] - FragPos);
 		vec3 H = normalize(V + L);
 		float lightDist = length(lightPositions[i] - FragPos);
-		float attenuation = 1 / lightDist * lightDist;
+		float attenuation = 1 / (lightDist * lightDist);
 		vec3 radiance = lightColors[i] * attenuation;
 
 		float NDF = DistributionGGX(N, H, roughness);       
