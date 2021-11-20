@@ -191,12 +191,12 @@ namespace test {
 
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
 
-		glm::vec3 pointLightColor = glm::vec3(20.f);
+		glm::vec3 pointLightColor = glm::vec3(10.f);
 		glm::vec3 pointLightAmbient = glm::vec3(0.2f);
 		glm::vec3 pointLightDiffuse = glm::vec3(1.0f);
 		glm::vec3 pointLightSpecular = glm::vec3(0.3f);
 
-		glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 dirLightColor = glm::vec3(5.f);
 		glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
 		glm::vec3 dirLightAmbient = glm::vec3(0.1f);
 		glm::vec3 dirLightDiffuse = glm::vec3(0.4f);
