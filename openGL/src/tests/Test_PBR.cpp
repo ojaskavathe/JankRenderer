@@ -243,6 +243,11 @@ test::Test_PBR::Test_PBR()
 	experimental.SetUniform3fv("pointLight.atten", attenuationParams);
 
 	experimental.SetUniform1f("mat.shininess", matShininess);
+
+	PBRShader.Bind();
+	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
+	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
 }
 
 test::Test_PBR::~Test_PBR()
@@ -486,12 +491,9 @@ void test::Test_PBR::OnRender()
 
 	//pbrSphere
 	PBRShader.Bind();
-	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 	PBRShader.SetUniform3fv("camPos", cam.GetCamPosition());
 	PBRShader.SetUniform3fv("pointLightPos", pointLightPosition);
 	PBRShader.SetUniform3fv("dirLightDir", dirLightDirection);
-	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
-	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
 	PBRShader.SetUniform1f("metallic", metallic);
 	PBRShader.SetUniform1f("roughness", roughness);
 	PBRShader.SetUniform1f("ao", 1.f);

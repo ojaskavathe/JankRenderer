@@ -11,7 +11,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#include "tests/Test_PBR.h"
+#include "tests/Test_PBR_IBL.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -58,7 +58,7 @@ int main()
 	SetDebugCallback();
 
 	//set current test
-	test::Test_PBR test1;
+	test::Test_PBR_IBL test1;
 
 	mTest = &test1;
 	Renderer renderer;

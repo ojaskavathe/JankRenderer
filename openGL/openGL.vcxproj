@@ -34,6 +34,7 @@
     <ClCompile Include="src\tests\Test_msFB.cpp" />
     <ClCompile Include="src\tests\Test_MSTransparency.cpp" />
     <ClCompile Include="src\tests\Test_PBR.cpp" />
+    <ClCompile Include="src\tests\Test_PBR_IBL.cpp" />
     <ClCompile Include="src\tests\Test_Points.cpp" />
     <ClCompile Include="src\tests\Test_ShadowMapping.cpp" />
     <ClCompile Include="src\tests\Test_ShadowMappingOmni.cpp" />
@@ -69,6 +70,7 @@
     <ClInclude Include="src\tests\Test_msFB.h" />
     <ClInclude Include="src\tests\Test_MSTransparency.h" />
     <ClInclude Include="src\tests\Test_PBR.h" />
+    <ClInclude Include="src\tests\Test_PBR_IBL.h" />
     <ClInclude Include="src\tests\Test_Points.h" />
     <ClInclude Include="src\tests\Test_ShadowMapping.h" />
     <ClInclude Include="src\tests\Test_ShadowMappingOmni.h" />
@@ -104,6 +106,8 @@
     <None Include="res\shaders\depthMap\Lshaderf.frag" />
     <None Include="res\shaders\depthMap\Lshaderv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
+    <None Include="res\shaders\hdri\cubemapf.frag" />
+    <None Include="res\shaders\hdri\cubemapv.vert" />
     <None Include="res\shaders\instancingv.vert" />
     <None Include="res\shaders\lightShaderf.frag" />
     <None Include="res\shaders\lightShaderv.vert" />
