@@ -122,6 +122,7 @@ namespace test {
 		Shader screenShader;
 
 		Shader hdriShader;
+		Shader cubemapShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -218,5 +219,8 @@ namespace test {
 		float roughness = 0.6f;
 
 		unsigned int hdrTex;
+		unsigned int envCubemap;
+
+		unsigned int envFB, envRB;
 	};
 }

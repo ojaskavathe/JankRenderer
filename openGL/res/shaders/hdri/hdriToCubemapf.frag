@@ -6,7 +6,7 @@ in vec3 localPos;
 uniform sampler2D map;
 
 const vec2 invAtan = vec2(0.1591f, 0.3183f); //vec2(1/2pi, 1/pi)  <- longitude varies over 2pi, latitude over pi
-vec2 SampleSphericalMap(vec3 v)
+vec2 SampleSphericalMap(vec3 v) // <- converts local pos into equirectangular coords
 {
 	//convert from cartesion to polar
 	vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
@@ -20,7 +20,7 @@ vec2 SampleSphericalMap(vec3 v)
 void main()
 {
 	vec2 uv = SampleSphericalMap(normalize(localPos));
-	vec3 color = texture(map, uv).rgb;
+	vec3 color = texture(map, uv).rgb; // <- map the hdri to the converted local pos
 
 	FragColor = vec4(color, 1.f);
 }

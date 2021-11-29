@@ -51,8 +51,8 @@ void Cubemap::Render(Shader &shader)
 	vao.Bind();
 	shader.Bind();
 	shader.SetUniform1i("box", 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDepthFunc(GL_LESS);
 }
