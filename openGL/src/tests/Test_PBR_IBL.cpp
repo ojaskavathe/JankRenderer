@@ -11,7 +11,9 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
 	PBRShader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag"),
+	IBLShader("res/shaders/PBR/PBR_IBLv.vert", "res/shaders/PBR/PBR_IBLf.frag"),
 	hdriShader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag"),
+	irradianceShader("res/shaders/hdri/convolutionv.vert", "res/shaders/hdri/convolutionf.frag"),
 	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag")
 {
 	//init arrays and buffers
@@ -143,12 +145,12 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, num;
-	float* data = stbi_loadf("res/textures/hdri/loft.hdr", &width, &height, &num, 0);
+	float* data = stbi_loadf("res/textures/hdri/path.hdr", &width, &height, &num, 0);
 
 	if (data)
 	{
-		glGenTextures(1, &hdrTex);
-		glBindTexture(GL_TEXTURE_2D, hdrTex);
+		glGenTextures(1, &hdrTexLoft);
+		glBindTexture(GL_TEXTURE_2D, hdrTexLoft);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -170,12 +172,12 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 2048, 2048);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, envRB);
 
-	//environment cubemap
-	glGenTextures(1, &envCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	//environment cubemap texture
+	glGenTextures(1, &envCubemapLoft);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemapLoft);
 	for (int i = 0; i < 6; i++)
 	{
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 2048, 2048, 0, GL_RGB, GL_FLOAT, nullptr);
@@ -202,20 +204,142 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	hdriShader.Bind();
 	hdriShader.SetUniform1i("map", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTex);
+	glBindTexture(GL_TEXTURE_2D, hdrTexLoft);
 
 	glViewport(0, 0, 2048, 2048);
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	for (int i = 0; i < 6; i++)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemapLoft, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		hdriShader.SetUniformMatrix4fv("vp", hdriVP[i]);
 		va.Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 	va.Unbind();
+
+	//garden
+	data = stbi_loadf("res/textures/hdri/garden.hdr", &width, &height, &num, 0);
+
+	if (data)
+	{
+		glGenTextures(1, &hdrTexGarden);
+		glBindTexture(GL_TEXTURE_2D, hdrTexGarden);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Failed to load HDR image. \n";
+	}
+
+	glGenTextures(1, &envCubemapGarden);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemapGarden);
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 2048, 2048, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	hdriShader.SetUniform1i("map", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, hdrTexGarden);
+
+	glViewport(0, 0, 2048, 2048);
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+
+	for (int i = 0; i < 6; i++)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemapGarden, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		hdriShader.SetUniformMatrix4fv("vp", hdriVP[i]);
+		va.Bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+	va.Unbind();
+
+	//diffuse irradiance map
+	glGenTextures(1, &irradianceMapLoft);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+
+	irradianceShader.Bind();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemapLoft);
+	irradianceShader.SetUniform1i("map", 0);
+
+	glViewport(0, 0, 32, 32);
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+
+	for (int i = 0; i < 6; i++)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMapLoft, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		irradianceShader.SetUniformMatrix4fv("vp", hdriVP[i]);
+		va.Bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+	va.Unbind();
+
+	//garden
+	glGenTextures(1, &irradianceMapGarden);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapGarden);
+	for (int i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+
+	irradianceShader.Bind();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemapGarden);
+	irradianceShader.SetUniform1i("map", 0);
+
+	glViewport(0, 0, 32, 32);
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+
+	for (int i = 0; i < 6; i++)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMapGarden, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		irradianceShader.SetUniformMatrix4fv("vp", hdriVP[i]);
+		va.Bind();
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+	va.Unbind();
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//setting up framebuffers for transparency
@@ -327,6 +451,11 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
 	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
+
+	IBLShader.Bind();
+	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
+	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
 }
 
 test::Test_PBR_IBL::~Test_PBR_IBL()
@@ -589,6 +718,37 @@ void test::Test_PBR_IBL::OnRender()
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
+	//iblSphere
+	IBLShader.Bind();
+	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
+	IBLShader.SetUniform3fv("pointLightPos", pointLightPosition);
+	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
+	IBLShader.SetUniform1f("metallic", metallic);
+	IBLShader.SetUniform1f("roughness", roughness);
+	IBLShader.SetUniform1f("ao", 0.3f);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform1i("irradianceMap", 0);
+
+	glActiveTexture(GL_TEXTURE0);
+
+	if (swtch)
+	{
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapGarden);
+	}
+
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
 	//HDRI
 	glDisable(GL_CULL_FACE);
 	glm::mat4 cView = glm::mat4(glm::mat3(view)); // <- to get rid of translation for cubemap
@@ -599,7 +759,15 @@ void test::Test_PBR_IBL::OnRender()
 	cubemapShader.SetUniformMatrix4fv("vp", vp);
 	cubemapShader.SetUniform1i("box", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+	if (swtch)
+	{
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapGarden);
+	}
+
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -743,6 +911,8 @@ void test::Test_PBR_IBL::OnImGuiRender()
 		ImGui::SliderFloat("exposure", &exposure, 0.f, 1.f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+		ImGui::SliderInt("env map", &swtch, 0, 1);
 
 		ImGui::End();
 	}

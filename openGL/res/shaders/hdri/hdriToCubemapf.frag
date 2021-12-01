@@ -22,5 +22,6 @@ void main()
 	vec2 uv = SampleSphericalMap(normalize(localPos));
 	vec3 color = texture(map, uv).rgb; // <- map the hdri to the converted local pos
 
+
 	FragColor = vec4(color, 1.f);
 }

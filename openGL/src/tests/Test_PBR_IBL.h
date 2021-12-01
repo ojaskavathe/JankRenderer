@@ -111,6 +111,7 @@ namespace test {
 		float spacing = 2.5;
 
 		Shader PBRShader;
+		Shader IBLShader;
 		Shader shader;
 		Shader lightShader;
 
@@ -123,6 +124,7 @@ namespace test {
 
 		Shader hdriShader;
 		Shader cubemapShader;
+		Shader irradianceShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -218,9 +220,11 @@ namespace test {
 		float metallic = 0.2f;
 		float roughness = 0.6f;
 
-		unsigned int hdrTex;
-		unsigned int envCubemap;
+		unsigned int hdrTexLoft, hdrTexGarden;
+		unsigned int envCubemapLoft, envCubemapGarden;
+		unsigned int irradianceMapLoft, irradianceMapGarden;
 
 		unsigned int envFB, envRB;
+		int swtch = 1;
 	};
 }

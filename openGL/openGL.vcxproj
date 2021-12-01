@@ -106,6 +106,8 @@
     <None Include="res\shaders\depthMap\Lshaderf.frag" />
     <None Include="res\shaders\depthMap\Lshaderv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
+    <None Include="res\shaders\hdri\convolutionf.frag" />
+    <None Include="res\shaders\hdri\convolutionv.vert" />
     <None Include="res\shaders\hdri\hdriToCubemapf.frag" />
     <None Include="res\shaders\hdri\hdriToCubemapv.vert" />
     <None Include="res\shaders\instancingv.vert" />
@@ -117,6 +119,8 @@
     <None Include="res\shaders\omniDepthShader\oDepthMapv.vert" />
     <None Include="res\shaders\PBR\PBRf.frag" />
     <None Include="res\shaders\PBR\PBRv.vert" />
+    <None Include="res\shaders\PBR\PBR_IBLf.frag" />
+    <None Include="res\shaders\PBR\PBR_IBLv.vert" />
     <None Include="res\shaders\postProcess\kuwahara.frag" />
     <None Include="res\shaders\screenShaderf.frag" />
     <None Include="res\shaders\screenShaderv.vert" />
