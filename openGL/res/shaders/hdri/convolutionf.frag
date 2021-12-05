@@ -1,46 +1,51 @@
-//#version 460 core
-//out vec4 FragColor;
-//
-//in vec3 localPos;
-//
-//uniform samplerCube irradianceMap;
-//
-//const float PI = 3.14159265359;
-//
-//void main()
-//{
-//	vec3 N = normalize(localPos);
-//	vec3 irradiance = vec3(0.f);
-//
-//	vec3 up = vec3(0.f, 1.f, 0.f);
-//	vec3 right = normalize(cross(up, N));
-//	up = normalize(cross(N, right));
-//
-//	float delta = 0.025f;
-//	int nSamples = 0;
-//
-//	float totalWeight = 0.f;
-//
-//	for(float phi = 0.f; phi < 2.f * PI; phi += delta)
-//	{
-//		for(float theta = 0.f; theta < 0.5f * PI; theta += delta)
-//		{
-//			//spherical to cartesian (in tangent space)
-//			vec3 sampleVec = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-//			//tangent space to world space
-//			sampleVec = sampleVec.x * right + sampleVec.y * up + sampleVec.z * N;
-//
-//			irradiance += texture(irradianceMap, sampleVec).rgb * cos(theta) * sin(theta);
-//			nSamples++;
-//			totalWeight += max(dot(N, sampleVec), 0.f);
-//		}
-//	}
-//
-//	irradiance = PI * irradiance * (1.f / totalWeight);
-//	FragColor = vec4(irradiance, 1.f);
-//}
-//
-#version 460
+#version 460 core
+out vec4 FragColor;
+
+in vec3 localPos;
+
+uniform samplerCube irradianceMap;
+
+const float PI = 3.14159265359;
+
+void main()
+{
+	vec3 N = normalize(localPos);
+	vec3 irradiance = vec3(0.f);
+
+	vec3 up = vec3(0.f, 1.f, 0.f);
+	vec3 right = normalize(cross(up, N));
+	up = normalize(cross(N, right));
+
+	float delta = 0.025f;
+	int nSamples = 0;
+
+	float totalWeight = 0.f;
+
+	for(float phi = 0.f; phi < 2.f * PI; phi += delta)
+	{
+		for(float theta = 0.f; theta < 0.5f * PI; theta += delta)
+		{
+			//spherical to cartesian (in tangent space)
+			vec3 sampleVec = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+			//tangent space to world space
+			sampleVec = sampleVec.x * right + sampleVec.y * up + sampleVec.z * N;
+
+			vec3 a = (textureCube(irradianceMap, normalize(sampleVec)).rgb * cos(theta) * sin(theta));
+            
+            //vec3 a = (textureCube(irradianceMap, normalize(sampleVec)).rgb) * dot(N, sampleVec) / 4 * PI;
+
+            if(length(a) > 10.f) irradiance += normalize(a)*10.f;
+            else irradiance += a;
+			nSamples++;
+			totalWeight += max(dot(N, sampleVec), 0.f);
+		}
+	}
+
+	irradiance = PI * irradiance * (1.f / nSamples);
+	FragColor = vec4(irradiance, 1.f);
+}
+
+/*#version 460
 
 in vec3 localPos;
 
@@ -62,7 +67,6 @@ float radicalInverse_VdC(uint bits)
 }
 
 // Randomish sequence that has pretty evenly spaced points
-// http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
 vec2 hammersley(uint i, uint N)
 {
     return vec2(float(i)/float(N), radicalInverse_VdC(i));
@@ -136,26 +140,6 @@ void main()
     irradiance = (PI * irradiance) / totalWeight;
     // irradiance = (PI * irradiance) / SAMPLE_COUNT;
 
-
-    /*
-    float phiDelta = 0.025;
-    float thetaDelta = 0.025;
-    int nrSamples = 0;
-    for (float phi = 0.0; phi < 2.0 * PI; phi += phiDelta) {
-        for (float theta = 0.0; theta < 0.5 * PI; theta += thetaDelta) {
-            // spherical to cartesian (in tangent space)
-            vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-            // tangent space to world
-            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
-            // cos(theta) is from dot product part of diffuse term of rendering equation
-            // and sin(theta) is from conversion of spherical to cartesian coordinates
-            irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
-            ++nrSamples;
-        }
-    }
-    irradiance = PI * irradiance * (1.0 / float(nrSamples));
-    */
-
     // irradiance = texture(environmentMap, normal).rgb;
     FragColor = vec4(irradiance, 1.0);
-}
+}*/

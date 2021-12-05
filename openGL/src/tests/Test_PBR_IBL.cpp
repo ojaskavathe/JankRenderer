@@ -145,7 +145,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, num;
-	float* data = stbi_loadf("res/textures/hdri/path.hdr", &width, &height, &num, 0);
+	float* data = stbi_loadf("res/textures/hdri/bright.hdr", &width, &height, &num, 0);
 
 	if (data)
 	{
@@ -339,7 +339,6 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 	va.Unbind();
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//setting up framebuffers for transparency
@@ -743,7 +742,7 @@ void test::Test_PBR_IBL::OnRender()
 		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
 	}
 	else {
-		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapGarden);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
 	}
 
 	glBindVertexArray(sphereVAO);
@@ -762,10 +761,10 @@ void test::Test_PBR_IBL::OnRender()
 
 	if (swtch)
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemapLoft);
 	}
 	else {
-		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapGarden);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapLoft);
 	}
 
 	va.Bind();
