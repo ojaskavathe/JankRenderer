@@ -20,7 +20,7 @@ uniform vec3 dirLightColor;
 
 uniform samplerCube irradianceMap;
 
-vec3 FresnelSchlick(float HdotV, vec3 F0);
+vec3 FresnelSchlick(float HoV, vec3 F0);
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometryGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
@@ -41,14 +41,14 @@ void main()
 
 	vec3 L0 = vec3(0.0); // <- total outgoing radiance or irradiance
 	
-	//L0 += calcPointLight(pointLightPos); 
+	L0 += calcPointLight(pointLightPos); 
 	//L0 += calcDirLight(dirLightDir); 
 	
 	//vec3 ambient = vec3(0.3) * albedo * ao;
 	vec3 ambient = texture(irradianceMap, N).rgb * albedo * ao;
 	vec3 color = ambient + L0;
 
-	//color = color / (color + vec3(1.0)); // <- HDR using reih
+	//color = color / (color + vec3(1.0)); // <- HDR using reinhart
 	//color = pow(color, vec3(1.0/2.2)); // <- i do the gamma correction in the final screenshader
 	FragColor = vec4(color, 1.0f);
 }
@@ -75,9 +75,9 @@ vec3 calcPointLight(vec3 lightPosition)
   
 	kD *= 1.0 - metallic;
 
-	float NdotL = max(dot(N, L), 0.0);
+	float NoL = max(dot(N, L), 0.0);
 	
-	res = (kD * albedo / PI + specular) * radiance * NdotL;
+	res = (kD * albedo / PI + specular) * radiance * NoL;
 	return res;
 }
 
@@ -102,49 +102,49 @@ vec3 calcDirLight(vec3 lightDir)
   
 	kD *= 1.0 - metallic;
 
-	float NdotL = max(dot(N, L), 0.0);
+	float NoL = max(dot(N, L), 0.0);
 	
-	res = (kD * albedo / PI + specular) * radiance * NdotL;
+	res = (kD * albedo / PI + specular) * radiance * NoL;
 	return res;
 }
 
-vec3 FresnelSchlick(float HdotV, vec3 F0)
+vec3 FresnelSchlick(float HoV, vec3 F0)
 {
 	//return F0 + (1.0 - F0) * pow(clamp(1.0 - HdotV, 0.0, 1.0), 5.0);
-	return F0 + (max(vec3(1.f - roughness), F0) - F0) * pow(clamp(1.0 - HdotV, 0.0, 1.0), 5.0); // <- takes in account roughness
+	return F0 + (max(vec3(1.f - roughness), F0) - F0) * pow(clamp(1.0 - HoV, 0.0, 1.0), 5.0); // <- takes in account roughness
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
 	float a      = roughness*roughness;
     float a2     = a*a;
-    float NdotH  = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
+    float NoH  = max(dot(N, H), 0.0);
+    float NoH2 = NoH*NoH;
 	
     float num   = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    float denom = (NoH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 	
     return num / denom;
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness)
+float GeometrySchlickGGX(float NoV, float roughness)
 {
     float r = (roughness + 1.0);
     float k = (r*r) / 8.0;
 
-    float num   = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float num   = NoV;
+    float denom = NoV * (1.0 - k) + k;
 	
     return num / denom;
 }
 
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+    float NoV = max(dot(N, V), 0.0);
+    float NoL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NoV, roughness);
+    float ggx1  = GeometrySchlickGGX(NoL, roughness);
 	
     return ggx1 * ggx2;
 }

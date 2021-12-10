@@ -110,6 +110,8 @@
     <None Include="res\shaders\hdri\convolutionv.vert" />
     <None Include="res\shaders\hdri\hdriToCubemapf.frag" />
     <None Include="res\shaders\hdri\hdriToCubemapv.vert" />
+    <None Include="res\shaders\hdri\prefilterf.frag" />
+    <None Include="res\shaders\hdri\prefilterv.vert" />
     <None Include="res\shaders\instancingv.vert" />
     <None Include="res\shaders\lightShaderf.frag" />
     <None Include="res\shaders\lightShaderv.vert" />

@@ -4,8 +4,9 @@ out vec4 FragColor;
 in vec3 texCoords;
 
 uniform samplerCube box;
+uniform float lod = 0.f;
 
 void main()
 {
-	FragColor = texture(box, texCoords);
+	FragColor = textureLod(box, texCoords, lod);
 }

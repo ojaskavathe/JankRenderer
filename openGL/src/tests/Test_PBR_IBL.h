@@ -110,9 +110,9 @@ namespace test {
 		int nrColumns = 7;
 		float spacing = 2.5;
 
+		Shader shader;
 		Shader PBRShader;
 		Shader IBLShader;
-		Shader shader;
 		Shader lightShader;
 
 		Shader depthMapShader;
@@ -125,6 +125,7 @@ namespace test {
 		Shader hdriShader;
 		Shader cubemapShader;
 		Shader irradianceShader;
+		Shader prefilterShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -201,7 +202,7 @@ namespace test {
 		glm::vec3 pointLightDiffuse = glm::vec3(1.0f);
 		glm::vec3 pointLightSpecular = glm::vec3(0.3f);
 
-		glm::vec3 dirLightColor = glm::vec3(5.f);
+		glm::vec3 dirLightColor = glm::vec3(1.f);
 		glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
 		glm::vec3 dirLightAmbient = glm::vec3(0.1f);
 		glm::vec3 dirLightDiffuse = glm::vec3(0.4f);
@@ -220,11 +221,16 @@ namespace test {
 		float metallic = 0.2f;
 		float roughness = 0.6f;
 
-		unsigned int hdrTexLoft, hdrTexGarden;
-		unsigned int envCubemapLoft, envCubemapGarden;
-		unsigned int irradianceMapLoft, irradianceMapGarden;
+		unsigned int hdrTex;
+		unsigned int envCubemap;
+		unsigned int irradianceMap;
+		unsigned int prefilterMap;
+
+		unsigned int maxMipLevels = 5;
 
 		unsigned int envFB, envRB;
 		int swtch = 1;
+		float lod = 0.f;
+		int mapped = 0;
 	};
 }
