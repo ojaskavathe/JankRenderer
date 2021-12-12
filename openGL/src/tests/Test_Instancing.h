@@ -78,15 +78,16 @@ namespace test {
 
 		VertexArray va;
 
-		unsigned int amount = 100000;
+		VertexBuffer cubeInstanceVB; //<- this needs to be here instead of in the constructer for instancing to work with AMD gpus
 
-		//set projection matrices
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
+		unsigned int amount = 100000;
 
 		float near = 0.1f;
 		float far = 300.0f;
+		//set projection matrices
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 
 		glm::mat4 normal = glm::mat4(1.0f);
 

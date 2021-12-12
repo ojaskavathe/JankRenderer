@@ -21,8 +21,12 @@ test::Test_Instancing::Test_Instancing()
 
 	va.AddBuffer(vb, layout);
 
-	std::vector<glm::mat4> modelMatrices;
-	std::vector<glm::vec3> modelColor;
+	//std::vector<glm::mat4> modelMatrices;
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	//std::vector<glm::vec3> modelColor;
+	glm::vec3* modelColor;
+	modelColor = new glm::vec3[amount];
 
 	//set rng
 	std::random_device rd;
@@ -54,11 +58,13 @@ test::Test_Instancing::Test_Instancing()
 		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
 		// 4. now add to list of matrices
-		modelMatrices.push_back(model);
-		modelColor.push_back(glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
+		//modelMatrices.push_back(model);
+		modelMatrices[i] = model;
+		//modelColor.push_back(glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
+		modelColor[i] = (glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
 	}
 
-	VertexBuffer cubeInstanceVB(&modelMatrices[0], (unsigned int)modelMatrices.size() * sizeof(glm::mat4));
+	cubeInstanceVB.BindData(modelMatrices, (amount) * sizeof(glm::mat4));
 
 	layout.Push<float>(4);
 	layout.Push<float>(4);
@@ -71,9 +77,7 @@ test::Test_Instancing::Test_Instancing()
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
 
-	unsigned int num = sizeof(glm::vec3);
-
-	VertexBuffer cubeColorVB(&modelColor[0], (unsigned int)modelColor.size() * sizeof(glm::vec3));
+	VertexBuffer cubeColorVB(modelColor, (amount) * sizeof(glm::vec3));
 	layout.Push<float>(3);
 	va.AddBuffer(cubeColorVB, layout);
 	
@@ -86,8 +90,6 @@ test::Test_Instancing::Test_Instancing()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_STENCIL_TEST);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	//backface culling
 	glEnable(GL_CULL_FACE);
@@ -95,7 +97,7 @@ test::Test_Instancing::Test_Instancing()
 }
 
 test::Test_Instancing::~Test_Instancing(){
-	
+	glDeleteVertexArrays(1, va.GetID());
 }
 
 void test::Test_Instancing::OnUpdate(float deltaTime, GLFWwindow* window)
@@ -138,7 +140,6 @@ void test::Test_Instancing::OnUpdate(float deltaTime, GLFWwindow* window)
 
 void test::Test_Instancing::OnRender()
 {
-	projection = glm::perspective(glm::radians(cam.GetFov()), 800.0f / 600.0f, near, far);
 	view = cam.GetViewMatrix();
 
 	vp = projection * view;

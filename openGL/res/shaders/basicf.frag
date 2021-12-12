@@ -1,10 +1,10 @@
 #version 460 core
 out vec4 FragColor;
 
-uniform vec3 fcolor = vec3(.3f);
+in vec3 fColor;
 
 void main()
 {    
     //FragColor = texture(texture_diffuse1, TexCoords);
-    FragColor = vec4(fcolor, 1.0f);
+    FragColor = vec4(fColor, 1.0f);
 }

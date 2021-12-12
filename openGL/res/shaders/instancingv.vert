@@ -8,10 +8,10 @@ layout (location = 7) in vec3 color;
 
 uniform mat4 vp;
 
-out vec3 fcolor;
+out vec3 fColor;
 
 void main()
 {
     gl_Position = vp * instanceMatrix * vec4(aPos, 1.0);
-    fcolor = color;
+    fColor = color;
 }
