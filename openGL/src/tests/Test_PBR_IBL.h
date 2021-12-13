@@ -219,8 +219,8 @@ namespace test {
 
 		float exposure = 0.4f;
 
-		float metallic = 0.2f;
-		float roughness = 0.6f;
+		float metallic = 0.5f;
+		float roughness = 0.1f;
 
 		unsigned int hdrTex;
 		unsigned int envCubemap;

@@ -548,6 +548,13 @@ void test::Test_PBR_IBL::OnRender()
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
@@ -602,6 +609,13 @@ void test::Test_PBR_IBL::OnRender()
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	glBindVertexArray(sphereVAO);
+	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	glBindVertexArray(sphereVAO);
@@ -766,6 +780,12 @@ void test::Test_PBR_IBL::OnRender()
 	glEnable(GL_CULL_FACE);
 
 	//regular spheres
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+
 	shader.Bind();
 	shader.SetUniform4fv("color", glm::vec4(0.0f, 0.0f, 0.5f, 1.0f));
 	model = glm::mat4(1.0f);
