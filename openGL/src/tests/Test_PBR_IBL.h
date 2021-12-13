@@ -126,6 +126,7 @@ namespace test {
 		Shader cubemapShader;
 		Shader irradianceShader;
 		Shader prefilterShader;
+		Shader brdfShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -225,11 +226,12 @@ namespace test {
 		unsigned int envCubemap;
 		unsigned int irradianceMap;
 		unsigned int prefilterMap;
+		unsigned int brdfLUT;
 
 		unsigned int maxMipLevels = 5;
 
 		unsigned int envFB, envRB;
-		int swtch = 1;
+		int swtch = 0;
 		float lod = 0.f;
 		int mapped = 0;
 	};

@@ -77,6 +77,7 @@ namespace test {
 		Shader shader;
 
 		VertexArray va;
+		VertexBuffer cubeInstanceVB;
 
 		unsigned int amount = 100000;
 

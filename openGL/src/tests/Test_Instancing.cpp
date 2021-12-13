@@ -58,7 +58,7 @@ test::Test_Instancing::Test_Instancing()
 		modelColor.push_back(glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
 	}
 
-	VertexBuffer cubeInstanceVB(&modelMatrices[0], (unsigned int)modelMatrices.size() * sizeof(glm::mat4));
+	cubeInstanceVB.BindData(&modelMatrices[0], (unsigned int)modelMatrices.size() * sizeof(glm::mat4));
 
 	layout.Push<float>(4);
 	layout.Push<float>(4);
@@ -70,8 +70,6 @@ test::Test_Instancing::Test_Instancing()
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
-
-	unsigned int num = sizeof(glm::vec3);
 
 	VertexBuffer cubeColorVB(&modelColor[0], (unsigned int)modelColor.size() * sizeof(glm::vec3));
 	layout.Push<float>(3);

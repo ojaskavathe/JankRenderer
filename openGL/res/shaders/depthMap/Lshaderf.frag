@@ -7,7 +7,6 @@ in vec2 texCoord;
 in vec3 FragPosition;
 in vec4 lightSpaceFragPos;
 
-uniform vec3 objectColor;
 uniform vec3 viewPosition;
 
 struct Material 

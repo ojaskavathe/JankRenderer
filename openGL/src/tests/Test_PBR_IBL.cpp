@@ -15,7 +15,8 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	hdriShader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag"),
 	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag"),
 	irradianceShader("res/shaders/hdri/convolutionv.vert", "res/shaders/hdri/convolutionf.frag"),
-	prefilterShader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag")
+	prefilterShader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag"),
+	brdfShader("res/shaders/hdri/brdfConvolutionv.vert", "res/shaders/hdri/brdfConvolutionf.frag")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
@@ -220,6 +221,9 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	}
 	va.Unbind();
 
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
 	//diffuse irradiance map
 	glGenTextures(1, &irradianceMap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
@@ -239,7 +243,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	irradianceShader.Bind();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	irradianceShader.SetUniform1i("map", 0);
+	irradianceShader.SetUniform1i("environmentMap", 0);
 
 	glViewport(0, 0, 32, 32);
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
@@ -298,6 +302,26 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 		}
 	}
 	va.Unbind();
+
+	glGenTextures(1, &brdfLUT);
+	glBindTexture(GL_TEXTURE_2D, brdfLUT);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
+	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUT, 0);
+
+	glViewport(0, 0, 512, 512);
+	brdfShader.Bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	quadVA.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	quadVA.Unbind();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -415,6 +439,9 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
+	IBLShader.SetUniform1i("irradianceMap", 0);
+	IBLShader.SetUniform1i("prefilterMap", 1);
+	IBLShader.SetUniform1i("brdfLUT", 2);
 }
 
 test::Test_PBR_IBL::~Test_PBR_IBL()
@@ -697,6 +724,10 @@ void test::Test_PBR_IBL::OnRender()
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, brdfLUT);
 
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
@@ -715,6 +746,7 @@ void test::Test_PBR_IBL::OnRender()
 	if (swtch == 0)
 	{
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		cubemapShader.SetUniform1f("lod", lod);
 	}
 	else if(swtch == 1)
 	{
@@ -735,7 +767,7 @@ void test::Test_PBR_IBL::OnRender()
 
 	//regular spheres
 	shader.Bind();
-	shader.SetUniform4fv("color", glm::vec4(0.5f, 0.0f, 0.0f, 1.0f));
+	shader.SetUniform4fv("color", glm::vec4(0.0f, 0.0f, 0.5f, 1.0f));
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));

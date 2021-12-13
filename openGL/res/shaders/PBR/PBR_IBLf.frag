@@ -19,6 +19,8 @@ uniform vec3 pointLightColor;
 uniform vec3 dirLightColor;
 
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D   brdfLUT;  
 
 vec3 FresnelSchlick(float HoV, vec3 F0);
 float DistributionGGX(vec3 N, vec3 H, float roughness);
@@ -45,7 +47,24 @@ void main()
 	//L0 += calcDirLight(dirLightDir); 
 	
 	//vec3 ambient = vec3(0.3) * albedo * ao;
-	vec3 ambient = texture(irradianceMap, N).rgb * albedo * ao;
+	vec3 R = reflect(-V, N);
+
+	vec3 F = FresnelSchlick(max(dot(N, V), 0.0), F0);
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;	
+
+	vec3 irradiance = texture(irradianceMap, N).rgb;
+	vec3 diffuse = irradiance * albedo;
+
+	const float MAX_REFLECT_LOD = 4.f;
+	vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECT_LOD).rgb;
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+
+	vec3 ambient = (kD * diffuse + specular) * ao; 
+
 	vec3 color = ambient + L0;
 
 	//color = color / (color + vec3(1.0)); // <- HDR using reinhart

@@ -106,6 +106,8 @@
     <None Include="res\shaders\depthMap\Lshaderf.frag" />
     <None Include="res\shaders\depthMap\Lshaderv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
+    <None Include="res\shaders\hdri\brdfConvolutionf.frag" />
+    <None Include="res\shaders\hdri\brdfConvolutionv.vert" />
     <None Include="res\shaders\hdri\convolutionf.frag" />
     <None Include="res\shaders\hdri\convolutionv.vert" />
     <None Include="res\shaders\hdri\hdriToCubemapf.frag" />
