@@ -7,7 +7,6 @@ in vec2 texCoord;
 in vec3 FragPosition;
 in vec4 lightSpaceFragPos;
 
-uniform vec3 objectColor;
 uniform vec3 viewPosition;
 
 struct Material 
@@ -146,15 +145,13 @@ float CalcPointShadow()
 	float bias = max(0.001f * (1.0f - dot(norm, -normalize(lightToFrag))), 0.00f);;
 	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
 
-	vec3 sampleOffsetDirections[20] = vec3[]
-	(
+	vec3 sampleOffsetDirections[20] = vec3[](
 	   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
 	   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
 	   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
 	   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
 	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
-	);   
-
+	);
 
 	//pcf
 	float shadow = 0.0;

@@ -33,6 +33,8 @@
     <ClCompile Include="src\tests\Test_Instancing.cpp" />
     <ClCompile Include="src\tests\Test_msFB.cpp" />
     <ClCompile Include="src\tests\Test_MSTransparency.cpp" />
+    <ClCompile Include="src\tests\Test_PBR.cpp" />
+    <ClCompile Include="src\tests\Test_PBR_IBL.cpp" />
     <ClCompile Include="src\tests\Test_Points.cpp" />
     <ClCompile Include="src\tests\Test_ShadowMapping.cpp" />
     <ClCompile Include="src\tests\Test_ShadowMappingOmni.cpp" />
@@ -67,6 +69,8 @@
     <ClInclude Include="src\tests\Test_Instancing.h" />
     <ClInclude Include="src\tests\Test_msFB.h" />
     <ClInclude Include="src\tests\Test_MSTransparency.h" />
+    <ClInclude Include="src\tests\Test_PBR.h" />
+    <ClInclude Include="src\tests\Test_PBR_IBL.h" />
     <ClInclude Include="src\tests\Test_Points.h" />
     <ClInclude Include="src\tests\Test_ShadowMapping.h" />
     <ClInclude Include="src\tests\Test_ShadowMappingOmni.h" />
@@ -102,6 +106,14 @@
     <None Include="res\shaders\depthMap\Lshaderf.frag" />
     <None Include="res\shaders\depthMap\Lshaderv.vert" />
     <None Include="res\shaders\experimentalf.frag" />
+    <None Include="res\shaders\hdri\brdfConvolutionf.frag" />
+    <None Include="res\shaders\hdri\brdfConvolutionv.vert" />
+    <None Include="res\shaders\hdri\convolutionf.frag" />
+    <None Include="res\shaders\hdri\convolutionv.vert" />
+    <None Include="res\shaders\hdri\hdriToCubemapf.frag" />
+    <None Include="res\shaders\hdri\hdriToCubemapv.vert" />
+    <None Include="res\shaders\hdri\prefilterf.frag" />
+    <None Include="res\shaders\hdri\prefilterv.vert" />
     <None Include="res\shaders\instancingv.vert" />
     <None Include="res\shaders\lightShaderf.frag" />
     <None Include="res\shaders\lightShaderv.vert" />
@@ -109,6 +121,10 @@
     <None Include="res\shaders\omniDepthShader\oDepthMapf.frag" />
     <None Include="res\shaders\omniDepthShader\oDepthMapg.geom" />
     <None Include="res\shaders\omniDepthShader\oDepthMapv.vert" />
+    <None Include="res\shaders\PBR\PBRf.frag" />
+    <None Include="res\shaders\PBR\PBRv.vert" />
+    <None Include="res\shaders\PBR\PBR_IBLf.frag" />
+    <None Include="res\shaders\PBR\PBR_IBLv.vert" />
     <None Include="res\shaders\postProcess\kuwahara.frag" />
     <None Include="res\shaders\screenShaderf.frag" />
     <None Include="res\shaders\screenShaderv.vert" />
