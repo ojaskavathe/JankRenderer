@@ -105,7 +105,7 @@ vec2 IntegrateBRDF(float NoV, float roughness)
     B /= float(SAMPLE_COUNT);
     return vec2(A, B);
 }
-// ----------------------------------------------------------------------------
+
 void main() 
 {
     vec2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);

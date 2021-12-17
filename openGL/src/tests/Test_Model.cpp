@@ -169,21 +169,24 @@ test::Test_Model::Test_Model()
 	}
 
 	//framebuffers for environment map
+	unsigned int textureRes = 1024;
+
 	glGenFramebuffers(1, &envFB);
 	glGenRenderbuffers(1, &envRB);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 2048, 2048);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, textureRes, textureRes);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, envRB);
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //<-enables interpolation between faces of cubemap
+
 	//environment cubemap texture
 	glGenTextures(1, &envCubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 2048, 2048, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, textureRes, textureRes, 0, GL_RGB, GL_FLOAT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -208,7 +211,7 @@ test::Test_Model::Test_Model()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTex);
 
-	glViewport(0, 0, 2048, 2048);
+	glViewport(0, 0, textureRes, textureRes);
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	for (int i = 0; i < 6; i++)
@@ -271,14 +274,13 @@ test::Test_Model::Test_Model()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
 	prefilterShader.Bind();
 	prefilterShader.SetUniform1i("environmentMap", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP); //<-generate lods for envmap to use in prefilter
 
-	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+	for (unsigned int mip = 0; mip < 5; ++mip)
 	{
 		//resize frambuffer according to mip level
 		unsigned int mipWidth = 128 * glm::pow(0.5f, mip);
@@ -291,7 +293,7 @@ test::Test_Model::Test_Model()
 		float mipRoughness = (float)mip / (float)(maxMipLevels - 1);
 		prefilterShader.SetUniform1f("roughness", mipRoughness);
 
-		for (unsigned int i = 0; i < 6; i++)
+		for (unsigned int i = 0; i < 6; ++i)
 		{
 			prefilterShader.SetUniformMatrix4fv("vp", hdriVP[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
@@ -736,6 +738,8 @@ void test::Test_Model::OnRender()
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
 	IBLShader.SetUniform1i("irradianceMap", 0);
 
+	IBLShader.SetUniform1f("iblIntensity", iblIntensity);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 	glActiveTexture(GL_TEXTURE1);
@@ -926,6 +930,7 @@ void test::Test_Model::OnImGuiRender()
 		ImGui::SliderInt("env map", &swtch, 0, 2);
 		ImGui::SliderInt("tonemapping", &mapped, 0, 1);
 		ImGui::SliderFloat("lod", &lod, 0.f, 5.f);
+		ImGui::SliderFloat("ibl Intensity", &iblIntensity, 0.f, 1.f);
 
 		ImGui::End();
 	}

@@ -232,7 +232,8 @@ namespace test {
 
 		unsigned int envFB, envRB;
 		int swtch = 0;
-		float lod = 0.f;
+		float lod = 1.2f;
 		int mapped = 0;
+		float iblIntensity = 1.f;
 	};
 }

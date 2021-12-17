@@ -1,37 +1,39 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <string>
-#include <vector>
-#include <numeric>
-#include <map>
+#include <json/json.h>
 
 #include "Shader.h"
 #include "Mesh.h"
 #include "vendor\stb_image\stb_image.h"
 
+using json = nlohmann::json;
+
 class Model
 {
 public:
-	Model(const std::string& path);
+	Model(const char* path);
 
 	void Draw(Shader& shader, glm::vec3 camDist);
 
 private:
 
-	std::vector<unsigned int> numFaces;
-	std::vector<glm::vec3> facePos;
+	const char* file;
+	std::vector<unsigned char> data; //easy to sample floats out of an array of 1 byte chars
+	json JSON;
 
-	std::string directory;
+	std::vector<unsigned char> getData();
+	std::vector<float> getFloats(json accessor);
+	std::vector<unsigned int> getIndices(json accessor);
 
-	std::vector<Mesh> meshes;
-	std::vector<Mesh> opaqueMeshes;
-	std::vector<Mesh> transparentMeshes;
+	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 
-	std::vector<Texture> textures_loaded;
-	/*void LoadModel(const std::string& path);
-	void ProcessNode(aiNode* node, const aiScene* scene);
-	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-	std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);*/
+	std::vector<glm::vec2> groupVec2(std::vector<float> floatVec);
+	std::vector<glm::vec3> groupVec3(std::vector<float> floatVec);
+	std::vector<glm::vec4> groupVec4(std::vector<float> floatVec);
+
+	std::string getFileContents(const char* path);
 };
 

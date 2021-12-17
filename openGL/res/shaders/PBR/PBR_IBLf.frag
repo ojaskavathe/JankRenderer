@@ -12,6 +12,7 @@ uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
 uniform float ao;
+uniform float iblIntensity;
 
 uniform vec3 pointLightPos;
 uniform vec3 dirLightDir;
@@ -65,7 +66,7 @@ void main()
 
 	vec3 ambient = (kD * diffuse + specular) * ao; 
 
-	vec3 color = ambient + L0;
+	vec3 color = (iblIntensity*ambient) + L0;
 
 	//color = color / (color + vec3(1.0)); // <- HDR using reinhart
 	//color = pow(color, vec3(1.0/2.2)); // <- i do the gamma correction in the final screenshader

@@ -1,14 +1,182 @@
 #include "Model.h"
 
-Model::Model(const std::string& path)
+Model::Model(const char* path)
 {
-	//LoadModel(path);
+	std::string text = getFileContents(path);
+	JSON = json::parse(text);
+
+	Model::file = path;
+	data = getData();
 }
 
 void Model::Draw(Shader& shader, glm::vec3 camDist)
 {
-	for (int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+	
+}
+
+std::vector<unsigned char> Model::getData()
+{
+	std::string bytesText;
+	std::string uri = JSON["buffers"][0]["uri"];
+
+	std::string fileStr = std::string(file);
+	std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1); //<-kinda sketch pls fix later
+	bytesText = getFileContents((fileDir + uri).c_str());
+
+	std::vector<unsigned char> data(bytesText.begin(), bytesText.end());
+	return data;
+}
+
+std::vector<float> Model::getFloats(json accessor)
+{
+	std::vector<float> floatVec;
+
+	unsigned int buffViewIndex = accessor.value("bufferView", 1); //<-value function only returns if the buffer exists, second parameter is backup value in case it doesn't
+	unsigned int count = accessor["count"]; //<-doesn't check if count exists
+	unsigned int accByteOffset = accessor.value("byteOffset", 0); //<-a lot of files don't have a byteoffset
+	std::string type = accessor["type"];
+
+	json bufferView = JSON["bufferViews"][buffViewIndex];
+	unsigned int byteOffset = bufferView["byteOffset"];
+
+	unsigned int floatsPerVertex;
+	if (type == "SCALAR") floatsPerVertex = 1;
+	else if (type == "VEC2") floatsPerVertex = 2;
+	else if (type == "VEC3") floatsPerVertex = 3;
+	else if (type == "VEC4") floatsPerVertex = 4;
+	else throw std::invalid_argument("Invalid type (not SCALAR, VEC2, VEC3, VEC4)");
+
+	unsigned int dataBegin = byteOffset + accByteOffset;
+	unsigned int dataLength = bufferView["byteLength"];
+
+	for (unsigned int i = dataBegin; i < dataBegin + dataLength; i) //<- i is being incremented per byte
+	{
+		//data is a char array, and float->4 bytes
+		unsigned char bytes[] = {
+			data[i++],
+			data[i++],
+			data[i++],
+			data[i++]
+		};
+		float value;
+		std::memcpy(&value, bytes, sizeof(float));
+		floatVec.push_back(value);
+	}
+
+	return floatVec;
+}
+
+std::vector<unsigned int> Model::getIndices(json accessor)
+{
+	std::vector<unsigned int> indicesVec;
+
+	unsigned int buffViewIndex = accessor.value("bufferView", 1); //<-value function only returns if the buffer exists, second parameter is backup value in case it doesn't
+	unsigned int count = accessor["count"]; //<-doesn't check if count exists
+	unsigned int accByteOffset = accessor.value("byteOffset", 0); //<-a lot of files don't have a byteoffset
+	unsigned int componentType = accessor["componentType"];
+
+	json bufferView = JSON["bufferViews"][buffViewIndex];
+	unsigned int byteOffset = bufferView["byteOffset"];
+
+	unsigned int dataBegin = byteOffset + accByteOffset;
+	unsigned int dataLength = bufferView["byteLength"];
+
+	//indices can be either an unsigned int, an unsigned short or a short
+	if (componentType == 5125) //int -> 4 bytes
+	{
+		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
+		{
+			unsigned char bytes[] = {
+				data[i++],
+				data[i++],
+				data[i++],
+				data[i++]
+			};
+			unsigned int value;
+			std::memcpy(&value, bytes, sizeof(unsigned int));
+			indicesVec.push_back(value);
+		}
+	}
+	else if (componentType == 5123) //unsigned short -> 2 bytes
+	{
+		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
+		{
+			unsigned char bytes[] = {
+				data[i++],
+				data[i++]
+			};
+			unsigned short value;
+			std::memcpy(&value, bytes, sizeof(unsigned short));
+			indicesVec.push_back(value);
+		}
+	}
+	else if (componentType == 5122) //short -> 2 bytes
+	{
+		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
+		{
+			unsigned char bytes[] = {
+				data[i++],
+				data[i++]
+			};
+			short value;
+			std::memcpy(&value, bytes, sizeof(short));
+			indicesVec.push_back(value);
+		}
+	}
+
+	return indicesVec;
+}
+
+std::vector<Vertex> Model::groupVertices
+(
+	std::vector<glm::vec3> positions,
+	std::vector<glm::vec3> normals,
+	std::vector<glm::vec2> UVs
+)
+{
+	std::vector<Vertex> vertices;
+	for (unsigned int i; i < positions.size(); ++i)
+	{
+		vertices.push_back(
+			Vertex{
+				positions[i],
+				normals[i],
+				UVs[i]
+			}
+		);
+	}
+}
+
+std::vector<glm::vec2> Model::groupVec2(std::vector<float> floatVec)
+{
+	std::vector<glm::vec2> vectors;
+	for (unsigned int i = 0; i < floatVec.size(); i)
+		vectors.push_back(glm::vec2(floatVec[i++], floatVec[i++]));
+	return vectors;
+}
+
+std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
+{
+	std::vector<glm::vec3> vectors;
+	for (unsigned int i = 0; i < floatVec.size(); i)
+		vectors.push_back(glm::vec3(floatVec[i++], floatVec[i++], floatVec[i++]));
+	return vectors;
+}
+
+std::vector<glm::vec4> Model::groupVec4(std::vector<float> floatVec)
+{
+	std::vector<glm::vec4> vectors;
+	for (unsigned int i = 0; i < floatVec.size(); i)
+		vectors.push_back(glm::vec4(floatVec[i++], floatVec[i++], floatVec[i++], floatVec[i++]));
+	return vectors;
+}
+
+std::string Model::getFileContents(const char* path)
+{
+	std::ifstream ifs(path);
+	std::string text((std::istreambuf_iterator<char>(ifs)),
+		(std::istreambuf_iterator<char>()));
+	return text;
 }
 
 //void Model::LoadModel(const std::string& path)
