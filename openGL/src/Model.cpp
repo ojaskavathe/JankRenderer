@@ -7,11 +7,87 @@ Model::Model(const char* path)
 
 	Model::file = path;
 	data = getData();
+
+	traverseNode(0);
 }
 
-void Model::Draw(Shader& shader, glm::vec3 camDist)
+void Model::Draw(Shader& shader, glm::mat4& vp)
 {
-	
+	for (unsigned int i = 0; i < meshes.size(); ++i)
+		meshes[i].Draw(shader, modelMat[i], vp);
+}
+
+void Model::loadMesh(unsigned int meshInd)
+{
+	unsigned int posAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["POSITION"];
+	unsigned int normalAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["NORMAL"];
+	unsigned int texAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["TEXCOORD_0"];
+	unsigned int indAccInd = JSON["meshes"][meshInd]["primitives"][0]["indices"];
+
+	std::vector<float> posVec = getFloats(JSON["accessors"][posAccInd]);
+	std::vector<glm::vec3> positions = groupVec3(posVec);
+	std::vector<float> normalVec = getFloats(JSON["accessors"][normalAccInd]);
+	std::vector<glm::vec3> normals = groupVec3(normalVec);
+	std::vector<float> texVec = getFloats(JSON["accessors"][texAccInd]);
+	std::vector<glm::vec2> UVs = groupVec2(texVec);
+
+	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
+	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
+	std::vector<Material> materials = getMaterials();
+	meshes.push_back(Mesh(vertices, indices, materials));
+}
+
+void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
+{
+	json node = JSON["nodes"][nextNode];
+
+	glm::vec3 translation = glm::vec3(0.f);
+	if (node.find("translation") != node.end())
+	{
+		translation.x = node["translation"][0];
+		translation.y = node["translation"][1];
+		translation.z = node["translation"][2];
+	}
+		
+	glm::quat rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
+	if (node.find("rotation") != node.end())
+	{
+		rotation.x = node["rotation"][3];
+		rotation.y = node["rotation"][0];
+		rotation.z = node["rotation"][1];
+		rotation.w = node["rotation"][2];
+	}
+
+	glm::vec3 scale = glm::vec3(1.f);
+	if (node.find("scale") != node.end())
+	{
+		scale.x = node["scale"][0];
+		scale.y = node["scale"][1];
+		scale.z = node["scale"][2];
+	}
+
+	glm::mat4 T = glm::mat4(1.f);
+	glm::mat4 R = glm::mat4(1.f);
+	glm::mat4 S = glm::mat4(1.f);
+
+	T = glm::translate(T, translation);
+	R = glm::mat4_cast(rotation);
+	S = glm::scale(S, scale);
+
+	glm::mat4 matNextNode = mat * T * R * S;
+
+	if (node.find("mesh") != node.end())
+	{
+		modelMat.push_back(T * R * S);
+		loadMesh(node["mesh"]);
+	}
+
+	if (node.find("children") != node.end())
+		std::cout << "hi";
+		for (unsigned int i = 0; i < node["children"].size(); ++i)
+			traverseNode(node["children"][i], matNextNode);
+	if (JSON["nodes"][nextNode + 1].is_object())
+		traverseNode(nextNode + 1);
 }
 
 std::vector<unsigned char> Model::getData()
@@ -127,6 +203,52 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 	return indicesVec;
 }
 
+std::vector<Material> Model::getMaterials()
+{
+	std::vector<Material> materials;
+	json mats = JSON["materials"];
+
+	for (auto it : mats)
+	{
+		bool skip = false;
+
+		//std::cout << loadedMatName.size() << std::endl;
+		for (unsigned int i = 0; i < loadedMatName.size(); ++i)
+		{
+			if (loadedMatName[i] == it["name"])
+			{
+				materials.push_back(loadedMat[i]);
+				skip = true;
+				break;
+			}
+		}
+
+		glm::vec4 albedo(0.f);
+		float metallic = 0.f;
+		float roughness = 0.f;
+
+		if (!skip)
+		{
+			albedo = glm::vec4(
+				it["pbrMetallicRoughness"]["baseColorFactor"][0],
+				it["pbrMetallicRoughness"]["baseColorFactor"][1],
+				it["pbrMetallicRoughness"]["baseColorFactor"][2],
+				it["pbrMetallicRoughness"]["baseColorFactor"][3]
+			);
+
+			metallic = it["pbrMetallicRoughness"]["metallicFactor"];
+			roughness = it["pbrMetallicRoughness"]["roughnessFactor"];
+
+			materials.push_back(Material{ albedo, metallic, roughness });
+			loadedMat.push_back(Material{ albedo, metallic, roughness });
+			loadedMatName.push_back(it["name"]);
+		}
+
+	}
+
+	return materials;
+}
+
 std::vector<Vertex> Model::groupVertices
 (
 	std::vector<glm::vec3> positions,
@@ -135,7 +257,7 @@ std::vector<Vertex> Model::groupVertices
 )
 {
 	std::vector<Vertex> vertices;
-	for (unsigned int i; i < positions.size(); ++i)
+	for (unsigned int i = 0; i < positions.size(); ++i)
 	{
 		vertices.push_back(
 			Vertex{
@@ -145,6 +267,8 @@ std::vector<Vertex> Model::groupVertices
 			}
 		);
 	}
+
+	return vertices;
 }
 
 std::vector<glm::vec2> Model::groupVec2(std::vector<float> floatVec)
@@ -160,6 +284,7 @@ std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
 	std::vector<glm::vec3> vectors;
 	for (unsigned int i = 0; i < floatVec.size(); i)
 		vectors.push_back(glm::vec3(floatVec[i++], floatVec[i++], floatVec[i++]));
+
 	return vectors;
 }
 
@@ -178,165 +303,3 @@ std::string Model::getFileContents(const char* path)
 		(std::istreambuf_iterator<char>()));
 	return text;
 }
-
-//void Model::LoadModel(const std::string& path)
-//{
-//	Assimp::Importer importer;
-//
-//	//aiProcess_FlipUVs doesn't quite work for everything
-//	const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate); 
-//
-//	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
-//	{
-//		std::cout << "[AssImp]: " << importer.GetErrorString() << std::endl;
-//		return;
-//	}
-//
-//	directory = path.substr(0, path.find_last_of('/'));
-//	ProcessNode(scene->mRootNode, scene);
-//
-//	std::cout << "Meshes: " << scene->mNumMeshes << std::endl;
-//	std::cout << "Materials: " << scene->mNumMaterials << std::endl;
-//
-//	for (int i = 0; i < meshes.size(); i++)
-//	{
-//		if (meshes[i].m_Blend == 0) opaqueMeshes.push_back(meshes[i]);
-//		else if (meshes[i].m_Blend != 0) transparentMeshes.push_back(meshes[i]);
-//	}
-//
-//	std::cout << "Opaque Meshes: " << opaqueMeshes.size() << std::endl;
-//	std::cout << "Transparent Meshes: " << transparentMeshes.size() << std::endl;
-//}
-//
-//void Model::ProcessNode(aiNode * node, const aiScene * scene)
-//{
-//	for (unsigned int i = 0; i < node->mNumMeshes; i++)
-//	{
-//		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-//		meshes.push_back(ProcessMesh(mesh, scene));
-//		numFaces.push_back(mesh->mNumFaces);
-//	}
-//	//recursive
-//	for (unsigned int i = 0; i < node->mNumChildren; i++)
-//	{
-//		ProcessNode(node->mChildren[i], scene);
-//	}
-//}
-//
-//Mesh Model::ProcessMesh(aiMesh * mesh, const aiScene * scene)
-//{
-//	std::vector<Vertex> vertices;
-//	std::vector<unsigned int> indices;
-//	std::vector<Texture> textures;
-//	unsigned int blend;
-//	//retrieve vertices
-//	//3 parts process -> positions, normals, texCoords
-//	for (unsigned int i = 0; i < mesh->mNumVertices; i++) 
-//	{
-//		Vertex vertex;
-//
-//		//pos
-//		//(note to self: assimp calls vertex positions mVertices -_-)
-//		glm::vec3 vec;
-//		vec.x = mesh->mVertices[i].x;
-//		vec.y = mesh->mVertices[i].y;
-//		vec.z = mesh->mVertices[i].z;
-//		vertex.position = vec;
-//
-//		//normals
-//		if (mesh->HasNormals())
-//		{
-//			vec.x = mesh->mNormals[i].x;
-//			vec.y = mesh->mNormals[i].y;
-//			vec.z = mesh->mNormals[i].z;
-//			vertex.normal = vec;	
-//		}
-//		
-//		//texCoords
-//		if (mesh->mTextureCoords[0]) 
-//		{
-//			glm::vec2 vec2;
-//			vec2.x = mesh->mTextureCoords[0][i].x;
-//			vec2.y = mesh->mTextureCoords[0][i].y;
-//			vertex.texCoord = vec2;
-//		}
-//		else
-//			vertex.texCoord = glm::vec2(0.0f, 0.0f);
-//
-//		vertices.push_back(vertex);
-//	}
-//
-//	//retrieve indices
-//	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-//	{
-//		aiFace face = mesh->mFaces[i];
-//		/*for (unsigned int j = 0; j < face.mNumIndices; j++)
-//		{
-//			indices.push_back(face.mIndices[j]);
-//		}*/
-//		glm::vec3 pos[3];
-//
-//		if (face.mNumIndices == 3) {
-//			indices.push_back(face.mIndices[0]);
-//			indices.push_back(face.mIndices[1]);
-//			indices.push_back(face.mIndices[2]);
-//
-//			pos[0] = vertices[face.mIndices[0]].position;
-//			pos[1] = vertices[face.mIndices[1]].position;
-//			pos[2] = vertices[face.mIndices[2]].position;
-//			facePos.push_back((pos[0] + pos[1] + pos[2]) / glm::float32(3.0f));
-//			
-//			//for all the indices in each face, add each indice
-//		}
-//	}
-//
-//	//retrieve materials
-//	if (mesh->mMaterialIndex >= 0)
-//	{
-//		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-//		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-//		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-//		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-//		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-//
-//		material->Get(AI_MATKEY_BLEND_FUNC, blend);
-//	}
-//
-//	
-//	return Mesh(vertices, indices, textures, blend);
-//}
-//
-//std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
-//{
-//	std::vector<Texture> textures;
-//
-//	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-//	{
-//		aiString str;
-//		mat->GetTexture(type, i, &str);
-//		bool loaded = false;
-//		
-//		//check if the texture's already loaded
-//		for (unsigned int j = 0; j < textures_loaded.size(); j++)
-//		{
-//			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-//			{
-//				loaded = true;
-//				textures.push_back(textures_loaded[j]);
-//				break;
-//			}
-//		}
-//
-//		if (loaded == false)
-//		{
-//			Texture texture;
-//			texture.id = TextureFile(directory + "/" + std::string(str.C_Str())).GetId();
-//			texture.type = typeName;
-//			texture.path = str.C_Str();
-//			textures.push_back(texture);
-//			//add to loaded textures
-//			textures_loaded.push_back(texture);
-//		}
-//	}
-//	return textures;
-//}

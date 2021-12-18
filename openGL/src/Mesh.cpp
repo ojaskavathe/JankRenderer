@@ -1,43 +1,39 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, unsigned int &blend)
-	: m_Vertices(vertices), m_Indices(indices), m_Textures(textures), m_Blend(blend)
+Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Material>& materials)
+	: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
 {
 	SetupMesh();
 }
 
-void Mesh::Draw(Shader &shader)
+void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 {
-	unsigned int numDiffuse = 1;
-	unsigned int numSpecular = 1;
-
+	glm::mat4 mvp = vp * model;
+	glm::mat4 normal = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
-	for (unsigned int i = 0; i < m_Textures.size(); i++)
-	{
-		std::string num;
-		if (m_Textures[i].type == "texture_diffuse")
-			num = std::to_string(numDiffuse++);
-		if (m_Textures[i].type == "texture_specular")
-			num = std::to_string(numSpecular++);
+	glDisable(GL_CULL_FACE);
 
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, m_Textures[i].id);	
-
-		//setting uniforms
-		shader.SetUniform1i("mat." + m_Textures[i].type + num, i);
-	}
-
-	//for models without textures
-	/*shader.SetUniform3fv("mat.diffuse", m_Material.diffuse);
-	shader.SetUniform3fv("mat.specular", m_Material.specular);
-	shader.SetUniform1f("mat.shininess", m_Material.shininess);*/
-
-
-	//glBindVertexArray(VAO);
 	vao.Bind();
-	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()));
-	glDrawElements(GL_TRIANGLES, unsigned int(m_Indices.size()), GL_UNSIGNED_INT, 0);
+	for (unsigned int i = 0; i < m_Materials.size(); ++i)
+	{
+		Material mat = m_Materials[1];
+
+		std::cout << mat.metallic << std::endl;
+
+		shader.SetUniformMatrix4fv("model", model);
+		shader.SetUniformMatrix4fv("mvp", mvp);
+		shader.SetUniformMatrix4fv("normalMatrix", normal);
+
+		shader.SetUniform3fv("albedo", mat.albedo);
+		shader.SetUniform1f("metallic", mat.metallic);
+		shader.SetUniform1f("roughness", mat.roughness);
+
+		glDrawElements(GL_TRIANGLES, unsigned int(m_Indices.size()), GL_UNSIGNED_INT, 0);
+	}
+	vao.Unbind();
+
+	glEnable(GL_CULL_FACE);
 
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
@@ -48,7 +44,7 @@ void Mesh::SetupMesh()
 {
 	vao.Bind();
 	VertexBuffer vbo(&m_Vertices[0], unsigned int(m_Vertices.size()) * sizeof(Vertex));
-	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()));
+	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()) * sizeof(unsigned int));
 	VertexBufferLayout layout;
 
 	layout.Push<float>(3);

@@ -28,10 +28,10 @@ struct Texture
 struct Material
 {
 	//sampler2D texture_diffuse1;
-	glm::vec3 diffuse;
 	//sampler2D texture_specular1;
-	glm::vec3 specular;
-	float shininess;
+	glm::vec4 albedo;
+	float metallic;
+	float roughness;
 };
 
 class Mesh
@@ -40,12 +40,10 @@ public:
 	std::vector<Vertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
 	std::vector<Texture> m_Textures;
-	//Material m_Material;
-	unsigned int m_Blend;
+	std::vector<Material> m_Materials;
 
-	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, unsigned int &blend);
-	//Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material &material, unsigned int &blend);
-	void Draw(Shader &shader);
+	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Material> &materials);
+	void Draw(Shader &shader, glm::mat4 model, glm::mat4& vp);
 
 private:
 	
