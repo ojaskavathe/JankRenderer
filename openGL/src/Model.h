@@ -1,8 +1,11 @@
 #pragma once
 
 #include <iostream>
+
 #include <fstream>
+#include <iterator>
 #include <string>
+
 #include <json/json.h>
 
 #include "Shader.h"
@@ -25,7 +28,7 @@ private:
 	const char* file;
 	std::vector<unsigned char> data; //easy to sample floats out of an array of 1 byte chars
 	json JSON;
-	
+
 	std::vector<std::string> loadedMatName;
 	std::vector<Material> loadedMat;
 
@@ -33,13 +36,14 @@ private:
 	std::vector<glm::mat4> modelMat;
 
 	void loadMesh(unsigned int meshInd);
+	Primitive loadPrimitive(json prim);
 
 	void traverseNode(unsigned int nextNode, glm::mat4 mat = glm::mat4(1.f));
 
 	std::vector<unsigned char> getData();
 	std::vector<float> getFloats(json accessor);
 	std::vector<unsigned int> getIndices(json accessor);
-	std::vector<Material> getMaterials();
+	Material getMaterial(unsigned int matIndex);
 
 	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 
@@ -49,4 +53,3 @@ private:
 
 	std::string getFileContents(const char* path);
 };
-

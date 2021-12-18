@@ -19,7 +19,7 @@ void Model::Draw(Shader& shader, glm::mat4& vp)
 
 void Model::loadMesh(unsigned int meshInd)
 {
-	unsigned int posAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["POSITION"];
+	/*unsigned int posAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["POSITION"];
 	unsigned int normalAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["NORMAL"];
 	unsigned int texAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["TEXCOORD_0"];
 	unsigned int indAccInd = JSON["meshes"][meshInd]["primitives"][0]["indices"];
@@ -33,8 +33,43 @@ void Model::loadMesh(unsigned int meshInd)
 
 	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
 	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
-	std::vector<Material> materials = getMaterials();
-	meshes.push_back(Mesh(vertices, indices, materials));
+	std::vector<Material> materials = getMaterials();*/
+
+	std::vector<Primitive> primitives;
+	json prims = JSON["meshes"][meshInd]["primitives"];
+
+	for (auto i : prims)
+		primitives.push_back(loadPrimitive(i));
+
+	std::cout << primitives.size() << std::endl; 
+
+	meshes.push_back(Mesh(primitives));
+}
+
+Primitive Model::loadPrimitive(json prim)
+{
+	Primitive primitive;
+
+	unsigned int posAccInd = prim["attributes"]["POSITION"];
+	unsigned int normalAccInd = prim["attributes"]["NORMAL"];
+	unsigned int texAccInd = prim["attributes"]["TEXCOORD_0"];
+	unsigned int indAccInd = prim["indices"];
+	unsigned int matInd = prim["material"];
+
+	std::vector<float> posVec = getFloats(JSON["accessors"][posAccInd]);
+	std::vector<glm::vec3> positions = groupVec3(posVec);
+	std::vector<float> normalVec = getFloats(JSON["accessors"][normalAccInd]);
+	std::vector<glm::vec3> normals = groupVec3(normalVec);
+	std::vector<float> texVec = getFloats(JSON["accessors"][texAccInd]);
+	std::vector<glm::vec2> UVs = groupVec2(texVec);
+
+	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
+	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
+	Material material = getMaterial(matInd);
+
+	primitive = Primitive{ vertices, indices, material };
+
+	return primitive;
 }
 
 void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
@@ -48,7 +83,7 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 		translation.y = node["translation"][1];
 		translation.z = node["translation"][2];
 	}
-		
+
 	glm::quat rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 	if (node.find("rotation") != node.end())
 	{
@@ -84,8 +119,8 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 
 	if (node.find("children") != node.end())
 		std::cout << "hi";
-		for (unsigned int i = 0; i < node["children"].size(); ++i)
-			traverseNode(node["children"][i], matNextNode);
+	for (unsigned int i = 0; i < node["children"].size(); ++i)
+		traverseNode(node["children"][i], matNextNode);
 	if (JSON["nodes"][nextNode + 1].is_object())
 		traverseNode(nextNode + 1);
 }
@@ -97,9 +132,11 @@ std::vector<unsigned char> Model::getData()
 
 	std::string fileStr = std::string(file);
 	std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1); //<-kinda sketch pls fix later
-	bytesText = getFileContents((fileDir + uri).c_str());
 
-	std::vector<unsigned char> data(bytesText.begin(), bytesText.end());
+	//can't use getFileContents here as we need binary data
+	std::ifstream input((fileDir + uri).c_str(), std::ios::binary);
+	std::vector<unsigned char> data(std::istreambuf_iterator<char>(input), {});
+
 	return data;
 }
 
@@ -135,7 +172,7 @@ std::vector<float> Model::getFloats(json accessor)
 			data[i++]
 		};
 		float value;
-		std::memcpy(&value, bytes, sizeof(float));
+		std::memcpy(&value, &bytes, sizeof(float));
 		floatVec.push_back(value);
 	}
 
@@ -169,7 +206,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 				data[i++]
 			};
 			unsigned int value;
-			std::memcpy(&value, bytes, sizeof(unsigned int));
+			std::memcpy(&value, &bytes, sizeof(unsigned int));
 			indicesVec.push_back(value);
 		}
 	}
@@ -182,7 +219,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 				data[i++]
 			};
 			unsigned short value;
-			std::memcpy(&value, bytes, sizeof(unsigned short));
+			std::memcpy(&value, &bytes, sizeof(unsigned short));
 			indicesVec.push_back(value);
 		}
 	}
@@ -195,7 +232,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 				data[i++]
 			};
 			short value;
-			std::memcpy(&value, bytes, sizeof(short));
+			std::memcpy(&value, &bytes, sizeof(short));
 			indicesVec.push_back(value);
 		}
 	}
@@ -203,50 +240,28 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 	return indicesVec;
 }
 
-std::vector<Material> Model::getMaterials()
+Material Model::getMaterial(unsigned int matIndex)
 {
-	std::vector<Material> materials;
-	json mats = JSON["materials"];
+	Material material;
+	json mat = JSON["materials"][matIndex];
 
-	for (auto it : mats)
-	{
-		bool skip = false;
+	glm::vec4 albedo(0.f);
+	float metallic = 0.f;
+	float roughness = 0.f;
 
-		//std::cout << loadedMatName.size() << std::endl;
-		for (unsigned int i = 0; i < loadedMatName.size(); ++i)
-		{
-			if (loadedMatName[i] == it["name"])
-			{
-				materials.push_back(loadedMat[i]);
-				skip = true;
-				break;
-			}
-		}
+	albedo = glm::vec4(
+		mat["pbrMetallicRoughness"]["baseColorFactor"][0],
+		mat["pbrMetallicRoughness"]["baseColorFactor"][1],
+		mat["pbrMetallicRoughness"]["baseColorFactor"][2],
+		mat["pbrMetallicRoughness"]["baseColorFactor"][3]
+	);
 
-		glm::vec4 albedo(0.f);
-		float metallic = 0.f;
-		float roughness = 0.f;
+	metallic = mat["pbrMetallicRoughness"]["metallicFactor"];
+	roughness = mat["pbrMetallicRoughness"]["roughnessFactor"];
 
-		if (!skip)
-		{
-			albedo = glm::vec4(
-				it["pbrMetallicRoughness"]["baseColorFactor"][0],
-				it["pbrMetallicRoughness"]["baseColorFactor"][1],
-				it["pbrMetallicRoughness"]["baseColorFactor"][2],
-				it["pbrMetallicRoughness"]["baseColorFactor"][3]
-			);
+	material = Material{ albedo, metallic, roughness };
 
-			metallic = it["pbrMetallicRoughness"]["metallicFactor"];
-			roughness = it["pbrMetallicRoughness"]["roughnessFactor"];
-
-			materials.push_back(Material{ albedo, metallic, roughness });
-			loadedMat.push_back(Material{ albedo, metallic, roughness });
-			loadedMatName.push_back(it["name"]);
-		}
-
-	}
-
-	return materials;
+	return material;
 }
 
 std::vector<Vertex> Model::groupVertices

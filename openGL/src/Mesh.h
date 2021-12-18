@@ -27,11 +27,18 @@ struct Texture
 
 struct Material
 {
-	//sampler2D texture_diffuse1;
-	//sampler2D texture_specular1;
 	glm::vec4 albedo;
 	float metallic;
 	float roughness;
+};
+
+struct Primitive
+{
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	Material material;
+
+	VertexArray vao;
 };
 
 class Mesh
@@ -39,15 +46,14 @@ class Mesh
 public:
 	std::vector<Vertex> m_Vertices;
 	std::vector<unsigned int> m_Indices;
-	std::vector<Texture> m_Textures;
 	std::vector<Material> m_Materials;
+	std::vector<Texture> m_Textures;
+	std::vector<Primitive> m_Primitives;
 
-	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Material> &materials);
-	void Draw(Shader &shader, glm::mat4 model, glm::mat4& vp);
+	Mesh(std::vector<Primitive> primitives);
+	void Draw(Shader& shader, glm::mat4 model, glm::mat4& vp);
 
 private:
-	
-	VertexArray vao;
+
 	void SetupMesh();
 };
-

@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Material>& materials)
-	: m_Vertices(vertices), m_Indices(indices), m_Materials(materials)
+Mesh::Mesh(std::vector<Primitive> primitives)
+	: m_Primitives(primitives)
 {
 	SetupMesh();
 }
@@ -14,12 +14,12 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 
 	glDisable(GL_CULL_FACE);
 
-	vao.Bind();
-	for (unsigned int i = 0; i < m_Materials.size(); ++i)
-	{
-		Material mat = m_Materials[1];
+	//std::cout << m_Primitives.size() << std::endl; 
 
-		std::cout << mat.metallic << std::endl;
+	for (unsigned int i = 0; i < m_Primitives.size(); ++i)
+	{
+		m_Primitives[i].vao.Bind();
+		Material mat = m_Primitives[i].material;
 
 		shader.SetUniformMatrix4fv("model", model);
 		shader.SetUniformMatrix4fv("mvp", mvp);
@@ -29,9 +29,10 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 		shader.SetUniform1f("metallic", mat.metallic);
 		shader.SetUniform1f("roughness", mat.roughness);
 
-		glDrawElements(GL_TRIANGLES, unsigned int(m_Indices.size()), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, unsigned int(m_Primitives[i].indices.size()), GL_UNSIGNED_INT, 0);
 	}
-	vao.Unbind();
+	
+	glBindVertexArray(0);
 
 	glEnable(GL_CULL_FACE);
 
@@ -42,15 +43,18 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 
 void Mesh::SetupMesh()
 {
-	vao.Bind();
-	VertexBuffer vbo(&m_Vertices[0], unsigned int(m_Vertices.size()) * sizeof(Vertex));
-	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()) * sizeof(unsigned int));
-	VertexBufferLayout layout;
+	for (auto i : m_Primitives)
+	{
+		i.vao.Bind();
+		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
+		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()) * sizeof(unsigned int));
+		VertexBufferLayout layout;
 
-	layout.Push<float>(3);
-	layout.Push<float>(3);
-	layout.Push<float>(2);
-	vao.AddBuffer(vbo, layout);
+		layout.Push<float>(3);
+		layout.Push<float>(3);
+		layout.Push<float>(2);
+		i.vao.AddBuffer(vbo, layout);
 
-	vao.Unbind();
+		i.vao.Unbind();
+	}
 }

@@ -719,13 +719,15 @@ void test::Test_Model::OnRender()
 	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
 	
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//iblSphere
 	IBLShader.Bind();
 	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
 	IBLShader.SetUniform3fv("pointLightPos", pointLightPosition);
 	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
+	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+
 	IBLShader.SetUniform1f("metallic", metallic);
 	IBLShader.SetUniform1f("roughness", roughness);
 	IBLShader.SetUniform1f("ao", 0.3f);
