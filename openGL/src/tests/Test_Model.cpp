@@ -43,7 +43,7 @@ test::Test_Model::Test_Model()
 
 	//quadva
 	quadVA.Bind();
-	VertexBuffer quadVB = VertexBuffer(quadVerts, (unsigned int)sizeof(quadVerts));
+	VertexBuffer quadVB(quadVerts, (unsigned int)sizeof(quadVerts));
 	VertexBufferLayout quadLayout;
 	quadLayout.Push<float>(2);
 	quadLayout.Push<float>(2);
@@ -652,7 +652,6 @@ void test::Test_Model::OnRender()
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
 	vp = projection * view;
 
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 
@@ -750,8 +749,6 @@ void test::Test_Model::OnRender()
 
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	mdl.Draw(IBLShader, vp);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);

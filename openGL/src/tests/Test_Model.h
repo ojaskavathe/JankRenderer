@@ -4,7 +4,6 @@
 #include "FrameBuffer.h"
 #include "Cubemap.h"
 #include "Camera.h"
-#include "Model.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -134,7 +133,6 @@ namespace test {
 		VertexArray quadVA;
 		VertexArray planeVA;
 
-
 		unsigned int sphereVAO;
 		unsigned int indexCount;
 
@@ -237,7 +235,5 @@ namespace test {
 		float lod = 0.f;
 		int mapped = 0;
 		float iblIntensity = 1.f;
-
-		Model mdl = Model("res/models/testCube.gltf");
 	};
 }

@@ -2,9 +2,6 @@
 #include <GLFW\glfw3.h>
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <json/json.h>
 
 #include "Camera.h"
 
@@ -27,26 +24,8 @@ test::Test* mTest;
 float deltaTime = 0.0f;
 float LastFrame = 0.0f;
 
-std::string getFileContents(const char* path)
-{
-	std::ifstream ifs(path);
-	std::string text((std::istreambuf_iterator<char>(ifs)),
-		(std::istreambuf_iterator<char>()));
-	return text;
-}
-
-using json = nlohmann::json;
-
 int main()
 {
-	/*std::string text = getFileContents("res/models/multiMat/multiMat.gltf");
-	json j = json::parse(text);
-
-	json mats = j["materials"];
-	unsigned int numMat = 0;
-
-	for (auto it : mats)
-		std::cout << it["pbrMetallicRoughness"] << std::endl;*/
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
