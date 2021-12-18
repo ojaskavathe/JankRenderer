@@ -127,6 +127,8 @@
     <None Include="res\shaders\PBR\PBRv.vert" />
     <None Include="res\shaders\PBR\PBR_IBLf.frag" />
     <None Include="res\shaders\PBR\PBR_IBLv.vert" />
+    <None Include="res\shaders\PBR\PBR_Modelf.frag" />
+    <None Include="res\shaders\PBR\PBR_Modelv.vert" />
     <None Include="res\shaders\postProcess\kuwahara.frag" />
     <None Include="res\shaders\screenShaderf.frag" />
     <None Include="res\shaders\screenShaderv.vert" />
