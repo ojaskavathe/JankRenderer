@@ -6,7 +6,7 @@
 #include <iterator>
 #include <string>
 
-#include <algorithm>
+#include <algorithm> //for std::remove
 
 #include <json/json.h>
 

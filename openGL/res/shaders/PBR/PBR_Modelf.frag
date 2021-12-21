@@ -2,9 +2,10 @@
 
 out vec4 FragColor;
 
-in vec2 TexCoords;
 in vec3 FragPos;
+in vec2 TexCoords;
 in vec3 Normal;
+in vec4 lightSpaceFragPos;
 
 uniform vec3 camPos;
 
@@ -21,7 +22,12 @@ uniform vec3 dirLightColor;
 
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
-uniform sampler2D   brdfLUT;  
+uniform sampler2D   brdfLUT;
+
+uniform sampler2D shadowMap;
+uniform samplerCube shadowCubemap;
+uniform int halfkernelWidth = 1;
+uniform float oFar; // <- omnidirection shadowmap projection far plane
 
 vec3 FresnelSchlick(float HoV, vec3 F0);
 float DistributionGGX(vec3 N, vec3 H, float roughness);
@@ -30,6 +36,8 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 
 vec3 calcPointLight(vec3 lightPosition);
 vec3 calcDirLight(vec3 lightDir);
+float CalcPointShadow();
+float CalcDirShadow();
 
 const float PI = 3.14159265359;
 
@@ -97,7 +105,41 @@ vec3 calcPointLight(vec3 lightPosition)
 	float NoL = max(dot(N, L), 0.0);
 	
 	res = ( kD * albedo / PI + specular ) * radiance * NoL;
-	return res;
+	return (1 - CalcPointShadow()) * res;
+}
+
+float CalcPointShadow()
+{
+	vec3 lightToFrag = FragPos - pointLightPos;
+	
+	float currentHitDist = length(lightToFrag);
+	
+	float bias = max(0.001f * (1.0f - dot(N, -normalize(lightToFrag))), 0.00f);;
+	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
+
+	vec3 sampleOffsetDirections[20] = vec3[](
+	   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+	   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+	   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+	   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+	);
+
+	//pcf
+	float shadow = 0.0;
+	int samples  = 20;
+	float viewDistance = length(camPos - FragPos);
+	float diskRadius = (1.0 + (viewDistance / oFar)) / 100.0;  
+	for(int i = 0; i < samples; i++)
+	{
+		float firstHitDist = texture(shadowCubemap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
+		firstHitDist *= oFar;   // undo mapping [0;1]
+		if(currentHitDist - bias > firstHitDist)
+			shadow += 1.0;
+	}
+	shadow /= float(samples);  
+	
+	return shadow;
 }
 
 vec3 calcDirLight(vec3 lightDir)
@@ -124,7 +166,34 @@ vec3 calcDirLight(vec3 lightDir)
 	float NoL = max(dot(N, L), 0.0);
 	
 	res = (kD * albedo / PI + specular) * radiance * NoL;
-	return res;
+	return (1 - CalcDirShadow()) * res;
+}
+
+float CalcDirShadow()
+{
+	vec3 projected = lightSpaceFragPos.xyz / lightSpaceFragPos.w;
+	projected = projected * 0.5f + 0.5f;
+	//float firstHitDist = texture(shadowMap, projected.xy).r; // -> first fragment hit (to be lit)
+	float currentHitDist = projected.z;
+
+	float bias = max(0.001f * (1.0f - dot(N, -normalize(dirLightDir))), 0.00f);
+
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
+	{
+		for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
+		{
+			float pcfDepth = texture(shadowMap, projected.xy + vec2(x, y) * texelSize).r;
+			shadow += currentHitDist - bias > pcfDepth ? 0.5 : 0.0;
+		}
+	}
+	shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
+
+	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
+	if(projected.z > 1.0f) shadow = 0.0f;
+
+	return shadow;
 }
 
 vec3 FresnelSchlick(float HoV, vec3 F0)

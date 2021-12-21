@@ -14,8 +14,6 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 
 	glDisable(GL_CULL_FACE);
 
-	//std::cout << m_Primitives.size() << std::endl; 
-
 	for (unsigned int i = 0; i < m_Primitives.size(); ++i)
 	{
 		m_Primitives[i].vao.Bind();

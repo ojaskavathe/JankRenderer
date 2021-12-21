@@ -5,7 +5,7 @@
 test::Test_Model::Test_Model()
 	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
 	PBRShader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag"),
-	IBLShader("res/shaders/PBR/PBR_IBLv.vert", "res/shaders/PBR/PBR_IBLf.frag"),
+	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
 	omniDepthShader("res/shaders/omniDepthShader/oDepthMapv.vert", "res/shaders/omniDepthShader/oDepthMapf.frag", "res/shaders/omniDepthShader/oDepthMapg.geom"),
@@ -388,10 +388,6 @@ test::Test_Model::Test_Model()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	shader.Bind();
-	shader.SetUniform1i("shadowMap", 0);
-	shader.SetUniform1i("shadowCubemap", 1);
-	shader.Unbind();
 
 	//blending
 	glEnable(GL_BLEND);
@@ -399,6 +395,8 @@ test::Test_Model::Test_Model()
 
 	//default shader uniforms
 	shader.Bind();
+	shader.SetUniform1i("shadowMap", 0);
+	shader.SetUniform1i("shadowCubemap", 1);
 	shader.SetUniform3fv("dirLight.color", dirLightColor);
 	shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
 	shader.SetUniform3fv("dirLight.diffuse", dirLightDiffuse);
@@ -444,6 +442,9 @@ test::Test_Model::Test_Model()
 	IBLShader.SetUniform1i("irradianceMap", 0);
 	IBLShader.SetUniform1i("prefilterMap", 1);
 	IBLShader.SetUniform1i("brdfLUT", 2);
+
+	IBLShader.SetUniform1i("shadowMap", 3);
+	IBLShader.SetUniform1i("shadowCubemap", 4);
 }
 
 test::Test_Model::~Test_Model()
@@ -527,6 +528,8 @@ void test::Test_Model::OnRender()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
+
+	mdl.Draw(depthMapShader, vp);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -613,6 +616,8 @@ void test::Test_Model::OnRender()
 
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
+
+	mdl.Draw(omniDepthShader, vp);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -782,12 +787,19 @@ void test::Test_Model::OnRender()
 
 	IBLShader.SetUniform1f("iblIntensity", iblIntensity);
 
+	IBLShader.SetUniformMatrix4fv("lightVP", lightVP);
+	IBLShader.SetUniform1f("oFar", oFar);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, brdfLUT);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
