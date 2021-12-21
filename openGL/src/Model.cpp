@@ -8,7 +8,7 @@ Model::Model(const char* path)
 	Model::file = path;
 	data = getData();
 
-	traverseNode(0);
+	traverseNode(JSON["nodes"].size() - 1);
 }
 
 void Model::Draw(Shader& shader, glm::mat4& vp)
@@ -19,29 +19,11 @@ void Model::Draw(Shader& shader, glm::mat4& vp)
 
 void Model::loadMesh(unsigned int meshInd)
 {
-	/*unsigned int posAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["POSITION"];
-	unsigned int normalAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["NORMAL"];
-	unsigned int texAccInd = JSON["meshes"][meshInd]["primitives"][0]["attributes"]["TEXCOORD_0"];
-	unsigned int indAccInd = JSON["meshes"][meshInd]["primitives"][0]["indices"];
-
-	std::vector<float> posVec = getFloats(JSON["accessors"][posAccInd]);
-	std::vector<glm::vec3> positions = groupVec3(posVec);
-	std::vector<float> normalVec = getFloats(JSON["accessors"][normalAccInd]);
-	std::vector<glm::vec3> normals = groupVec3(normalVec);
-	std::vector<float> texVec = getFloats(JSON["accessors"][texAccInd]);
-	std::vector<glm::vec2> UVs = groupVec2(texVec);
-
-	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
-	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
-	std::vector<Material> materials = getMaterials();*/
-
 	std::vector<Primitive> primitives;
 	json prims = JSON["meshes"][meshInd]["primitives"];
 
 	for (auto i : prims)
 		primitives.push_back(loadPrimitive(i));
-
-	std::cout << primitives.size() << std::endl; 
 
 	meshes.push_back(Mesh(primitives));
 }
@@ -54,7 +36,7 @@ Primitive Model::loadPrimitive(json prim)
 	unsigned int normalAccInd = prim["attributes"]["NORMAL"];
 	unsigned int texAccInd = prim["attributes"]["TEXCOORD_0"];
 	unsigned int indAccInd = prim["indices"];
-	unsigned int matInd = prim["material"];
+	signed int matInd = prim.value("material", -1);
 
 	std::vector<float> posVec = getFloats(JSON["accessors"][posAccInd]);
 	std::vector<glm::vec3> positions = groupVec3(posVec);
@@ -87,10 +69,10 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 	glm::quat rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 	if (node.find("rotation") != node.end())
 	{
-		rotation.x = node["rotation"][3];
-		rotation.y = node["rotation"][0];
-		rotation.z = node["rotation"][1];
-		rotation.w = node["rotation"][2];
+		rotation.w = node["rotation"][3];
+		rotation.x = node["rotation"][0];
+		rotation.y = node["rotation"][1];
+		rotation.z = node["rotation"][2];
 	}
 
 	glm::vec3 scale = glm::vec3(1.f);
@@ -113,16 +95,31 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 
 	if (node.find("mesh") != node.end())
 	{
-		modelMat.push_back(T * R * S);
+		modelMat.push_back(matNextNode);
 		loadMesh(node["mesh"]);
+		loadedMeshes.push_back(node["mesh"]);
 	}
 
-	if (node.find("children") != node.end())
-		std::cout << "hi";
-	for (unsigned int i = 0; i < node["children"].size(); ++i)
-		traverseNode(node["children"][i], matNextNode);
-	if (JSON["nodes"][nextNode + 1].is_object())
-		traverseNode(nextNode + 1);
+	if (node["children"].is_array()) {
+		std::cout << currIndent;
+		currIndent += "        ";
+		std::string name = node["name"];
+		std::cout << name << "\n";
+		for (unsigned int i = 0; i < node["children"].size(); ++i) {
+			unsigned int childNum = node["children"][i];
+			if (!(JSON["nodes"][childNum]["children"].is_array())) {
+				std::string childName = JSON["nodes"][childNum]["name"];
+				std::cout << currIndent;
+				std::cout << childName << "\n";
+			}
+			traverseNode(node["children"][i], matNextNode);
+		}
+		currIndent.erase(std::remove(currIndent.end() - 8, currIndent.end(), ' '), currIndent.end());
+	}
+	/*else if (JSON["nodes"][(signed int)nextNode - 1].is_object()) {
+		isChild = false;
+		traverseNode(nextNode - 1u);
+	}*/
 }
 
 std::vector<unsigned char> Model::getData()
@@ -183,9 +180,9 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 {
 	std::vector<unsigned int> indicesVec;
 
-	unsigned int buffViewIndex = accessor.value("bufferView", 1); //<-value function only returns if the buffer exists, second parameter is backup value in case it doesn't
-	unsigned int count = accessor["count"]; //<-doesn't check if count exists
-	unsigned int accByteOffset = accessor.value("byteOffset", 0); //<-a lot of files don't have a byteoffset
+	unsigned int buffViewIndex = accessor.value("bufferView", 1); 
+	unsigned int count = accessor["count"];
+	unsigned int accByteOffset = accessor.value("byteOffset", 0);
 	unsigned int componentType = accessor["componentType"];
 
 	json bufferView = JSON["bufferViews"][buffViewIndex];
@@ -240,24 +237,28 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 	return indicesVec;
 }
 
-Material Model::getMaterial(unsigned int matIndex)
+Material Model::getMaterial(signed int matIndex)
 {
 	Material material;
-	json mat = JSON["materials"][matIndex];
 
-	glm::vec4 albedo(0.f);
+	glm::vec4 albedo(0.3f);
 	float metallic = 0.f;
 	float roughness = 0.f;
 
-	albedo = glm::vec4(
-		mat["pbrMetallicRoughness"]["baseColorFactor"][0],
-		mat["pbrMetallicRoughness"]["baseColorFactor"][1],
-		mat["pbrMetallicRoughness"]["baseColorFactor"][2],
-		mat["pbrMetallicRoughness"]["baseColorFactor"][3]
-	);
+	if (matIndex != -1) {	//sentinel for meshes without materials
+		json mat = JSON["materials"][matIndex];
+		if (mat["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
+			albedo = glm::vec4(
+				mat["pbrMetallicRoughness"]["baseColorFactor"][0],
+				mat["pbrMetallicRoughness"]["baseColorFactor"][1],
+				mat["pbrMetallicRoughness"]["baseColorFactor"][2],
+				mat["pbrMetallicRoughness"]["baseColorFactor"][3]
+			);
+		}
 
-	metallic = mat["pbrMetallicRoughness"]["metallicFactor"];
-	roughness = mat["pbrMetallicRoughness"]["roughnessFactor"];
+		metallic = mat["pbrMetallicRoughness"].value("metallicFactor", 0.f);
+		roughness = mat["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
+	}
 
 	material = Material{ albedo, metallic, roughness };
 
@@ -289,16 +290,24 @@ std::vector<Vertex> Model::groupVertices
 std::vector<glm::vec2> Model::groupVec2(std::vector<float> floatVec)
 {
 	std::vector<glm::vec2> vectors;
-	for (unsigned int i = 0; i < floatVec.size(); i)
-		vectors.push_back(glm::vec2(floatVec[i++], floatVec[i++]));
+	for (unsigned int i = 0; i < floatVec.size(); i += 2)
+		vectors.push_back(glm::vec2(
+			floatVec[i],
+			floatVec[i + 1]
+		));
 	return vectors;
 }
 
 std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
 {
 	std::vector<glm::vec3> vectors;
-	for (unsigned int i = 0; i < floatVec.size(); i)
-		vectors.push_back(glm::vec3(floatVec[i++], floatVec[i++], floatVec[i++]));
+	
+	for (unsigned int i = 0; i < floatVec.size(); i+=3)
+		vectors.push_back(glm::vec3(
+			floatVec[i], 
+			floatVec[i + 1], 
+			floatVec[i + 2]
+		));
 
 	return vectors;
 }
@@ -306,8 +315,13 @@ std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
 std::vector<glm::vec4> Model::groupVec4(std::vector<float> floatVec)
 {
 	std::vector<glm::vec4> vectors;
-	for (unsigned int i = 0; i < floatVec.size(); i)
-		vectors.push_back(glm::vec4(floatVec[i++], floatVec[i++], floatVec[i++], floatVec[i++]));
+	for (unsigned int i = 0; i < floatVec.size(); i += 4)
+		vectors.push_back(glm::vec4(
+			floatVec[i],
+			floatVec[i + 1],
+			floatVec[i + 2],
+			floatVec[i + 3]
+		));
 	return vectors;
 }
 

@@ -465,6 +465,7 @@ void test::Test_Model::OnUpdate(float deltaTime, GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.ProcessMovement(cam.LEFT, deltaTime);
 
+
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		pointLightPosition += glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
@@ -533,6 +534,25 @@ void test::Test_Model::OnRender()
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
 	//cubes
 	va.Bind();
 	model = glm::mat4(1.0f);
@@ -599,6 +619,25 @@ void test::Test_Model::OnRender()
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//cubes
 	va.Bind();
@@ -699,7 +738,7 @@ void test::Test_Model::OnRender()
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
 	shader.SetUniform4fv("color", glm::vec4(0.5f));
 	planeVA.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//pbrSphere
 	PBRShader.Bind();
@@ -753,6 +792,44 @@ void test::Test_Model::OnRender()
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform3fv("albedo", glm::vec3(1.f, 0.f, 0.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform3fv("albedo", glm::vec3(0.f, 1.f, 0.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform3fv("albedo", glm::vec3(0.f, 0.f, 1.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	mdl.Draw(IBLShader, vp);
 
 	//HDRI

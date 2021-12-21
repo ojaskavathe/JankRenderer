@@ -9,7 +9,7 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
-	glm::mat4 normal = glm::transpose(glm::inverse(model));
+	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
 	glDisable(GL_CULL_FACE);
@@ -23,7 +23,7 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 
 		shader.SetUniformMatrix4fv("model", model);
 		shader.SetUniformMatrix4fv("mvp", mvp);
-		shader.SetUniformMatrix4fv("normalMatrix", normal);
+		shader.SetUniformMatrix4fv("normalMatrix", normalMat);
 
 		shader.SetUniform3fv("albedo", mat.albedo);
 		shader.SetUniform1f("metallic", mat.metallic);
@@ -47,7 +47,7 @@ void Mesh::SetupMesh()
 	{
 		i.vao.Bind();
 		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
-		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()) * sizeof(unsigned int));
+		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
 		VertexBufferLayout layout;
 
 		layout.Push<float>(3);

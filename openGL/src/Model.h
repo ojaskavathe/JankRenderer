@@ -6,11 +6,16 @@
 #include <iterator>
 #include <string>
 
+#include <algorithm>
+
 #include <json/json.h>
 
 #include "Shader.h"
 #include "Mesh.h"
 #include "vendor\stb_image\stb_image.h"
+
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 using json = nlohmann::json;
 
@@ -24,6 +29,8 @@ public:
 private:
 
 	unsigned int n = 0;
+	bool isChild = false;
+	std::string currIndent;
 
 	const char* file;
 	std::vector<unsigned char> data; //easy to sample floats out of an array of 1 byte chars
@@ -35,6 +42,8 @@ private:
 	std::vector<Mesh> meshes;
 	std::vector<glm::mat4> modelMat;
 
+	std::vector<unsigned int> loadedMeshes;
+
 	void loadMesh(unsigned int meshInd);
 	Primitive loadPrimitive(json prim);
 
@@ -43,7 +52,7 @@ private:
 	std::vector<unsigned char> getData();
 	std::vector<float> getFloats(json accessor);
 	std::vector<unsigned int> getIndices(json accessor);
-	Material getMaterial(unsigned int matIndex);
+	Material getMaterial(signed int matIndex);
 
 	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 
