@@ -8,7 +8,9 @@ Model::Model(const char* path)
 	Model::m_File = path;
 	m_Data = getData();
 
+	if (JSON["textures"].is_array()) m_Textures = getTextures();
 	if (JSON["materials"].is_array()) m_Materials = getMaterials();
+
 	traverseNode(JSON["nodes"].size() - 1);
 }
 
@@ -49,7 +51,11 @@ Primitive Model::loadPrimitive(json prim)
 	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
 	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
 
-	Material material = Material{ glm::vec4(0.7f, 0.7f, 0.7f, 1.f), 0.f, 0.f };
+	Material material;
+	material.albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
+	material.metallic = 0.f;
+	material.roughness = 0.5f;
+
 	if (matInd != -1) material = m_Materials[matInd];
 
 	primitive = Primitive{ vertices, indices, material };
@@ -246,26 +252,68 @@ std::vector<Material> Model::getMaterials()
 	for (auto i : JSON["materials"])
 	{
 		Material material;
-		glm::vec4 albedo(0.7f);
+		glm::vec4 albedo(0.7f, 0.7f, 0.7f, 1.f);
 		float metallic = 0.f;
 		float roughness = 0.f;
 
-		if (i["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
+		if (i["pbrMetallicRoughness"]["baseColorTexture"].is_object()) {
+			unsigned int texIndex = i["pbrMetallicRoughness"]["baseColorTexture"]["index"];
+			material.albedoTex = m_Textures[texIndex];
+			std::cout << m_Textures[texIndex].GetPath() << "\n";
+			material.hasAlbedoTex = true;
+		}
+		else if (i["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
 			albedo = glm::vec4(
 				i["pbrMetallicRoughness"]["baseColorFactor"][0],
 				i["pbrMetallicRoughness"]["baseColorFactor"][1],
 				i["pbrMetallicRoughness"]["baseColorFactor"][2],
 				i["pbrMetallicRoughness"]["baseColorFactor"][3]
 			);
-			metallic = i["pbrMetallicRoughness"].value("metallicFactor", 0.f);
-			roughness = i["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
+			material.albedo = albedo;
+		}
+		else {
+			material.albedo = albedo;
 		}
 
-		material = Material{ albedo, metallic, roughness };
+		if (i["pbrMetallicRoughness"]["metallicRoughnessTexture"].is_object()) {
+			unsigned int texIndex = i["pbrMetallicRoughness"]["metallicRoughnessTexture"]["index"];
+			material.metallicRoughnessTex = m_Textures[texIndex];
+			material.metallic = i["pbrMetallicRoughness"].value("metallicFactor", 1.f);
+			material.roughness = i["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
+			material.hasMetRoughTex = true;
+		}
+		else {
+			material.metallic = i["pbrMetallicRoughness"].value("metallicFactor", 0.f);
+			material.roughness = i["pbrMetallicRoughness"].value("roughnessFactor", 0.5f);
+		}
+
 		materials.push_back(material);
 	}
 
 	return materials;
+}
+
+std::vector<TextureFile> Model::getTextures()
+{
+	std::vector<TextureFile> textures;
+
+	std::string fileStr = std::string(m_File);
+	std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1);
+
+	for (auto i : JSON["textures"])
+	{
+		unsigned int image = i["source"];
+		std::string texPath = JSON["images"][image]["uri"];
+
+		unsigned int sampler = i["sampler"];
+		unsigned int mag = JSON["samplers"][sampler].value("magFilter", GL_LINEAR);
+		unsigned int min = JSON["samplers"][sampler].value("minFilter", GL_LINEAR_MIPMAP_LINEAR);
+		unsigned int wrapS = JSON["samplers"][sampler].value("wrapS", GL_REPEAT);
+		unsigned int wrapT = JSON["samplers"][sampler].value("wrapT", GL_REPEAT);
+		textures.push_back(TextureFile((fileDir + texPath), mag, min, wrapS, wrapT));
+	}
+
+	return textures;
 }
 
 std::vector<Vertex> Model::groupVertices

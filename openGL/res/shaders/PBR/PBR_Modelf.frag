@@ -9,9 +9,15 @@ in vec4 lightSpaceFragPos;
 
 uniform vec3 camPos;
 
-uniform vec3 albedo;
-uniform float metallic;
-uniform float roughness;
+uniform bool hasAlbedoTex = false;
+uniform sampler2D albedoTex;
+uniform vec4 albedoVal;
+
+uniform bool hasMetRoughTex = false;
+uniform sampler2D metallicRoughnessTex;
+uniform float metallicVal;
+uniform float roughnessVal;
+
 uniform float ao;
 uniform float iblIntensity;
 
@@ -46,8 +52,23 @@ vec3 V = normalize(camPos - FragPos);
 
 vec3 F0 = vec3(0.04);
 
+vec3 albedo;
+float metallic;
+float roughness;
+
 void main()
 {
+	if ( hasAlbedoTex ) albedo = vec3(texture(albedoTex, TexCoords).rgb);
+	else albedo = albedoVal.xyz;
+
+	if ( hasMetRoughTex ) {
+		metallic = texture(metallicRoughnessTex, TexCoords).b * metallicVal;
+		roughness = texture(metallicRoughnessTex, TexCoords).g * roughnessVal;
+	} else {
+		metallic = metallicVal;
+		roughness = roughnessVal;
+	}
+
 	F0 = mix(F0, albedo, metallic);
 
 	vec3 L0 = vec3(0.0); // <- total outgoing radiance or irradiance
@@ -133,7 +154,7 @@ float CalcPointShadow()
 	{
 		float firstHitDist = texture(shadowCubemap, lightToFrag + sampleOffsetDirections[i] * diskRadius).r;
 		firstHitDist *= oFar;   // undo mapping [0;1]
-		if(currentHitDist - bias > firstHitDist)
+		if( currentHitDist - bias > firstHitDist )
 			shadow += 1.0;
 	}
 	shadow /= float(samples);  

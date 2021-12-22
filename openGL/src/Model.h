@@ -35,6 +35,7 @@ private:
 	std::vector<unsigned char> m_Data; //easy to sample floats out of an array of 1 byte chars
 
 	std::vector<Material> m_Materials;
+	std::vector<TextureFile> m_Textures;
 
 	std::vector<Mesh> m_Meshes;
 	std::vector<glm::mat4> m_ModelMat;
@@ -48,6 +49,7 @@ private:
 	std::vector<float> getFloats(json accessor);
 	std::vector<unsigned int> getIndices(json accessor);
 	std::vector<Material> getMaterials();
+	std::vector<TextureFile> getTextures();
 
 	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 

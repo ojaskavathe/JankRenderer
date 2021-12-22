@@ -14,20 +14,36 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 
 	glDisable(GL_CULL_FACE);
 
-	for (unsigned int i = 0; i < m_Primitives.size(); ++i)
+	for (auto i : m_Primitives)
 	{
-		m_Primitives[i].vao.Bind();
-		Material mat = m_Primitives[i].material;
+		i.vao.Bind();
+		Material mat = i.material;
+
+		//defaults
+		shader.SetUniform1i("hasAlbedoText", 0);
+		shader.SetUniform1i("hasMetRoughTex", 0);
 
 		shader.SetUniformMatrix4fv("model", model);
 		shader.SetUniformMatrix4fv("mvp", mvp);
 		shader.SetUniformMatrix4fv("normalMatrix", normalMat);
 
-		shader.SetUniform3fv("albedo", mat.albedo);
-		shader.SetUniform1f("metallic", mat.metallic);
-		shader.SetUniform1f("roughness", mat.roughness);
+		shader.SetUniform4fv("albedo", mat.albedo);
+		shader.SetUniform1f("metallicVal", mat.metallic);
+		shader.SetUniform1f("roughnessVal", mat.roughness);
 
-		glDrawElements(GL_TRIANGLES, unsigned int(m_Primitives[i].indices.size()), GL_UNSIGNED_INT, 0);
+		if (i.material.hasAlbedoTex) {
+			shader.SetUniform1i("hasAlbedoTex", 1);
+			shader.SetUniform1i("albedoTex", 5);
+			i.material.albedoTex.Bind(5);
+		}
+
+		if (i.material.hasMetRoughTex) {
+			shader.SetUniform1i("hasMetRoughTex", 1);
+			shader.SetUniform1i("metallicRoughnessTex", 6);
+			i.material.metallicRoughnessTex.Bind(6);
+		}
+
+		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
 	
 	glBindVertexArray(0);

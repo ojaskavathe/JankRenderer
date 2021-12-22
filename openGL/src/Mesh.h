@@ -23,6 +23,16 @@ struct Material
 	glm::vec4 albedo;
 	float metallic;
 	float roughness;
+
+	bool hasAlbedoTex = false;
+	bool hasMetRoughTex = false;
+
+	TextureFile albedoTex;
+	TextureFile metallicRoughnessTex;
+
+	/*Material(glm::vec4 albedo, float metallic, float roughness)
+		: albedo(albedo), metallic(metallic), roughness(roughness)
+	{};*/
 };
 
 struct Primitive

@@ -431,12 +431,14 @@ test::Test_Model::Test_Model()
 	experimental.SetUniform1f("mat.shininess", matShininess);
 
 	PBRShader.Bind();
-	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	PBRShader.SetUniform3fv("albedoVal", glm::vec3(0.5f, 0.0f, 0.0f));
 	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
 	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
 
 	IBLShader.Bind();
-	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	IBLShader.SetUniform1i("hasAlbedoTex", 0);
+	IBLShader.SetUniform1i("hasMetRoughTex", 0);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.f, 0.f, 1.f));
 	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
 	IBLShader.SetUniform1i("irradianceMap", 0);
@@ -445,6 +447,9 @@ test::Test_Model::Test_Model()
 
 	IBLShader.SetUniform1i("shadowMap", 3);
 	IBLShader.SetUniform1i("shadowCubemap", 4);
+
+	IBLShader.SetUniform1i("albedoTex", 5);
+	IBLShader.SetUniform1i("metallicRoughnessTex", 6);
 }
 
 test::Test_Model::~Test_Model()
@@ -529,7 +534,7 @@ void test::Test_Model::OnRender()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	mdl.Draw(depthMapShader, vp);
+	mdl.Draw(depthMapShader, lightVP);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -563,7 +568,7 @@ void test::Test_Model::OnRender()
 	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
@@ -617,6 +622,7 @@ void test::Test_Model::OnRender()
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
 
+	//The point light artefact is probably because of sending uniforms that are not part of the shader
 	mdl.Draw(omniDepthShader, vp);
 
 	//ground
@@ -651,7 +657,7 @@ void test::Test_Model::OnRender()
 	model = glm::scale(model, glm::vec3(0.5f));
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
@@ -770,13 +776,13 @@ void test::Test_Model::OnRender()
 	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
 	IBLShader.SetUniform3fv("pointLightPos", pointLightPosition);
 	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
-	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.0f, 0.0f, 1.f));
 
-	IBLShader.SetUniform1f("metallic", metallic);
-	IBLShader.SetUniform1f("roughness", roughness);
+	IBLShader.SetUniform1f("metallicVal", metallic);
+	IBLShader.SetUniform1f("roughnessVal", roughness);
 	IBLShader.SetUniform1f("ao", 0.3f);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
+	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.f));
 	model = glm::scale(model, glm::vec3(0.5f));
 	IBLShader.SetUniformMatrix4fv("model", model);
 	mvp = projection * view * model;
@@ -812,7 +818,7 @@ void test::Test_Model::OnRender()
 	IBLShader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform3fv("albedo", glm::vec3(1.f, 0.f, 0.f));
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(1.f, 0.f, 0.f, 1.f));
 
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -824,7 +830,7 @@ void test::Test_Model::OnRender()
 	IBLShader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform3fv("albedo", glm::vec3(0.f, 1.f, 0.f));
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 1.f, 0.f, 1.f));
 
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -836,13 +842,15 @@ void test::Test_Model::OnRender()
 	IBLShader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform3fv("albedo", glm::vec3(0.f, 0.f, 1.f));
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 0.f, 1.f, 1.f));
 
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	mdl.Draw(IBLShader, vp);
+	IBLShader.SetUniform1i("hasAlbedoTex", 0);
+	IBLShader.SetUniform1i("hasMetRoughTex", 0);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);

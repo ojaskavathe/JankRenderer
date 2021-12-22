@@ -11,7 +11,14 @@ private:
 	int m_Width, m_Height, m_BPP;
 
 public:
-	TextureFile(const std::string& path);
+	TextureFile(
+		const std::string& path,
+		unsigned int magFilter = GL_LINEAR,
+		unsigned int minFilter = GL_LINEAR_MIPMAP_LINEAR,
+		unsigned int wrapS = GL_REPEAT,
+		unsigned int wrapT = GL_REPEAT
+	);
+	TextureFile();
 	~TextureFile();
 
 	void Bind(unsigned int slot = 0) const;
@@ -20,4 +27,5 @@ public:
 	inline unsigned int GetWidth() const { return m_Width; }
 	inline unsigned int GetHeight() const { return m_Height; }
 	inline unsigned int GetId() const { return m_RendererID; }
+	inline std::string GetPath() const { return  m_FilePath; }
 };
