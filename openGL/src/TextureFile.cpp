@@ -15,7 +15,7 @@ TextureFile::TextureFile(const std::string& path)
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 0);
 	if (m_LocalBuffer)
 	{
-		unsigned int format;
+		unsigned int format = GL_RGB;
 		switch (m_BPP) {
 		case(1):
 			format = GL_RED;

@@ -18,13 +18,6 @@ struct Vertex
 	glm::vec2 texCoord;
 };
 
-struct Texture
-{
-	unsigned int id;
-	std::string type;
-	std::string path;
-};
-
 struct Material
 {
 	glm::vec4 albedo;
@@ -43,17 +36,10 @@ struct Primitive
 
 class Mesh
 {
-public:
-	std::vector<Vertex> m_Vertices;
-	std::vector<unsigned int> m_Indices;
-	std::vector<Material> m_Materials;
-	std::vector<Texture> m_Textures;
 	std::vector<Primitive> m_Primitives;
+	void SetupMesh();
 
+public:
 	Mesh(std::vector<Primitive> primitives);
 	void Draw(Shader& shader, glm::mat4 model, glm::mat4& vp);
-
-private:
-
-	void SetupMesh();
 };

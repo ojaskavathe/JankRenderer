@@ -31,12 +31,8 @@ void Mesh::Draw(Shader& shader, glm::mat4 model, glm::mat4& vp)
 	}
 	
 	glBindVertexArray(0);
-
 	glEnable(GL_CULL_FACE);
-
-	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
-	//renderer.DrawElements(va, ib, shader);
 }
 
 void Mesh::SetupMesh()

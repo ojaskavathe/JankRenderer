@@ -58,7 +58,6 @@ void main()
 	vec3 R = reflect(-V, N);
 
 	vec3 F = FresnelSchlick(max(dot(N, V), 0.0), F0);
-
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
 	kD *= 1.0 - metallic;

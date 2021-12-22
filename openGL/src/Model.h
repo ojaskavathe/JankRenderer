@@ -28,21 +28,17 @@ public:
 
 private:
 
-	unsigned int n = 0;
-	bool isChild = false;
 	std::string currIndent;
 
 	const char* file;
 	std::vector<unsigned char> data; //easy to sample floats out of an array of 1 byte chars
 	json JSON;
 
-	std::vector<std::string> loadedMatName;
+	std::vector<unsigned int> loadedMatInd;
 	std::vector<Material> loadedMat;
 
 	std::vector<Mesh> meshes;
 	std::vector<glm::mat4> modelMat;
-
-	std::vector<unsigned int> loadedMeshes;
 
 	void loadMesh(unsigned int meshInd);
 	Primitive loadPrimitive(json prim);

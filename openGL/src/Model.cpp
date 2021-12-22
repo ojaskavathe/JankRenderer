@@ -47,7 +47,21 @@ Primitive Model::loadPrimitive(json prim)
 
 	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
 	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
-	Material material = getMaterial(matInd);
+
+	Material material;
+	bool loaded = false; // Don't load already loaded materials
+	for (unsigned int i = 0; i < loadedMatInd.size(); ++i) {
+		if (matInd == loadedMatInd[i]) {
+			material = loadedMat[i];
+			loaded = true;
+			break;
+		}
+	}
+	if (!loaded) {
+		material = getMaterial(matInd);
+		loadedMat.push_back(material);
+		loadedMatInd.push_back(matInd);
+	}
 
 	primitive = Primitive{ vertices, indices, material };
 
@@ -97,7 +111,6 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 	{
 		modelMat.push_back(matNextNode);
 		loadMesh(node["mesh"]);
-		loadedMeshes.push_back(node["mesh"]);
 	}
 
 	if (node["children"].is_array()) {
@@ -254,14 +267,12 @@ Material Model::getMaterial(signed int matIndex)
 				mat["pbrMetallicRoughness"]["baseColorFactor"][2],
 				mat["pbrMetallicRoughness"]["baseColorFactor"][3]
 			);
+			metallic = mat["pbrMetallicRoughness"].value("metallicFactor", 0.f);
+			roughness = mat["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
 		}
-
-		metallic = mat["pbrMetallicRoughness"].value("metallicFactor", 0.f);
-		roughness = mat["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
 	}
 
 	material = Material{ albedo, metallic, roughness };
-
 	return material;
 }
 
