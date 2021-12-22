@@ -27,18 +27,17 @@ public:
 	void Draw(Shader& shader, glm::mat4& vp);
 
 private:
-
-	std::string currIndent;
-
-	const char* file;
-	std::vector<unsigned char> data; //easy to sample floats out of an array of 1 byte chars
 	json JSON;
 
-	std::vector<unsigned int> loadedMatInd;
-	std::vector<Material> loadedMat;
+	std::string m_CurrIndent;
 
-	std::vector<Mesh> meshes;
-	std::vector<glm::mat4> modelMat;
+	const char* m_File;
+	std::vector<unsigned char> m_Data; //easy to sample floats out of an array of 1 byte chars
+
+	std::vector<Material> m_Materials;
+
+	std::vector<Mesh> m_Meshes;
+	std::vector<glm::mat4> m_ModelMat;
 
 	void loadMesh(unsigned int meshInd);
 	Primitive loadPrimitive(json prim);
@@ -48,7 +47,7 @@ private:
 	std::vector<unsigned char> getData();
 	std::vector<float> getFloats(json accessor);
 	std::vector<unsigned int> getIndices(json accessor);
-	Material getMaterial(signed int matIndex);
+	std::vector<Material> getMaterials();
 
 	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 

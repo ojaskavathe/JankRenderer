@@ -5,16 +5,17 @@ Model::Model(const char* path)
 	std::string text = getFileContents(path);
 	JSON = json::parse(text);
 
-	Model::file = path;
-	data = getData();
+	Model::m_File = path;
+	m_Data = getData();
 
+	if (JSON["materials"].is_array()) m_Materials = getMaterials();
 	traverseNode(JSON["nodes"].size() - 1);
 }
 
 void Model::Draw(Shader& shader, glm::mat4& vp)
 {
-	for (unsigned int i = 0; i < meshes.size(); ++i)
-		meshes[i].Draw(shader, modelMat[i], vp);
+	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
+		m_Meshes[i].Draw(shader, m_ModelMat[i], vp);
 }
 
 void Model::loadMesh(unsigned int meshInd)
@@ -25,7 +26,7 @@ void Model::loadMesh(unsigned int meshInd)
 	for (auto i : prims)
 		primitives.push_back(loadPrimitive(i));
 
-	meshes.push_back(Mesh(primitives));
+	m_Meshes.push_back(Mesh(primitives));
 }
 
 Primitive Model::loadPrimitive(json prim)
@@ -48,20 +49,8 @@ Primitive Model::loadPrimitive(json prim)
 	std::vector<Vertex> vertices = groupVertices(positions, normals, UVs);
 	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
 
-	Material material;
-	bool loaded = false; // Don't load already loaded materials
-	for (unsigned int i = 0; i < loadedMatInd.size(); ++i) {
-		if (matInd == loadedMatInd[i]) {
-			material = loadedMat[i];
-			loaded = true;
-			break;
-		}
-	}
-	if (!loaded) {
-		material = getMaterial(matInd);
-		loadedMat.push_back(material);
-		loadedMatInd.push_back(matInd);
-	}
+	Material material = Material{ glm::vec4(0.7f, 0.7f, 0.7f, 1.f), 0.f, 0.f };
+	if (matInd != -1) material = m_Materials[matInd];
 
 	primitive = Primitive{ vertices, indices, material };
 
@@ -109,25 +98,25 @@ void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
 
 	if (node.find("mesh") != node.end())
 	{
-		modelMat.push_back(matNextNode);
+		m_ModelMat.push_back(matNextNode);
 		loadMesh(node["mesh"]);
 	}
 
 	if (node["children"].is_array()) {
-		std::cout << currIndent;
-		currIndent += "        ";
+		std::cout << m_CurrIndent;
+		m_CurrIndent += "        ";
 		std::string name = node["name"];
 		std::cout << name << "\n";
 		for (unsigned int i = 0; i < node["children"].size(); ++i) {
 			unsigned int childNum = node["children"][i];
 			if (!(JSON["nodes"][childNum]["children"].is_array())) {
 				std::string childName = JSON["nodes"][childNum]["name"];
-				std::cout << currIndent;
+				std::cout << m_CurrIndent;
 				std::cout << childName << "\n";
 			}
 			traverseNode(node["children"][i], matNextNode);
 		}
-		currIndent.erase(std::remove(currIndent.end() - 8, currIndent.end(), ' '), currIndent.end());
+		m_CurrIndent.erase(std::remove(m_CurrIndent.end() - 8, m_CurrIndent.end(), ' '), m_CurrIndent.end());
 	}
 	/*else if (JSON["nodes"][(signed int)nextNode - 1].is_object()) {
 		isChild = false;
@@ -140,7 +129,7 @@ std::vector<unsigned char> Model::getData()
 	std::string bytesText;
 	std::string uri = JSON["buffers"][0]["uri"];
 
-	std::string fileStr = std::string(file);
+	std::string fileStr = std::string(m_File);
 	std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1); //<-kinda sketch pls fix later
 
 	//can't use getFileContents here as we need binary data
@@ -176,10 +165,10 @@ std::vector<float> Model::getFloats(json accessor)
 	{
 		//data is a char array, and float->4 bytes
 		unsigned char bytes[] = {
-			data[i++],
-			data[i++],
-			data[i++],
-			data[i++]
+			m_Data[i++],
+			m_Data[i++],
+			m_Data[i++],
+			m_Data[i++]
 		};
 		float value;
 		std::memcpy(&value, &bytes, sizeof(float));
@@ -210,10 +199,10 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
 		{
 			unsigned char bytes[] = {
-				data[i++],
-				data[i++],
-				data[i++],
-				data[i++]
+				m_Data[i++],
+				m_Data[i++],
+				m_Data[i++],
+				m_Data[i++]
 			};
 			unsigned int value;
 			std::memcpy(&value, &bytes, sizeof(unsigned int));
@@ -225,8 +214,8 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
 		{
 			unsigned char bytes[] = {
-				data[i++],
-				data[i++]
+				m_Data[i++],
+				m_Data[i++]
 			};
 			unsigned short value;
 			std::memcpy(&value, &bytes, sizeof(unsigned short));
@@ -238,8 +227,8 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 		for (unsigned int i = dataBegin; i < dataBegin + dataLength; i)
 		{
 			unsigned char bytes[] = {
-				data[i++],
-				data[i++]
+				m_Data[i++],
+				m_Data[i++]
 			};
 			short value;
 			std::memcpy(&value, &bytes, sizeof(short));
@@ -250,30 +239,33 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 	return indicesVec;
 }
 
-Material Model::getMaterial(signed int matIndex)
+std::vector<Material> Model::getMaterials()
 {
-	Material material;
+	std::vector<Material> materials;
 
-	glm::vec4 albedo(0.3f);
-	float metallic = 0.f;
-	float roughness = 0.f;
+	for (auto i : JSON["materials"])
+	{
+		Material material;
+		glm::vec4 albedo(0.7f);
+		float metallic = 0.f;
+		float roughness = 0.f;
 
-	if (matIndex != -1) {	//sentinel for meshes without materials
-		json mat = JSON["materials"][matIndex];
-		if (mat["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
+		if (i["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
 			albedo = glm::vec4(
-				mat["pbrMetallicRoughness"]["baseColorFactor"][0],
-				mat["pbrMetallicRoughness"]["baseColorFactor"][1],
-				mat["pbrMetallicRoughness"]["baseColorFactor"][2],
-				mat["pbrMetallicRoughness"]["baseColorFactor"][3]
+				i["pbrMetallicRoughness"]["baseColorFactor"][0],
+				i["pbrMetallicRoughness"]["baseColorFactor"][1],
+				i["pbrMetallicRoughness"]["baseColorFactor"][2],
+				i["pbrMetallicRoughness"]["baseColorFactor"][3]
 			);
-			metallic = mat["pbrMetallicRoughness"].value("metallicFactor", 0.f);
-			roughness = mat["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
+			metallic = i["pbrMetallicRoughness"].value("metallicFactor", 0.f);
+			roughness = i["pbrMetallicRoughness"].value("roughnessFactor", 1.f);
 		}
+
+		material = Material{ albedo, metallic, roughness };
+		materials.push_back(material);
 	}
 
-	material = Material{ albedo, metallic, roughness };
-	return material;
+	return materials;
 }
 
 std::vector<Vertex> Model::groupVertices
