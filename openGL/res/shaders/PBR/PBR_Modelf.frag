@@ -6,6 +6,7 @@ in vec3 FragPos;
 in vec2 TexCoords;
 in vec3 Normal;
 in vec4 lightSpaceFragPos;
+in mat3 TBN; 
 
 uniform vec3 camPos;
 
@@ -17,6 +18,9 @@ uniform bool hasMetRoughTex = false;
 uniform sampler2D metallicRoughnessTex;
 uniform float metallicVal;
 uniform float roughnessVal;
+
+uniform bool hasNormalTex = false;
+uniform sampler2D normalTex;
 
 uniform float ao;
 uniform float iblIntensity;
@@ -58,8 +62,8 @@ float roughness;
 
 void main()
 {
-	if ( hasAlbedoTex ) albedo = vec3(texture(albedoTex, TexCoords).rgb);
-	else albedo = albedoVal.xyz;
+	if ( hasAlbedoTex ) { albedo = vec3(texture(albedoTex, TexCoords).rgb); }
+	else { albedo = albedoVal.xyz; }
 
 	if ( hasMetRoughTex ) {
 		metallic = texture(metallicRoughnessTex, TexCoords).b * metallicVal;
@@ -67,6 +71,15 @@ void main()
 	} else {
 		metallic = metallicVal;
 		roughness = roughnessVal;
+	}
+
+	
+
+	if ( hasNormalTex ) 
+	{ 
+		N = texture(normalTex, TexCoords).rgb; 
+		N = N * 2.f - 1.f;
+		N = normalize(TBN * N);
 	}
 
 	F0 = mix(F0, albedo, metallic);

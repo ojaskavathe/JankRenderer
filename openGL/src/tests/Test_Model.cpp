@@ -438,6 +438,7 @@ test::Test_Model::Test_Model()
 	IBLShader.Bind();
 	IBLShader.SetUniform1i("hasAlbedoTex", 0);
 	IBLShader.SetUniform1i("hasMetRoughTex", 0);
+	IBLShader.SetUniform1i("hasNormalTex", 0);
 	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.f, 0.f, 1.f));
 	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
@@ -450,6 +451,8 @@ test::Test_Model::Test_Model()
 
 	IBLShader.SetUniform1i("albedoTex", 5);
 	IBLShader.SetUniform1i("metallicRoughnessTex", 6);
+
+	IBLShader.SetUniform1i("normalTex", 7);
 }
 
 test::Test_Model::~Test_Model()
@@ -849,8 +852,6 @@ void test::Test_Model::OnRender()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	mdl.Draw(IBLShader, vp);
-	IBLShader.SetUniform1i("hasAlbedoTex", 0);
-	IBLShader.SetUniform1i("hasMetRoughTex", 0);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);
@@ -904,7 +905,7 @@ void test::Test_Model::OnRender()
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
 
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//transfer data to single sample framebuffer for postprocess
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, opaqueFB.getID());

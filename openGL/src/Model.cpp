@@ -25,7 +25,7 @@ void Model::loadMesh(unsigned int meshInd)
 	std::vector<Primitive> primitives;
 	json prims = JSON["meshes"][meshInd]["primitives"];
 
-	for (auto i : prims)
+	for (auto &i : prims)
 		primitives.push_back(loadPrimitive(i));
 
 	m_Meshes.push_back(Mesh(primitives));
@@ -259,7 +259,6 @@ std::vector<Material> Model::getMaterials()
 		if (i["pbrMetallicRoughness"]["baseColorTexture"].is_object()) {
 			unsigned int texIndex = i["pbrMetallicRoughness"]["baseColorTexture"]["index"];
 			material.albedoTex = m_Textures[texIndex];
-			std::cout << m_Textures[texIndex].GetPath() << "\n";
 			material.hasAlbedoTex = true;
 		}
 		else if (i["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
@@ -285,6 +284,12 @@ std::vector<Material> Model::getMaterials()
 		else {
 			material.metallic = i["pbrMetallicRoughness"].value("metallicFactor", 0.f);
 			material.roughness = i["pbrMetallicRoughness"].value("roughnessFactor", 0.5f);
+		}
+
+		if (i["normalTexture"].is_object()) {
+			unsigned int texIndex = i["normalTexture"]["index"];
+			material.normalTex = m_Textures[texIndex];
+			material.hasNormalTex = true;
 		}
 
 		materials.push_back(material);
