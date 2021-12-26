@@ -238,6 +238,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/voronoi/voronoi.gltf");
+		Model mdl = Model("res/models/Sponza/Sponza.gltf");
 	};
 }

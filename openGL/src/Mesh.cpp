@@ -28,7 +28,7 @@ void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 		shader.SetUniformMatrix4fv("mvp", mvp);
 		shader.SetUniformMatrix4fv("normalMatrix", normalMat);
 
-		shader.SetUniform4fv("albedo", mat.albedo);
+		shader.SetUniform4fv("albedoVal", mat.albedo);
 		shader.SetUniform1f("metallicVal", mat.metallic);
 		shader.SetUniform1f("roughnessVal", mat.roughness);
 
@@ -131,8 +131,5 @@ void Mesh::InitTangentBasis(Primitive& prim)
 		prim.Triangles[i].v1.bitangent = bitangent;
 		prim.Triangles[i].v2.bitangent = bitangent;
 		prim.Triangles[i].v3.bitangent = bitangent;
-
-		/*prim.vertices[prim.indices[i]].tangent = tangent;
-		prim.vertices[prim.indices[i]].bitangent = bitangent;*/
 	}
 }

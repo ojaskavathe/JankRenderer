@@ -68,3 +68,8 @@ void TextureFile::Unbind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void TextureFile::Delete() const
+{
+	glDeleteTextures(1, &m_RendererID);
+}

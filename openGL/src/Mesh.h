@@ -62,6 +62,7 @@ struct Primitive
 class Mesh
 {
 	std::vector<Primitive> m_Primitives;
+
 	void SetupMesh();
 	void SetupTris(Primitive& prim);
 	void InitTangentBasis(Primitive& prim);

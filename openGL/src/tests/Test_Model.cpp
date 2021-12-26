@@ -365,7 +365,6 @@ test::Test_Model::Test_Model()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-
 	//omnidirectional shadowmap framebuffer
 	glGenFramebuffers(1, &oDepthMapFB);
 	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
@@ -387,7 +386,6 @@ test::Test_Model::Test_Model()
 	//backface culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-
 
 	//blending
 	glEnable(GL_BLEND);

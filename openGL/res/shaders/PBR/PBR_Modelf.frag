@@ -56,27 +56,20 @@ vec3 V = normalize(camPos - FragPos);
 
 vec3 F0 = vec3(0.04);
 
-vec3 albedo;
-float metallic;
-float roughness;
+vec3 albedo = albedoVal.rgb;
+float metallic = metallicVal;
+float roughness = roughnessVal;
 
 void main()
 {
-	if ( hasAlbedoTex ) { albedo = vec3(texture(albedoTex, TexCoords).rgb); }
-	else { albedo = albedoVal.xyz; }
+	if ( hasAlbedoTex ) albedo = vec3(texture(albedoTex, TexCoords).rgb);
 
 	if ( hasMetRoughTex ) {
 		metallic = texture(metallicRoughnessTex, TexCoords).b * metallicVal;
 		roughness = texture(metallicRoughnessTex, TexCoords).g * roughnessVal;
-	} else {
-		metallic = metallicVal;
-		roughness = roughnessVal;
 	}
 
-	
-
-	if ( hasNormalTex ) 
-	{ 
+	if ( hasNormalTex ) { 
 		N = texture(normalTex, TexCoords).rgb; 
 		N = N * 2.f - 1.f;
 		N = normalize(TBN * N);
