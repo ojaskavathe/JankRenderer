@@ -1,21 +1,27 @@
 #include "TextureFile.h"
 #include <stb_image\stb_image.h>
 
-TextureFile::TextureFile(const std::string& path)
+TextureFile::TextureFile(
+	const std::string& path,
+	unsigned int magFilter,
+	unsigned int minFilter,
+	unsigned int wrapS,
+	unsigned int wrapT
+)
 	: m_RendererID(0),m_FilePath(path), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0)
 {
 	glGenTextures(1, &m_RendererID);
 	glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 0);
 	if (m_LocalBuffer)
 	{
-		unsigned int format;
+		unsigned int format = GL_RGB;
 		switch (m_BPP) {
 		case(1):
 			format = GL_RED;
@@ -29,7 +35,7 @@ TextureFile::TextureFile(const std::string& path)
 			format = GL_RGBA;
 			break;
 		}
-		
+
 		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, m_LocalBuffer);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -38,14 +44,17 @@ TextureFile::TextureFile(const std::string& path)
 	}
 	else
 	{
-		std::cout << "couldn't load texture" << std::endl;
+		std::cout << "[TextureFile]: Couldn't load texture: " << path << "\n";
 	}
+}
+
+TextureFile::TextureFile()
+{
 }
 
 TextureFile::~TextureFile()
 {
-	//yeah this messes with the way textures are stored, m_RendererID gets reset and multiple textures all get assigned to one id
-	//find a way around it
+	//Textures have the same problem as VA's where they need to last longer than their scope
 	//glDeleteTextures(1, &m_RendererID);
 }
 
@@ -58,4 +67,9 @@ void TextureFile::Bind(unsigned int slot) const
 void TextureFile::Unbind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void TextureFile::Delete() const
+{
+	glDeleteTextures(1, &m_RendererID);
 }

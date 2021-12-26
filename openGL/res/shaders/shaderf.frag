@@ -118,7 +118,7 @@ vec3 CalcDirLight(DirectionalLight light, vec3 norm, vec3 viewDir)
 	vec3 specularColor	= pow(max(dot(norm, halfwayDir), 0.0f), mat.shininess) * light.specular * light.color;// <- Blinn-Phong
 	//vec3 specularColor	= pow(max(dot(-viewDir, reflectDir), 0.0f), mat.shininess) * light.specular * light.color; // <- Phong
 
-	return ambientColor + (diffuseColor + specularColor);
+	return ambientColor + (1 - CalcShadow())*(diffuseColor + specularColor);
 }
 
 float CalcShadow()

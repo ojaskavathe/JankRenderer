@@ -16,40 +16,58 @@ struct Vertex
 	glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 texCoord;
+
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
 };
 
-struct Texture
+struct Triangle
 {
-	unsigned int id;
-	std::string type;
-	std::string path;
+	Vertex &v1;
+	Vertex &v2;
+	Vertex &v3;
 };
 
 struct Material
 {
-	//sampler2D texture_diffuse1;
-	glm::vec3 diffuse;
-	//sampler2D texture_specular1;
-	glm::vec3 specular;
-	float shininess;
+	glm::vec4 albedo;
+	float metallic;
+	float roughness;
+
+	bool hasAlbedoTex = false;
+	bool hasMetRoughTex = false;
+	bool hasNormalTex = false;
+
+	TextureFile albedoTex;
+	TextureFile metallicRoughnessTex;
+	TextureFile normalTex;
+
+	/*Material(glm::vec4 albedo, float metallic, float roughness)
+		: albedo(albedo), metallic(metallic), roughness(roughness)
+	{};*/
+};
+
+struct Primitive
+{
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+
+	Material material;
+
+	std::vector<Triangle> Triangles;
+
+	VertexArray vao;
 };
 
 class Mesh
 {
-public:
-	std::vector<Vertex> m_Vertices;
-	std::vector<unsigned int> m_Indices;
-	std::vector<Texture> m_Textures;
-	//Material m_Material;
-	unsigned int m_Blend;
+	std::vector<Primitive> m_Primitives;
 
-	Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, unsigned int &blend);
-	//Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material &material, unsigned int &blend);
-	void Draw(Shader &shader);
-
-private:
-	
-	VertexArray vao;
 	void SetupMesh();
-};
+	void SetupTris(Primitive& prim);
+	void InitTangentBasis(Primitive& prim);
 
+public:
+	Mesh(std::vector<Primitive> primitives);
+	void Draw(Shader& shader, glm::mat4& model, glm::mat4& vp);
+};

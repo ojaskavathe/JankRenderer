@@ -69,21 +69,21 @@ void main()
     vec3 R = N;
     vec3 V = R;
 
-    float resolution = 2048.f;
+    float resolution = 1024.f;
+    const uint SAMPLE_COUNT = 1024u;
+    const float oneOverN = 1/float(SAMPLE_COUNT); //u HAVE to convert sample count to float
+
 
     vec3 prefilteredColor = vec3(0.f);
-
-    const uint SAMPLE_COUNT = 4096; //2^12
-    const float oneOverN = 1/SAMPLE_COUNT;
     float totalWeight = 0.0;
+
     for (uint i = 0u; i < SAMPLE_COUNT; ++i) {
         vec2 Xi = hammersley(i, oneOverN);
         vec3 H = importanceSampleGGX(Xi, N, roughness);
-        vec3 L = 2 * dot( V, H ) * H - V;
+        vec3 L = normalize(2 * dot( V, H ) * H - V);
 
-
-        float NoL = max(dot(N, L), 0);
-        if( NoL > 0 )
+        float NoL = max(dot(N, L), 0.f);
+        if( NoL > 0.f )
         {
             float NoH = max(dot(N, H), 0);
             float HoV = max(dot(H, V), 0);
@@ -96,6 +96,7 @@ void main()
             float mipLevel = (roughness == 0.f) ? 0.f : 0.5 * log2(saSample / saTexel);
 
             prefilteredColor += textureLod(environmentMap, L, mipLevel).rgb * NoL;
+
             totalWeight += NoL;
         }
     }

@@ -1,60 +1,135 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture>& textures, unsigned int &blend)
-	: m_Vertices(vertices), m_Indices(indices), m_Textures(textures), m_Blend(blend)
+Mesh::Mesh(std::vector<Primitive> primitives)
+	: m_Primitives(primitives)
 {
 	SetupMesh();
 }
 
-void Mesh::Draw(Shader &shader)
+void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 {
-	unsigned int numDiffuse = 1;
-	unsigned int numSpecular = 1;
-
+	glm::mat4 mvp = vp * model;
+	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
-	for (unsigned int i = 0; i < m_Textures.size(); i++)
+	glDisable(GL_CULL_FACE);
+
+	for (auto i : m_Primitives)
 	{
-		std::string num;
-		if (m_Textures[i].type == "texture_diffuse")
-			num = std::to_string(numDiffuse++);
-		if (m_Textures[i].type == "texture_specular")
-			num = std::to_string(numSpecular++);
+		i.vao.Bind();
+		Material mat = i.material;
 
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, m_Textures[i].id);	
+		//defaults
+		shader.SetUniform1i("hasAlbedoTex", 0);
+		shader.SetUniform1i("hasMetRoughTex", 0);
+		shader.SetUniform1i("hasNormalTex", 0);
 
-		//setting uniforms
-		shader.SetUniform1i("mat." + m_Textures[i].type + num, i);
+		shader.SetUniformMatrix4fv("model", model);
+		shader.SetUniformMatrix4fv("mvp", mvp);
+		shader.SetUniformMatrix4fv("normalMatrix", normalMat);
+
+		shader.SetUniform4fv("albedoVal", mat.albedo);
+		shader.SetUniform1f("metallicVal", mat.metallic);
+		shader.SetUniform1f("roughnessVal", mat.roughness);
+
+		if (i.material.hasAlbedoTex) {
+			shader.SetUniform1i("hasAlbedoTex", 1);
+			shader.SetUniform1i("albedoTex", 5);
+			i.material.albedoTex.Bind(5);
+		}
+
+		if (i.material.hasMetRoughTex) {
+			shader.SetUniform1i("hasMetRoughTex", 1);
+			shader.SetUniform1i("metallicRoughnessTex", 6);
+			i.material.metallicRoughnessTex.Bind(6);
+		}
+
+		if (i.material.hasNormalTex) {
+			shader.SetUniform1i("hasNormalTex", 1);
+			shader.SetUniform1i("normalTex", 7);
+			i.material.normalTex.Bind(7);
+		}
+
+		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
+	
+	shader.SetUniform1i("hasAlbedoTex", 0);
+	shader.SetUniform1i("hasMetRoughTex", 0);
+	shader.SetUniform1i("hasNormalTex", 0);
 
-	//for models without textures
-	/*shader.SetUniform3fv("mat.diffuse", m_Material.diffuse);
-	shader.SetUniform3fv("mat.specular", m_Material.specular);
-	shader.SetUniform1f("mat.shininess", m_Material.shininess);*/
-
-
-	//glBindVertexArray(VAO);
-	vao.Bind();
-	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()));
-	glDrawElements(GL_TRIANGLES, unsigned int(m_Indices.size()), GL_UNSIGNED_INT, 0);
-
-	// always good practice to set everything back to defaults once configured.
+	glBindVertexArray(0);
+	glEnable(GL_CULL_FACE);
 	glActiveTexture(GL_TEXTURE0);
-	//renderer.DrawElements(va, ib, shader);
 }
 
 void Mesh::SetupMesh()
 {
-	vao.Bind();
-	VertexBuffer vbo(&m_Vertices[0], unsigned int(m_Vertices.size()) * sizeof(Vertex));
-	IndexBuffer ibo(&m_Indices[0], unsigned int(m_Indices.size()));
-	VertexBufferLayout layout;
+	for (auto i : m_Primitives)
+	{
+		SetupTris(i);
+		InitTangentBasis(i);
 
-	layout.Push<float>(3);
-	layout.Push<float>(3);
-	layout.Push<float>(2);
-	vao.AddBuffer(vbo, layout);
+		i.vao.Bind();
 
-	vao.Unbind();
+		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
+
+		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
+		VertexBufferLayout layout;
+
+		layout.Push<float>(3);
+		layout.Push<float>(3);
+		layout.Push<float>(2);
+		layout.Push<float>(3);
+		layout.Push<float>(3);
+
+		i.vao.AddBuffer(vbo, layout);
+
+		i.vao.Unbind();
+	}
+}
+
+void Mesh::SetupTris(Primitive& prim)
+{
+	for (unsigned int i = 0; i < prim.indices.size() - 2; i+=3)
+	{
+		Vertex *v1 = &prim.vertices[(prim.indices[i])];
+		Vertex *v2 = &prim.vertices[(prim.indices[i + 1])];
+		Vertex *v3 = &prim.vertices[(prim.indices[i + 2])];
+
+		prim.Triangles.push_back(Triangle{*v1, *v2, *v3});
+	}
+}
+
+void Mesh::InitTangentBasis(Primitive& prim)
+{
+	//for (const auto& j : prim.Triangles) {
+	for (unsigned int i = 0; i < prim.Triangles.size(); ++i) {
+		glm::vec3 v0 = prim.Triangles[i].v1.position;
+		glm::vec3 v1 = prim.Triangles[i].v2.position;
+		glm::vec3 v2 = prim.Triangles[i].v3.position;
+
+		glm::vec2 uv0 = prim.Triangles[i].v1.texCoord;
+		glm::vec2 uv1 = prim.Triangles[i].v2.texCoord;
+		glm::vec2 uv2 = prim.Triangles[i].v3.texCoord;
+
+		// Edges of the triangle : position delta
+		glm::vec3 deltaPos1 = v1 - v0;
+		glm::vec3 deltaPos2 = v2 - v0;
+
+		// UV delta
+		glm::vec2 deltaUV1 = uv1 - uv0;
+		glm::vec2 deltaUV2 = uv2 - uv0;
+
+		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+		glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+		prim.Triangles[i].v1.tangent = tangent;
+		prim.Triangles[i].v2.tangent = tangent;
+		prim.Triangles[i].v3.tangent = tangent;
+
+		prim.Triangles[i].v1.bitangent = bitangent;
+		prim.Triangles[i].v2.bitangent = bitangent;
+		prim.Triangles[i].v3.bitangent = bitangent;
+	}
 }

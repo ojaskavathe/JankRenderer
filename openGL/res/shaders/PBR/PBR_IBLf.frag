@@ -12,6 +12,7 @@ uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
 uniform float ao;
+uniform float iblIntensity;
 
 uniform vec3 pointLightPos;
 uniform vec3 dirLightDir;
@@ -44,9 +45,8 @@ void main()
 	vec3 L0 = vec3(0.0); // <- total outgoing radiance or irradiance
 	
 	L0 += calcPointLight(pointLightPos); 
-	//L0 += calcDirLight(dirLightDir); 
+	L0 += calcDirLight(dirLightDir); 
 	
-	//vec3 ambient = vec3(0.3) * albedo * ao;
 	vec3 R = reflect(-V, N);
 
 	vec3 F = FresnelSchlick(max(dot(N, V), 0.0), F0);
@@ -63,9 +63,9 @@ void main()
 	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
-	vec3 ambient = (kD * diffuse + specular) * ao; 
+	vec3 ambient = (kD * diffuse + specular) * ao;
 
-	vec3 color = ambient + L0;
+	vec3 color = (iblIntensity*ambient) + L0;
 
 	//color = color / (color + vec3(1.0)); // <- HDR using reinhart
 	//color = pow(color, vec3(1.0/2.2)); // <- i do the gamma correction in the final screenshader

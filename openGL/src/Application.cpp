@@ -2,6 +2,9 @@
 #include <GLFW\glfw3.h>
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <json/json.h>
 
 #include "Camera.h"
 
@@ -11,7 +14,8 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#include "tests/Test_PBR_IBL.h"
+#include "tests/Test_Model.h"
+#include "tests/Test_PBR.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -25,7 +29,6 @@ float LastFrame = 0.0f;
 
 int main()
 {
-
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
@@ -58,7 +61,7 @@ int main()
 	SetDebugCallback();
 
 	//set current test
-	test::Test_PBR_IBL test1;
+	test::Test_Model test1;
 
 	mTest = &test1;
 	Renderer renderer;
