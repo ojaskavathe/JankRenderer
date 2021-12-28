@@ -535,7 +535,7 @@ void test::Test_Model::OnRender()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	mdl.Draw(depthMapShader, lightVP);
+	mdl.DrawShadowMap(depthMapShader, lightVP);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -623,8 +623,7 @@ void test::Test_Model::OnRender()
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
 
-	//The point light artefact is probably because of sending uniforms that are not part of the shader
-	mdl.Draw(omniDepthShader, vp);
+	mdl.DrawShadowMap(omniDepthShader, vp);
 
 	//ground
 	model = glm::mat4(1.0f);

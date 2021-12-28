@@ -20,6 +20,12 @@ void Model::Draw(Shader& shader, glm::mat4& vp)
 		m_Meshes[i].Draw(shader, m_ModelMat[i], vp);
 }
 
+void Model::DrawShadowMap(Shader& shader, glm::mat4& vp)
+{
+	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
+		m_Meshes[i].DrawShadowMap(shader, m_ModelMat[i], vp);
+}
+
 void Model::loadMesh(unsigned int meshInd)
 {
 	std::vector<Primitive> primitives;

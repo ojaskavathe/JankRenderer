@@ -26,6 +26,8 @@ public:
 
 	void Draw(Shader& shader, glm::mat4& vp);
 
+	void DrawShadowMap(Shader& shader, glm::mat4& vp);
+
 private:
 	json JSON;
 

@@ -12,8 +12,6 @@ void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
-	glDisable(GL_CULL_FACE);
-
 	for (auto i : m_Primitives)
 	{
 		i.vao.Bind();
@@ -58,7 +56,22 @@ void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 	shader.SetUniform1i("hasNormalTex", 0);
 
 	glBindVertexArray(0);
-	glEnable(GL_CULL_FACE);
+	glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp)
+{
+	shader.Bind();
+
+	for (auto i : m_Primitives)
+	{
+		i.vao.Bind();
+
+		shader.SetUniformMatrix4fv("model", model);
+		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
+	}
+
+	glBindVertexArray(0);
 	glActiveTexture(GL_TEXTURE0);
 }
 

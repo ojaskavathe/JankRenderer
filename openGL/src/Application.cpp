@@ -1,11 +1,6 @@
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <json/json.h>
-
 #include "Camera.h"
 
 #include "Renderer.h"
