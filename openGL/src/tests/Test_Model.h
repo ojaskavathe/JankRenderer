@@ -5,6 +5,7 @@
 #include "Cubemap.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Samples/Samples.h"
 
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
@@ -134,6 +135,7 @@ namespace test {
 		VertexArray quadVA;
 		VertexArray planeVA;
 
+		Mesh cube = Samples::Cube();
 
 		unsigned int sphereVAO;
 		unsigned int indexCount;
@@ -238,6 +240,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/JadeToad/JadeToad.gltf");
+		Model mdl = Model("res/models/voronoi/voronoi.gltf");
 	};
 }

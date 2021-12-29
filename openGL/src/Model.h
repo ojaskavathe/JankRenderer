@@ -24,7 +24,7 @@ class Model
 public:
 	Model(const char* path);
 
-	void Draw(Shader& shader, glm::mat4& vp);
+	void Draw(const Shader& shader, const glm::mat4& vp);
 
 	void DrawShadowMap(Shader& shader, glm::mat4& vp);
 
@@ -45,7 +45,7 @@ private:
 	void loadMesh(unsigned int meshInd);
 	Primitive loadPrimitive(json prim);
 
-	void traverseNode(unsigned int nextNode, glm::mat4 mat = glm::mat4(1.f));
+	void traverseNode(unsigned int nextNode, const glm::mat4& mat = glm::mat4(1.f));
 
 	std::vector<unsigned char> getData();
 	std::vector<float> getFloats(json accessor);
@@ -55,9 +55,9 @@ private:
 
 	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
 
-	std::vector<glm::vec2> groupVec2(std::vector<float> floatVec);
-	std::vector<glm::vec3> groupVec3(std::vector<float> floatVec);
-	std::vector<glm::vec4> groupVec4(std::vector<float> floatVec);
+	std::vector<glm::vec2> groupVec2(const std::vector<float>& floatVec);
+	std::vector<glm::vec3> groupVec3(const std::vector<float>& floatVec);
+	std::vector<glm::vec4> groupVec4(const std::vector<float>& floatVec);
 
 	std::string getFileContents(const char* path);
 };

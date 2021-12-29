@@ -5,7 +5,7 @@ FrameBuffer::FrameBuffer()
 	glGenFramebuffers(1, &m_RendererID);
 }
 
-void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int width, unsigned int height)
+void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int width, unsigned int height) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenTextures(1, &buffer);
@@ -25,7 +25,7 @@ void FrameBuffer::GenTextureBuffer(unsigned int& buffer, unsigned int internalFo
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int samples)
+void FrameBuffer::GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int samples) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenTextures(1, &buffer);
@@ -39,21 +39,21 @@ void FrameBuffer::GenTextureBufferMS(unsigned int& buffer, unsigned int internal
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::attachTextureBuffer(GLenum attachment, unsigned int& buffer)
+void FrameBuffer::attachTextureBuffer(GLenum attachment, unsigned int& buffer) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, buffer, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::attachTextureBufferMS(GLenum attachment, unsigned int& buffer)
+void FrameBuffer::attachTextureBufferMS(GLenum attachment, unsigned int& buffer) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, buffer, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type)
+void FrameBuffer::GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenRenderbuffers(1, &buffer);
@@ -65,7 +65,7 @@ void FrameBuffer::GenRenderBuffer(unsigned int& buffer, unsigned int internalFor
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::CheckStatus()
+void FrameBuffer::CheckStatus() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -74,12 +74,12 @@ void FrameBuffer::CheckStatus()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::Bind()
+void FrameBuffer::Bind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 }
 
-void FrameBuffer::Unbind()
+void FrameBuffer::Unbind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

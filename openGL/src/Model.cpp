@@ -14,7 +14,7 @@ Model::Model(const char* path)
 	traverseNode(JSON["nodes"].size() - 1);
 }
 
-void Model::Draw(Shader& shader, glm::mat4& vp)
+void Model::Draw(const Shader& shader, const glm::mat4& vp)
 {
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
 		m_Meshes[i].Draw(shader, m_ModelMat[i], vp);
@@ -30,9 +30,10 @@ void Model::loadMesh(unsigned int meshInd)
 {
 	std::vector<Primitive> primitives;
 	json prims = JSON["meshes"][meshInd]["primitives"];
+	primitives.reserve(prims.size());
 
 	for (auto &i : prims)
-		primitives.push_back(loadPrimitive(i));
+		primitives.emplace_back(loadPrimitive(i));
 
 	m_Meshes.push_back(Mesh(primitives));
 }
@@ -58,10 +59,6 @@ Primitive Model::loadPrimitive(json prim)
 	std::vector<unsigned int> indices = getIndices(JSON["accessors"][indAccInd]);
 
 	Material material;
-	material.albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
-	material.metallic = 0.f;
-	material.roughness = 0.5f;
-
 	if (matInd != -1) material = m_Materials[matInd];
 
 	primitive = Primitive{ vertices, indices, material };
@@ -69,7 +66,7 @@ Primitive Model::loadPrimitive(json prim)
 	return primitive;
 }
 
-void Model::traverseNode(unsigned int nextNode, glm::mat4 mat)
+void Model::traverseNode(unsigned int nextNode, const glm::mat4& mat)
 {
 	json node = JSON["nodes"][nextNode];
 
@@ -173,6 +170,8 @@ std::vector<float> Model::getFloats(json accessor)
 	unsigned int dataBegin = byteOffset + accByteOffset;
 	unsigned int dataLength = bufferView["byteLength"];
 
+	floatVec.reserve(dataBegin + dataLength);
+
 	for (unsigned int i = dataBegin; i < dataBegin + dataLength; i) //<- i is being incremented per byte
 	{
 		//data is a char array, and float->4 bytes
@@ -184,7 +183,7 @@ std::vector<float> Model::getFloats(json accessor)
 		};
 		float value;
 		std::memcpy(&value, &bytes, sizeof(float));
-		floatVec.push_back(value);
+		floatVec.emplace_back(value);
 	}
 
 	return floatVec;
@@ -205,6 +204,8 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 	unsigned int dataBegin = byteOffset + accByteOffset;
 	unsigned int dataLength = bufferView["byteLength"];
 
+	indicesVec.reserve(dataBegin + dataLength);
+
 	//indices can be either an unsigned int, an unsigned short or a short
 	if (componentType == 5125) //int -> 4 bytes
 	{
@@ -218,7 +219,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 			};
 			unsigned int value;
 			std::memcpy(&value, &bytes, sizeof(unsigned int));
-			indicesVec.push_back(value);
+			indicesVec.emplace_back(value);
 		}
 	}
 	else if (componentType == 5123) //unsigned short -> 2 bytes
@@ -231,7 +232,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 			};
 			unsigned short value;
 			std::memcpy(&value, &bytes, sizeof(unsigned short));
-			indicesVec.push_back(value);
+			indicesVec.emplace_back(value);
 		}
 	}
 	else if (componentType == 5122) //short -> 2 bytes
@@ -244,7 +245,7 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 			};
 			short value;
 			std::memcpy(&value, &bytes, sizeof(short));
-			indicesVec.push_back(value);
+			indicesVec.emplace_back(value);
 		}
 	}
 
@@ -254,13 +255,11 @@ std::vector<unsigned int> Model::getIndices(json accessor)
 std::vector<Material> Model::getMaterials()
 {
 	std::vector<Material> materials;
+	materials.reserve(JSON["materials"].size());
 
 	for (auto i : JSON["materials"])
 	{
 		Material material;
-		glm::vec4 albedo(0.7f, 0.7f, 0.7f, 1.f);
-		float metallic = 0.f;
-		float roughness = 0.f;
 
 		if (i["pbrMetallicRoughness"]["baseColorTexture"].is_object()) {
 			unsigned int texIndex = i["pbrMetallicRoughness"]["baseColorTexture"]["index"];
@@ -268,15 +267,12 @@ std::vector<Material> Model::getMaterials()
 			material.hasAlbedoTex = true;
 		}
 		else if (i["pbrMetallicRoughness"]["baseColorFactor"].is_array()) {
-			albedo = glm::vec4(
+			glm::vec4 albedo = glm::vec4(
 				i["pbrMetallicRoughness"]["baseColorFactor"][0],
 				i["pbrMetallicRoughness"]["baseColorFactor"][1],
 				i["pbrMetallicRoughness"]["baseColorFactor"][2],
 				i["pbrMetallicRoughness"]["baseColorFactor"][3]
 			);
-			material.albedo = albedo;
-		}
-		else {
 			material.albedo = albedo;
 		}
 
@@ -298,7 +294,7 @@ std::vector<Material> Model::getMaterials()
 			material.hasNormalTex = true;
 		}
 
-		materials.push_back(material);
+		materials.emplace_back(material);
 	}
 
 	return materials;
@@ -307,6 +303,7 @@ std::vector<Material> Model::getMaterials()
 std::vector<TextureFile> Model::getTextures()
 {
 	std::vector<TextureFile> textures;
+	textures.reserve(JSON["textures"].size());
 
 	std::string fileStr = std::string(m_File);
 	std::string fileDir = fileStr.substr(0, fileStr.find_last_of('/') + 1);
@@ -321,7 +318,7 @@ std::vector<TextureFile> Model::getTextures()
 		unsigned int min = JSON["samplers"][sampler].value("minFilter", GL_LINEAR_MIPMAP_LINEAR);
 		unsigned int wrapS = JSON["samplers"][sampler].value("wrapS", GL_REPEAT);
 		unsigned int wrapT = JSON["samplers"][sampler].value("wrapT", GL_REPEAT);
-		textures.push_back(TextureFile((fileDir + texPath), mag, min, wrapS, wrapT));
+		textures.emplace_back((fileDir + texPath), mag, min, wrapS, wrapT);
 	}
 
 	return textures;
@@ -335,37 +332,37 @@ std::vector<Vertex> Model::groupVertices
 )
 {
 	std::vector<Vertex> vertices;
+	vertices.reserve(positions.size());
 	for (unsigned int i = 0; i < positions.size(); ++i)
 	{
-		vertices.push_back(
-			Vertex{
+		vertices.emplace_back(
 				positions[i],
 				normals[i],
 				UVs[i]
-			}
 		);
 	}
 
 	return vertices;
 }
 
-std::vector<glm::vec2> Model::groupVec2(std::vector<float> floatVec)
+std::vector<glm::vec2> Model::groupVec2(const std::vector<float>& floatVec)
 {
 	std::vector<glm::vec2> vectors;
+	vectors.reserve(floatVec.size());
 	for (unsigned int i = 0; i < floatVec.size(); i += 2)
-		vectors.push_back(glm::vec2(
+		vectors.emplace_back(glm::vec2(
 			floatVec[i],
 			floatVec[i + 1]
 		));
 	return vectors;
 }
 
-std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
+std::vector<glm::vec3> Model::groupVec3(const std::vector<float>& floatVec)
 {
 	std::vector<glm::vec3> vectors;
-	
+	vectors.reserve(floatVec.size());
 	for (unsigned int i = 0; i < floatVec.size(); i+=3)
-		vectors.push_back(glm::vec3(
+		vectors.emplace_back(glm::vec3(
 			floatVec[i], 
 			floatVec[i + 1], 
 			floatVec[i + 2]
@@ -374,11 +371,12 @@ std::vector<glm::vec3> Model::groupVec3(std::vector<float> floatVec)
 	return vectors;
 }
 
-std::vector<glm::vec4> Model::groupVec4(std::vector<float> floatVec)
+std::vector<glm::vec4> Model::groupVec4(const std::vector<float>& floatVec)
 {
 	std::vector<glm::vec4> vectors;
+	vectors.reserve(floatVec.size());
 	for (unsigned int i = 0; i < floatVec.size(); i += 4)
-		vectors.push_back(glm::vec4(
+		vectors.emplace_back(glm::vec4(
 			floatVec[i],
 			floatVec[i + 1],
 			floatVec[i + 2],

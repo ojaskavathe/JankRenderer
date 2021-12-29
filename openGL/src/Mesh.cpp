@@ -6,7 +6,7 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
-void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
+void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
@@ -50,7 +50,7 @@ void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 
 		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
-	
+
 	shader.SetUniform1i("hasAlbedoTex", 0);
 	shader.SetUniform1i("hasMetRoughTex", 0);
 	shader.SetUniform1i("hasNormalTex", 0);
@@ -77,7 +77,7 @@ void Mesh::DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp)
 
 void Mesh::SetupMesh()
 {
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		SetupTris(i);
 		InitTangentBasis(i);
@@ -103,13 +103,15 @@ void Mesh::SetupMesh()
 
 void Mesh::SetupTris(Primitive& prim)
 {
+	prim.Triangles.reserve(prim.indices.size() / 3);
+
 	for (unsigned int i = 0; i < prim.indices.size() - 2; i+=3)
 	{
 		Vertex *v1 = &prim.vertices[(prim.indices[i])];
 		Vertex *v2 = &prim.vertices[(prim.indices[i + 1])];
 		Vertex *v3 = &prim.vertices[(prim.indices[i + 2])];
 
-		prim.Triangles.push_back(Triangle{*v1, *v2, *v3});
+		prim.Triangles.emplace_back(v1, v2, v3);
 	}
 }
 

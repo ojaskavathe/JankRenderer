@@ -19,4 +19,7 @@ public:
 	void Clear() const;
 	void DrawArrays(VertexArray& va, Shader& shader) const;
 	void DrawElements(VertexArray& va, IndexBuffer& ib, Shader& shader) const;
+
+private:
+
 };
