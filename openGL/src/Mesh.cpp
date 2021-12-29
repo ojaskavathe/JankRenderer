@@ -11,7 +11,7 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
-void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
+const void const Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
@@ -64,7 +64,7 @@ void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& v
 	glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp)
+const void const Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	shader.Bind();
 

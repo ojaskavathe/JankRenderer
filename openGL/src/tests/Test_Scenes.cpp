@@ -1,14 +1,11 @@
-#include <iostream>
-
-#include <stb_image/stb_image.h>
-#include "Test_PBR_IBL.h"
-#include "VertexBufferLayout.h"
+#include "Test_Scenes.h"
 #include "imgui/imgui.h"
+#include <stb_image/stb_image.h>
 
-test::Test_PBR_IBL::Test_PBR_IBL()
+test::Test_Scenes::Test_Scenes()
 	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
 	PBRShader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag"),
-	IBLShader("res/shaders/PBR/PBR_IBLv.vert", "res/shaders/PBR/PBR_IBLf.frag"),
+	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
 	omniDepthShader("res/shaders/omniDepthShader/oDepthMapv.vert", "res/shaders/omniDepthShader/oDepthMapf.frag", "res/shaders/omniDepthShader/oDepthMapg.geom"),
@@ -46,7 +43,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 
 	//quadva
 	quadVA.Bind();
-	VertexBuffer quadVB(quadVerts, (unsigned int)sizeof(quadVerts));
+	VertexBuffer quadVB = VertexBuffer(quadVerts, (unsigned int)sizeof(quadVerts));
 	VertexBufferLayout quadLayout;
 	quadLayout.Push<float>(2);
 	quadLayout.Push<float>(2);
@@ -135,11 +132,15 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 			circleData.push_back(uv[i].y);
 		}
 	}
+
 	glBindVertexArray(sphereVAO);
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, circleData.size() * sizeof(float), &circleData[0], GL_STATIC_DRAW);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
 	unsigned int stride = (3 + 2 + 3) * sizeof(float);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
@@ -172,26 +173,29 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	}
 
 	//framebuffers for environment map
+	unsigned int textureRes = 1024;
+
 	glGenFramebuffers(1, &envFB);
 	glGenRenderbuffers(1, &envRB);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 2048, 2048);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, textureRes, textureRes);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, envRB);
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //<-enables interpolation between faces of cubemap
+
 	//environment cubemap texture
 	glGenTextures(1, &envCubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 2048, 2048, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, textureRes, textureRes, 0, GL_RGB, GL_FLOAT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	//HDRI
@@ -211,7 +215,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTex);
 
-	glViewport(0, 0, 2048, 2048);
+	glViewport(0, 0, textureRes, textureRes);
 	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
 
 	for (int i = 0; i < 6; i++)
@@ -231,7 +235,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glGenTextures(1, &irradianceMap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB32F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
 	
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -274,14 +278,13 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
 	prefilterShader.Bind();
 	prefilterShader.SetUniform1i("environmentMap", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP); //<-generate lods for envmap to use in prefilter
 
-	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+	for (unsigned int mip = 0; mip < 5; ++mip)
 	{
 		//resize frambuffer according to mip level
 		unsigned int mipWidth = 128 * glm::pow(0.5f, mip);
@@ -294,7 +297,7 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 		float mipRoughness = (float)mip / (float)(maxMipLevels - 1);
 		prefilterShader.SetUniform1f("roughness", mipRoughness);
 
-		for (unsigned int i = 0; i < 6; i++)
+		for (unsigned int i = 0; i < 6; ++i)
 		{
 			prefilterShader.SetUniformMatrix4fv("vp", hdriVP[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
@@ -366,7 +369,6 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-
 	//omnidirectional shadowmap framebuffer
 	glGenFramebuffers(1, &oDepthMapFB);
 	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
@@ -389,17 +391,14 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	shader.Bind();
-	shader.SetUniform1i("shadowMap", 0);
-	shader.SetUniform1i("shadowCubemap", 1);
-	shader.Unbind();
-
 	//blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//default shader uniforms
 	shader.Bind();
+	shader.SetUniform1i("shadowMap", 0);
+	shader.SetUniform1i("shadowCubemap", 1);
 	shader.SetUniform3fv("dirLight.color", dirLightColor);
 	shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
 	shader.SetUniform3fv("dirLight.diffuse", dirLightDiffuse);
@@ -434,24 +433,35 @@ test::Test_PBR_IBL::Test_PBR_IBL()
 	experimental.SetUniform1f("mat.shininess", matShininess);
 
 	PBRShader.Bind();
-	PBRShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	PBRShader.SetUniform3fv("albedoVal", glm::vec3(0.5f, 0.0f, 0.0f));
 	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
 	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
 
 	IBLShader.Bind();
-	IBLShader.SetUniform3fv("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	IBLShader.SetUniform1i("hasAlbedoTex", 0);
+	IBLShader.SetUniform1i("hasMetRoughTex", 0);
+	IBLShader.SetUniform1i("hasNormalTex", 0);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.f, 0.f, 1.f));
 	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
 	IBLShader.SetUniform1i("irradianceMap", 0);
 	IBLShader.SetUniform1i("prefilterMap", 1);
 	IBLShader.SetUniform1i("brdfLUT", 2);
+
+	IBLShader.SetUniform1i("shadowMap", 3);
+	IBLShader.SetUniform1i("shadowCubemap", 4);
+
+	IBLShader.SetUniform1i("albedoTex", 5);
+	IBLShader.SetUniform1i("metallicRoughnessTex", 6);
+
+	IBLShader.SetUniform1i("normalTex", 7);
 }
 
-test::Test_PBR_IBL::~Test_PBR_IBL()
+test::Test_Scenes::~Test_Scenes()
 {
 }
 
-void test::Test_PBR_IBL::OnUpdate(float deltaTime, GLFWwindow* window)
+void test::Test_Scenes::OnUpdate(float deltaTime, GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -465,6 +475,7 @@ void test::Test_PBR_IBL::OnUpdate(float deltaTime, GLFWwindow* window)
 		cam.ProcessMovement(cam.RIGHT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.ProcessMovement(cam.LEFT, deltaTime);
+
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		pointLightPosition += glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
@@ -502,7 +513,7 @@ void test::Test_PBR_IBL::OnUpdate(float deltaTime, GLFWwindow* window)
 		inputFlag = 0;
 }
 
-void test::Test_PBR_IBL::OnRender()
+void test::Test_Scenes::OnRender()
 {
 	//rendering to shadowmap
 	glEnable(GL_DEPTH_TEST); //<-- keep track
@@ -528,11 +539,32 @@ void test::Test_PBR_IBL::OnRender()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
+	mdl.DrawShadowMap(depthMapShader, lightVP);
+
 	//ground
 	model = glm::mat4(1.0f);
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//cubes
 	va.Bind();
@@ -541,7 +573,7 @@ void test::Test_PBR_IBL::OnRender()
 	model = glm::scale(model, glm::vec3(0.5f));
 	depthMapShader.SetUniformMatrix4fv("model", model);
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
@@ -595,11 +627,32 @@ void test::Test_PBR_IBL::OnRender()
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
 
+	mdl.DrawShadowMap(omniDepthShader, vp);
+
 	//ground
 	model = glm::mat4(1.0f);
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//cubes
 	va.Bind();
@@ -608,7 +661,7 @@ void test::Test_PBR_IBL::OnRender()
 	model = glm::scale(model, glm::vec3(0.5f));
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
@@ -652,6 +705,7 @@ void test::Test_PBR_IBL::OnRender()
 
 	view = cam.GetViewMatrix(); //<-- add translation back to camera
 	vp = projection * view;
+
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -699,7 +753,7 @@ void test::Test_PBR_IBL::OnRender()
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
 	shader.SetUniform4fv("color", glm::vec4(0.5f));
 	planeVA.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//pbrSphere
 	PBRShader.Bind();
@@ -719,18 +773,20 @@ void test::Test_PBR_IBL::OnRender()
 	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
 	
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//iblSphere
 	IBLShader.Bind();
 	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
 	IBLShader.SetUniform3fv("pointLightPos", pointLightPosition);
 	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
-	IBLShader.SetUniform1f("metallic", metallic);
-	IBLShader.SetUniform1f("roughness", roughness);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.0f, 0.0f, 1.f));
+
+	IBLShader.SetUniform1f("metallicVal", metallic);
+	IBLShader.SetUniform1f("roughnessVal", roughness);
 	IBLShader.SetUniform1f("ao", 0.3f);
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
+	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.f));
 	model = glm::scale(model, glm::vec3(0.5f));
 	IBLShader.SetUniformMatrix4fv("model", model);
 	mvp = projection * view * model;
@@ -739,15 +795,67 @@ void test::Test_PBR_IBL::OnRender()
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
 	IBLShader.SetUniform1i("irradianceMap", 0);
 
+	IBLShader.SetUniform1f("iblIntensity", iblIntensity);
+
+	IBLShader.SetUniformMatrix4fv("lightVP", lightVP);
+	IBLShader.SetUniform1f("oFar", oFar);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, brdfLUT);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
 	glBindVertexArray(sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+	//axes
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(1.f, 0.f, 0.f, 1.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 1.f, 0.f, 1.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
+	IBLShader.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	IBLShader.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 0.f, 1.f, 1.f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//mdl.Draw(IBLShader, vp);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(3.f, 0.f, 0.f));
+	cube.Draw(IBLShader, vp, model);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);
@@ -801,7 +909,7 @@ void test::Test_PBR_IBL::OnRender()
 	shader.SetUniformMatrix4fv("normalMatrix", normal);
 
 	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//transfer data to single sample framebuffer for postprocess
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, opaqueFB.getID());
@@ -910,14 +1018,14 @@ void test::Test_PBR_IBL::OnRender()
 	//glEnable(GL_CULL_FACE);
 }
 
-void test::Test_PBR_IBL::OnImGuiRender()
+void test::Test_Scenes::OnImGuiRender()
 {
 	//imgui
 	{
 		static float f = 0.0f;
 		static int counter = 0;
 
-		ImGui::Begin("color");
+		ImGui::Begin("Model");
 
 		ImGui::SliderFloat("metallic", &metallic, 0.f, 1.f);
 		ImGui::SliderFloat("roughness", &roughness, 0.f, 1.f);
@@ -929,18 +1037,19 @@ void test::Test_PBR_IBL::OnImGuiRender()
 		ImGui::SliderInt("env map", &swtch, 0, 2);
 		ImGui::SliderInt("tonemapping", &mapped, 0, 1);
 		ImGui::SliderFloat("lod", &lod, 0.f, 5.f);
+		ImGui::SliderFloat("ibl Intensity", &iblIntensity, 0.f, 1.f);
 
 		ImGui::End();
 	}
 }
 
-void test::Test_PBR_IBL::CursorInput(double xPos, double yPos)
+void test::Test_Scenes::CursorInput(double xPos, double yPos)
 {
 	if (mouseCtrl == 1)
 		cam.ProcessMouseInput(xPos, yPos);
 }
 
-void test::Test_PBR_IBL::ScrollInput(double xOffset, double yOffset)
+void test::Test_Scenes::ScrollInput(double xOffset, double yOffset)
 {
 	cam.ProcessScroll(xOffset, yOffset);
 }

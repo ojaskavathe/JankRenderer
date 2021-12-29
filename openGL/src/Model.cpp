@@ -22,17 +22,38 @@ Model::Model(const char* path)
 	traverseNode(JSON["nodes"].size() - 1);
 }
 
+Model::Model(std::vector<Mesh>& meshes)
+	:m_Meshes(meshes)
+{
+	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
+		m_ModelMat.push_back(glm::mat4(1.f));
+}
+
 void Model::Draw(const Shader& shader, const glm::mat4& vp)
 {
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
 		m_Meshes[i].Draw(shader, m_ModelMat[i], vp);
 }
 
-void Model::DrawShadowMap(Shader& shader, glm::mat4& vp)
+void Model::Draw(const Shader& shader, const glm::mat4& vp, const glm::mat4& model)
+{
+	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
+		m_Meshes[i].Draw(shader, (m_ModelMat[i] * model), vp);
+}
+
+void Model::DrawShadowMap(const Shader& shader, const glm::mat4& vp)
 {
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
 		m_Meshes[i].DrawShadowMap(shader, m_ModelMat[i], vp);
 }
+
+void Model::DrawShadowMap(const Shader& shader, const glm::mat4& vp, const glm::mat4& model)
+{
+	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
+		m_Meshes[i].DrawShadowMap(shader, (m_ModelMat[i] * model), vp);
+}
+
+//------------MODEL LOADING--------------//
 
 void Model::loadMesh(unsigned int meshInd)
 {

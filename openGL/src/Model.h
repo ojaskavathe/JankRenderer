@@ -14,12 +14,19 @@ class Model
 {
 public:
 	Model(const char* path);
+	Model(std::vector<Mesh>& meshes);
 
 	void Draw(const Shader& shader, const glm::mat4& vp);
+	void Draw(const Shader& shader, const glm::mat4& vp, const glm::mat4& model);
 
-	void DrawShadowMap(Shader& shader, glm::mat4& vp);
+	void DrawShadowMap(const Shader& shader, const glm::mat4& vp);
+	void DrawShadowMap(const Shader& shader, const glm::mat4& vp, const glm::mat4& model);
 
 private:
+	std::vector<Mesh> m_Meshes;
+	std::vector<glm::mat4> m_ModelMat;
+
+	//-------MODEL LOADING-------//
 	json JSON;
 
 	std::string m_CurrIndent;
@@ -29,9 +36,6 @@ private:
 
 	std::vector<Material> m_Materials;
 	std::vector<TextureFile> m_Textures;
-
-	std::vector<Mesh> m_Meshes;
-	std::vector<glm::mat4> m_ModelMat;
 
 	void loadMesh(unsigned int meshInd);
 	Primitive loadPrimitive(json prim);

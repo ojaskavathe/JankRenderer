@@ -2,7 +2,7 @@
 #include "Samples.h"
 
 namespace Samples {
-	Mesh Cube()
+	Model Cube()
 	{
 		std::vector<Primitive> cube;
 		cube.reserve(1);
@@ -56,7 +56,10 @@ namespace Samples {
 
 		cube.push_back(Primitive{ vertices, indices, material });
 
-		return Mesh(cube);
+		std::vector<Mesh> meshes;
+		meshes.reserve(1);
+		meshes.emplace_back(Mesh(cube));
+		return Model(meshes);
 	}
 
 	Mesh Sphere()

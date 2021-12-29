@@ -1,8 +1,8 @@
 #pragma once
-#include "Mesh.h"
+#include "Model.h"
 
 namespace Samples {
-	Mesh Cube();
+	Model Cube();
 
 	Mesh Sphere(); //reqiures GL_TRIANGLE_STRIP
 }

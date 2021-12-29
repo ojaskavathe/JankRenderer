@@ -1,23 +1,21 @@
 #pragma once
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include "Renderer.h"
 #include "Test.h"
 #include "FrameBuffer.h"
 #include "Cubemap.h"
 #include "Camera.h"
-#include "TextureFile.h"
-
-#include "Debug.h"
-
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
+#include "Model.h"
+#include "Samples/Samples.h"
 
 namespace test {
-	class Test_ShadowMappingOmni : public Test
+	class Test_Scenes : public Test
 	{
 	public:
-		Test_ShadowMappingOmni();
-		~Test_ShadowMappingOmni();
+		Test_Scenes();
+		~Test_Scenes();
 
 		void OnUpdate(float deltaTime, GLFWwindow* window) override;
 		void OnRender() override;
@@ -42,35 +40,35 @@ namespace test {
 			 1.0f,  1.0, -1.0f,  0.0f,  0.0f, -1.0f,	1.0f, 1.0f,
 			-1.0f, -1.0, -1.0f,  0.0f,  0.0f, -1.0f,	0.0f, 0.0f,
 			-1.0f,  1.0, -1.0f,  0.0f,  0.0f, -1.0f,	0.0f, 1.0f,
-			 
+
 			-1.0f, -1.0,  1.0f,  0.0f,  0.0f,  1.0f,	0.0f, 0.0f,
 			 1.0f, -1.0,  1.0f,  0.0f,  0.0f,	1.0f,	1.0f, 0.0f,
 			 1.0f,  1.0,  1.0f,  0.0f,  0.0f,	1.0f,	1.0f, 1.0f,
 			 1.0f,  1.0,  1.0f,  0.0f,  0.0f,	1.0f,	1.0f, 1.0f,
 			-1.0f,  1.0,  1.0f,  0.0f,  0.0f,	1.0f,	0.0f, 1.0f,
 			-1.0f, -1.0,  1.0f,  0.0f,  0.0f,	1.0f,	0.0f, 0.0f,
-			 
+
 			-1.0f,  1.0,  1.0f, -1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			-1.0f,  1.0, -1.0f, -1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
 			-1.0f, -1.0, -1.0f, -1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			-1.0f, -1.0, -1.0f, -1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			-1.0f, -1.0,  1.0f, -1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
 			-1.0f,  1.0,  1.0f, -1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
-			 
+
 			 1.0f,  1.0,  1.0f,  1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			 1.0f, -1.0, -1.0f,  1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			 1.0f,  1.0, -1.0f,  1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
 			 1.0f, -1.0, -1.0f,  1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
 			 1.0f,  1.0,  1.0f,  1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
 			 1.0f, -1.0,  1.0f,  1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
-			
+
 			-1.0f, -1.0, -1.0f,  0.0f, -1.0f,  0.0f,	0.0f, 1.0f,
 			 1.0f, -1.0, -1.0f,  0.0f, -1.0f,  0.0f,	1.0f, 1.0f,
 			 1.0f, -1.0,  1.0f,  0.0f, -1.0f,  0.0f,	1.0f, 0.0f,
 			 1.0f, -1.0,  1.0f,  0.0f, -1.0f,  0.0f,	1.0f, 0.0f,
 			-1.0f, -1.0,  1.0f,  0.0f, -1.0f,  0.0f,	0.0f, 0.0f,
 			-1.0f, -1.0, -1.0f,  0.0f, -1.0f,  0.0f,	0.0f, 1.0f,
-			
+
 			-1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f,	0.0f, 1.0f,
 			 1.0f,  1.0,  1.0f,  0.0f,  1.0f,  0.0f,	1.0f, 0.0f,
 			 1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f,	1.0f, 1.0f,
@@ -87,7 +85,6 @@ namespace test {
 			glm::vec3(-3.0f, 0.0f, 0.0f)
 		};
 
-		//for framebuffers
 		float quadVerts[24] = {
 			// positions   // texCoords
 			-1.0f,  1.0f,  0.0f, 1.0f,
@@ -110,26 +107,59 @@ namespace test {
 			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 
+		int nrRows = 7;
+		int nrColumns = 7;
+		float spacing = 2.5;
+
 		Shader shader;
+		Shader PBRShader;
+		Shader IBLShader;
 		Shader lightShader;
-		Shader screenShader;
+
 		Shader depthMapShader;
-		Shader basicShader;
 		Shader omniDepthShader;
+
+		Shader experimental;
+		Shader compositeShader;
+		Shader screenShader;
+
+		Shader hdriShader;
+		Shader cubemapShader;
+		Shader irradianceShader;
+		Shader prefilterShader;
+		Shader brdfShader;
 
 		VertexArray va;
 		VertexArray lightVA;
 		VertexArray quadVA;
 		VertexArray planeVA;
 
+		Model cube = Samples::Cube();
+
+		unsigned int sphereVAO;
+		unsigned int indexCount;
+
 		//shadowmap
 		FrameBuffer depthMapFB;
 		unsigned int depthMap;
 
+		FrameBuffer opaqueFB;
+		unsigned int opaqueBuffer, depthBuffer;
+
+		FrameBuffer transparentFB;
+		unsigned int accumTexture, revealTexture;
+
+		FrameBuffer opaqueScreenFB;
+		unsigned int opaqueScreenTex;
+
+		FrameBuffer transparentScreenFB;
+		unsigned int accumScreenTex, revealScreenTex;
+
+		glm::vec4 zeroFillerVec = glm::vec4(0.0f);
+		glm::vec4 oneFillerVec = glm::vec4(1.0f);
 
 		float near = 0.1f;
 		float far = 100.0f;
-
 
 		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
 		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
@@ -137,7 +167,7 @@ namespace test {
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)800 / 600, near, far);
 
 		glm::mat4 mvp = glm::mat4(1.0f);
 		glm::mat4 vp = glm::mat4(1.0f);
@@ -148,9 +178,9 @@ namespace test {
 		glm::mat4 lightProjection = glm::mat4(1.0f);
 		glm::mat4 lightView = glm::mat4(1.0f);
 		glm::mat4 lightVP = glm::mat4(1.0f);
-		
+
 		unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
-		
+
 		float shadowNear = 1.0f;
 		float shadowFar = 15.f;
 
@@ -161,23 +191,22 @@ namespace test {
 		unsigned int depthCubemap;
 
 		float oAspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
-		float oNear = 1.0f;
+		float oNear = 0.1f;
 		float oFar = 25.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), oAspect, oNear, oFar);
 
-		Renderer renderer;
-		
+		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
-		
-		glm::vec3 objectColor = glm::vec3(1.0f, 1.0f, 1.0f);
-		glm::vec3 pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+		glm::vec3 pointLightColor = glm::vec3(10.f);
 		glm::vec3 pointLightAmbient = glm::vec3(0.2f);
 		glm::vec3 pointLightDiffuse = glm::vec3(1.0f);
-		glm::vec3 pointLightSpecular = glm::vec3(1.0f);
+		glm::vec3 pointLightSpecular = glm::vec3(0.3f);
 
-		glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec3 dirLightColor = glm::vec3(1.f);
 		glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
-		glm::vec3 dirLightAmbient = glm::vec3(0.5f);
+		glm::vec3 dirLightAmbient = glm::vec3(0.1f);
 		glm::vec3 dirLightDiffuse = glm::vec3(0.4f);
 		glm::vec3 dirLightSpecular = glm::vec3(0.4f);
 
@@ -188,5 +217,26 @@ namespace test {
 		glm::vec3 attenuationParams = glm::vec3(1.0f, 0.3f, 0.44f);
 
 		glm::vec4 color = glm::vec4(0.5f, 0.0f, 0.0f, 1.0f);
+
+		float exposure = 0.4f;
+
+		float metallic = 0.5f;
+		float roughness = 0.1f;
+
+		unsigned int hdrTex;
+		unsigned int envCubemap;
+		unsigned int irradianceMap;
+		unsigned int prefilterMap;
+		unsigned int brdfLUT;
+
+		unsigned int maxMipLevels = 5;
+
+		unsigned int envFB, envRB;
+		int swtch = 0;
+		float lod = 0.f;
+		int mapped = 0;
+		float iblIntensity = 1.f;
+
+		Model mdl = Model("res/models/voronoi/voronoi.gltf");
 	};
 }

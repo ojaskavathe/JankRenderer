@@ -74,6 +74,6 @@ class Mesh
 
 public:
 	Mesh(std::vector<Primitive> primitives);
-	void Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
-	void DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp);
+	const void const Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
+	const void const DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
 };

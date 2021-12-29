@@ -134,7 +134,7 @@ namespace test {
 		VertexArray quadVA;
 		VertexArray planeVA;
 
-		Mesh cube = Samples::Cube();
+		Model cube = Samples::Cube();
 
 		unsigned int sphereVAO;
 		unsigned int indexCount;
