@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Samples.h"
 
 namespace Samples {
@@ -64,13 +65,8 @@ namespace Samples {
 		sphere.reserve(1);
 
 		std::vector<Vertex> vertices;
-
-		std::vector<glm::vec3> positions;
-		std::vector<glm::vec2> uv;
-		std::vector<glm::vec3> normals;
 		std::vector<unsigned int> indices;
 
-		unsigned int indexCount;
 		const unsigned int X_SEGMENTS = 64;
 		const unsigned int Y_SEGMENTS = 64;
 		const float PI = 3.14159265359;
@@ -91,10 +87,6 @@ namespace Samples {
 						glm::vec2(xSegment, ySegment)
 					)
 				);
-
-				/*positions.push_back(glm::vec3(xPos, yPos, zPos));
-				uv.push_back(glm::vec2(xSegment, ySegment));
-				normals.push_back(glm::vec3(xPos, yPos, zPos));*/
 			}
 		}
 

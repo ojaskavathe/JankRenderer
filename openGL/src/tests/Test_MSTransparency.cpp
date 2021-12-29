@@ -1,6 +1,7 @@
 #include "Test_MSTransparency.h"
 #include "VertexBufferLayout.h"
 #include "imgui/imgui.h"
+#include <stb_image/stb_image.h>
 
 test::Test_MSTransparency::Test_MSTransparency()
 	:shader("res/shaders/shaderv.vert", "res/shaders/shaderf.frag"),

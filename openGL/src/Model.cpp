@@ -1,3 +1,11 @@
+#include <fstream>
+#include <iterator> //for getFileContents
+#include <string>
+#include <algorithm> //for std::remove
+
+#include <stb_image/stb_image.h>
+#include <glm/gtc/quaternion.hpp>
+
 #include "Model.h"
 
 Model::Model(const char* path)

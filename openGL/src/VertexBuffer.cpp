@@ -1,5 +1,5 @@
 #include "VertexBuffer.h"
-#include "Renderer.h"
+#include <glad/glad.h>
 
 VertexBuffer::VertexBuffer()
 {

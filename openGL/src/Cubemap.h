@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
-#include "Renderer.h"
-#include "VertexBufferLayout.h"
-#include "vendor\stb_image\stb_image.h"
+#include <string>
+#include "VertexArray.h"
+#include "Shader.h"
 
 class Cubemap
 {

@@ -1,4 +1,7 @@
 #pragma once
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include "Renderer.h"
 #include "Test.h"
 #include "FrameBuffer.h"
@@ -6,10 +9,6 @@
 #include "Camera.h"
 #include "Model.h"
 #include "Samples/Samples.h"
-
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
 
 namespace test {
 	class Test_Model : public Test
@@ -168,7 +167,7 @@ namespace test {
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)800 / 600, near, far);
 
 		glm::mat4 mvp = glm::mat4(1.0f);
 		glm::mat4 vp = glm::mat4(1.0f);
@@ -195,8 +194,6 @@ namespace test {
 		float oNear = 0.1f;
 		float oFar = 25.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), oAspect, oNear, oFar);
-
-		Renderer renderer;
 
 		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 

@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Renderer.h"
+#include <string>
 
 class TextureFile
 {
@@ -13,10 +12,10 @@ private:
 public:
 	TextureFile(
 		const std::string& path,
-		unsigned int magFilter = GL_LINEAR,
-		unsigned int minFilter = GL_LINEAR_MIPMAP_LINEAR,
-		unsigned int wrapS = GL_REPEAT,
-		unsigned int wrapT = GL_REPEAT
+		unsigned int magFilter = 0x2601, //GL_LINEAR
+		unsigned int minFilter = 0X2703, //GL_LINEAR_MIPMAP_LINEAR
+		unsigned int wrapS = 0x2901, //GL_REPEAT
+		unsigned int wrapT = 0x2901 //GL_REPEAT
 	);
 	TextureFile();
 	~TextureFile();

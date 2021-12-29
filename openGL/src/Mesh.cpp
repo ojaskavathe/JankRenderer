@@ -1,3 +1,8 @@
+#include <iostream>
+#include <string>
+#include <glm\gtc\matrix_transform.hpp>
+
+#include "IndexBuffer.h"
 #include "Mesh.h"
 
 Mesh::Mesh(std::vector<Primitive> primitives)
@@ -84,6 +89,11 @@ void Mesh::SetupMesh()
 
 		i.vao.Bind();
 
+		/*for (const auto& j : i.vertices) {
+			std::cout << j.tangent.x << std::endl;
+		}
+		std::cout << std::endl;*/
+
 		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
 
 		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
@@ -139,6 +149,7 @@ void Mesh::InitTangentBasis(Primitive& prim)
 		glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
 		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
 
+		//since the triangle vertices are just references, setting them sets the actual vertices
 		prim.Triangles[i].v1.tangent = tangent;
 		prim.Triangles[i].v2.tangent = tangent;
 		prim.Triangles[i].v3.tangent = tangent;

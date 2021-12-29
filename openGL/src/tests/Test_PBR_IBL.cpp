@@ -1,3 +1,6 @@
+#include <iostream>
+
+#include <stb_image/stb_image.h>
 #include "Test_PBR_IBL.h"
 #include "VertexBufferLayout.h"
 #include "imgui/imgui.h"

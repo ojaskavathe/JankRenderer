@@ -1,16 +1,13 @@
-#include <glad\glad.h>
+#include "Renderer.h"
 #include <GLFW\glfw3.h>
 
 #include "Camera.h"
-
-#include "Renderer.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
 #include "tests/Test_Model.h"
-#include "tests/Test_PBR.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);

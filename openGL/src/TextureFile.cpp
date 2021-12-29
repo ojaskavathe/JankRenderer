@@ -1,5 +1,7 @@
-#include "TextureFile.h"
+#include <glad/glad.h>
+#include <iostream>
 #include <stb_image\stb_image.h>
+#include "TextureFile.h"
 
 TextureFile::TextureFile(
 	const std::string& path,

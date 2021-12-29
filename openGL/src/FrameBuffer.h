@@ -1,7 +1,4 @@
 #pragma once
-#include "VertexBufferLayout.h"
-#include "Renderer.h"
-#include "Shader.h"
 
 class FrameBuffer
 {
@@ -10,11 +7,11 @@ private:
 	
 public:
 	FrameBuffer();
-	void GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int width = WINDOW_WIDTH, unsigned int height = WINDOW_HEIGHT) const;
-	void GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type, GLenum attachment, unsigned int samples) const;
-	void attachTextureBuffer(GLenum attachment, unsigned int& buffer) const;
-	void attachTextureBufferMS(GLenum attachment, unsigned int& buffer) const;
-	void GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, GLenum type) const;
+	void GenTextureBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, unsigned int type, unsigned int attachment, unsigned int width = 800, unsigned int height = 600) const;
+	void GenTextureBufferMS(unsigned int& buffer, unsigned int internalFormat, unsigned int format, unsigned int type, unsigned int attachment, unsigned int samples) const;
+	void attachTextureBuffer(unsigned int attachment, unsigned int& buffer) const;
+	void attachTextureBufferMS(unsigned int attachment, unsigned int& buffer) const;
+	void GenRenderBuffer(unsigned int& buffer, unsigned int internalFormat, unsigned int format, unsigned int type) const;
 	void CheckStatus() const;
 	void Bind() const;
 	void Unbind() const;

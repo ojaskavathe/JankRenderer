@@ -7,8 +7,7 @@
 #include <vector>
 
 #include "TextureFile.h"
-#include "Renderer.h"
-#include "VertexBufferLayout.h"
+#include "VertexArray.h"
 #include "Shader.h"
 
 struct Vertex
@@ -51,10 +50,6 @@ struct Material
 	TextureFile albedoTex;
 	TextureFile metallicRoughnessTex;
 	TextureFile normalTex;
-
-	/*Material(glm::vec4 albedo, float metallic, float roughness)
-		: albedo(albedo), metallic(metallic), roughness(roughness)
-	{};*/
 };
 
 struct Primitive

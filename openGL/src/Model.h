@@ -1,21 +1,12 @@
 #pragma once
 
 #include <iostream>
-
-#include <fstream>
-#include <iterator>
 #include <string>
-
-#include <algorithm> //for std::remove
 
 #include <json/json.h>
 
 #include "Shader.h"
 #include "Mesh.h"
-#include "vendor\stb_image\stb_image.h"
-
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp>
 
 using json = nlohmann::json;
 

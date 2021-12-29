@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "Renderer.h"
+#include <glad/glad.h>
 
 struct VertexBufferElement 
 {
@@ -17,7 +17,7 @@ struct VertexBufferElement
 		case GL_UNSIGNED_INT:	return 4;
 		case GL_UNSIGNED_BYTE:	return 1;
 		}
-		ASSERT(false);
+		__debugbreak();
 		return 0;
 	}
 };

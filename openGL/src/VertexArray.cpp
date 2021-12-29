@@ -1,6 +1,4 @@
 #include "VertexArray.h"
-#include "VertexBufferLayout.h"
-#include "Renderer.h"
 
 VertexArray::VertexArray()
 	:currentPos(0)

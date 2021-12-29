@@ -1,6 +1,7 @@
 #include "Test_msFB.h"
 #include "VertexBufferLayout.h"
 #include "imgui/imgui.h"
+#include <stb_image/stb_image.h>
 
 test::Test_msFB::Test_msFB()
 	:shader("res/shaders/basicv.vert", "res/shaders/basicf.frag"),
