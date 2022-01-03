@@ -4,5 +4,5 @@
 namespace Samples {
 	Model Cube();
 
-	Mesh Sphere(); //reqiures GL_TRIANGLE_STRIP
+	Model Sphere();
 }

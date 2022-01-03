@@ -19,7 +19,7 @@ struct Vertex
 	glm::vec3 tangent;
 	glm::vec3 bitangent;
 
-	Vertex(glm::vec3 pos, glm::vec3 norm, glm::vec2 uv) 
+	Vertex(const glm::vec3& pos, const glm::vec3& norm, const glm::vec2& uv) 
 		: position(pos), normal(norm), texCoord(uv), tangent(glm::vec3(0)), bitangent(glm::vec3(0))
 	{
 	}
@@ -41,7 +41,7 @@ struct Material
 {
 	glm::vec4 albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
 	float metallic = 0.f;
-	float roughness = 0.7f;
+	float roughness = 0.1f;
 
 	bool hasAlbedoTex = false;
 	bool hasMetRoughTex = false;

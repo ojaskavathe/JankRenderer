@@ -37,18 +37,18 @@ private:
 	std::vector<Material> m_Materials;
 	std::vector<TextureFile> m_Textures;
 
-	void loadMesh(unsigned int meshInd);
-	Primitive loadPrimitive(json prim);
+	void loadMesh(const unsigned int& meshInd);
+	Primitive loadPrimitive(const json& prim);
 
-	void traverseNode(unsigned int nextNode, const glm::mat4& mat = glm::mat4(1.f));
+	void traverseNode(const unsigned int& nextNode, const glm::mat4& mat = glm::mat4(1.f));
 
 	std::vector<unsigned char> getData();
-	std::vector<float> getFloats(json accessor);
-	std::vector<unsigned int> getIndices(json accessor);
+	std::vector<float> getFloats(const json& accessor);
+	std::vector<unsigned int> getIndices(const json& accessor);
 	std::vector<Material> getMaterials();
 	std::vector<TextureFile> getTextures();
 
-	std::vector<Vertex> groupVertices(std::vector<glm::vec3> positions, std::vector<glm::vec3> normals, std::vector<glm::vec2> UVs);
+	std::vector<Vertex> groupVertices(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& UVs);
 
 	std::vector<glm::vec2> groupVec2(const std::vector<float>& floatVec);
 	std::vector<glm::vec3> groupVec3(const std::vector<float>& floatVec);

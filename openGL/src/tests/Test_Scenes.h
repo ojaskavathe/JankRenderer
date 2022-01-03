@@ -28,9 +28,20 @@ namespace test {
 
 	private:
 
+		Renderer renderer;
+		Scene scene;
+
 		int cameraLock = 0;
 		int inputFlag = 0;
 		int mouseCtrl = 0;
+
+		glm::vec3 cubepositions[5] = {
+			glm::vec3(3.0f, 0.0f, 0.0f),
+			glm::vec3(1.5f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(-1.5f, 0.0f, 0.0f),
+			glm::vec3(-3.0f, 0.0f, 0.0f)
+		};
 
 		float vertices[288] = {
 			//pos				 //normals				//uv
@@ -77,14 +88,6 @@ namespace test {
 			-1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f, 	0.0f, 1.0f
 		};
 
-		glm::vec3 cubepositions[5] = {
-			glm::vec3(3.0f, 0.0f, 0.0f),
-			glm::vec3(1.5f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(-1.5f, 0.0f, 0.0f),
-			glm::vec3(-3.0f, 0.0f, 0.0f)
-		};
-
 		float quadVerts[24] = {
 			// positions   // texCoords
 			-1.0f,  1.0f,  0.0f, 1.0f,
@@ -111,37 +114,35 @@ namespace test {
 		int nrColumns = 7;
 		float spacing = 2.5;
 
-		Shader shader;
-		Shader PBRShader;
-		Shader IBLShader;
-		Shader lightShader;
+		Shader shader = Shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag");
+		Shader PBRShader = Shader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag");
+		Shader IBLShader = Shader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag");
+		Shader lightShader = Shader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag");
 
-		Shader depthMapShader;
-		Shader omniDepthShader;
+		Shader depthMapShader = Shader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag");
+		Shader omniDepthShader = Shader("res/shaders/omniDepthShader/oDepthMapv.vert", "res/shaders/omniDepthShader/oDepthMapf.frag", "res/shaders/omniDepthShader/oDepthMapg.geom");
 
-		Shader experimental;
-		Shader compositeShader;
-		Shader screenShader;
+		Shader experimental = Shader("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag");
+		Shader compositeShader = Shader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag");
+		Shader screenShader = Shader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag");
 
-		Shader hdriShader;
-		Shader cubemapShader;
-		Shader irradianceShader;
-		Shader prefilterShader;
-		Shader brdfShader;
+		Shader hdriShader = Shader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag");
+		Shader cubemapShader = Shader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag");
+		Shader irradianceShader = Shader("res/shaders/hdri/convolutionv.vert", "res/shaders/hdri/convolutionf.frag");
+		Shader prefilterShader = Shader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag");
+		Shader brdfShader = Shader("res/shaders/hdri/brdfConvolutionv.vert", "res/shaders/hdri/brdfConvolutionf.frag");
 
 		VertexArray va;
 		VertexArray lightVA;
 		VertexArray quadVA;
 		VertexArray planeVA;
 
-		Model cube = Samples::Cube();
+		Object cubeObj = Object(Samples::Cube(), &IBLShader);
+		Object sphereObj = Object(Samples::Sphere(), &IBLShader);
+		Object mdl = Object(Model("res/models/monitor/monitor.gltf"), &IBLShader);
 
 		unsigned int sphereVAO;
 		unsigned int indexCount;
-
-		//shadowmap
-		FrameBuffer depthMapFB;
-		unsigned int depthMap;
 
 		FrameBuffer opaqueFB;
 		unsigned int opaqueBuffer, depthBuffer;
@@ -155,24 +156,15 @@ namespace test {
 		FrameBuffer transparentScreenFB;
 		unsigned int accumScreenTex, revealScreenTex;
 
+		//shadowmap
+		FrameBuffer depthMapFB;
+		unsigned int depthMap;
+
 		glm::vec4 zeroFillerVec = glm::vec4(0.0f);
 		glm::vec4 oneFillerVec = glm::vec4(1.0f);
 
 		float near = 0.1f;
 		float far = 100.0f;
-
-		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
-		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
-
-		//set projection matrices
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)800 / 600, near, far);
-
-		glm::mat4 mvp = glm::mat4(1.0f);
-		glm::mat4 vp = glm::mat4(1.0f);
-
-		glm::mat4 normal = glm::mat4(1.0f);
 
 		//shadowmap matrices
 		glm::mat4 lightProjection = glm::mat4(1.0f);
@@ -197,6 +189,19 @@ namespace test {
 
 		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
+		//glm::vec3 lightPosition = cam.GetCamPosition() + glm::vec3(0.0f, 4.0f, 0.0f);
+		glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
+
+		//set projection matrices
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)800 / 600, near, far);
+
+		glm::mat4 mvp = glm::mat4(1.0f);
+		glm::mat4 vp = glm::mat4(1.0f);
+
+		glm::mat4 normal = glm::mat4(1.0f);
+
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
 
 		glm::vec3 pointLightColor = glm::vec3(10.f);
@@ -209,6 +214,9 @@ namespace test {
 		glm::vec3 dirLightAmbient = glm::vec3(0.1f);
 		glm::vec3 dirLightDiffuse = glm::vec3(0.4f);
 		glm::vec3 dirLightSpecular = glm::vec3(0.4f);
+		
+		PointLight pointlight = PointLight(pointLightPosition, pointLightColor);
+		DirLight dirlight = DirLight(dirLightDirection, dirLightColor);
 
 		glm::vec3 matDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 matSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -237,6 +245,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/voronoi/voronoi.gltf");
+		//Model mdl = Model("res/models/sphere/monitor.gltf");
 	};
 }

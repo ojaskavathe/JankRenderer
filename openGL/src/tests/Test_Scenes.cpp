@@ -3,20 +3,6 @@
 #include <stb_image/stb_image.h>
 
 test::Test_Scenes::Test_Scenes()
-	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
-	PBRShader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag"),
-	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
-	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
-	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
-	omniDepthShader("res/shaders/omniDepthShader/oDepthMapv.vert", "res/shaders/omniDepthShader/oDepthMapf.frag", "res/shaders/omniDepthShader/oDepthMapg.geom"),
-	experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag"),
-	compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag"),
-	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
-	hdriShader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag"),
-	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag"),
-	irradianceShader("res/shaders/hdri/convolutionv.vert", "res/shaders/hdri/convolutionf.frag"),
-	prefilterShader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag"),
-	brdfShader("res/shaders/hdri/brdfConvolutionv.vert", "res/shaders/hdri/brdfConvolutionf.frag")
 {
 	//init arrays and buffers
 	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
@@ -148,6 +134,8 @@ test::Test_Scenes::Test_Scenes()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+
+	glBindVertexArray(0);
 
 	//loading hdri texture
 	stbi_set_flip_vertically_on_load(true);
@@ -382,6 +370,16 @@ test::Test_Scenes::Test_Scenes()
 	//wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	scene.Add(cubeObj);
+	scene.Add(mdl);
+	//scene.Add(sphereObj);
+
+	scene.Add(pointlight);
+	scene.Add(dirlight);
+
+	renderer.SetCamera(cam);
+	renderer.SetScene(scene);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
@@ -444,6 +442,7 @@ test::Test_Scenes::Test_Scenes()
 	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.f, 0.f, 1.f));
 	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("dirLightColor", dirLightColor);
+
 	IBLShader.SetUniform1i("irradianceMap", 0);
 	IBLShader.SetUniform1i("prefilterMap", 1);
 	IBLShader.SetUniform1i("brdfLUT", 2);
@@ -453,8 +452,9 @@ test::Test_Scenes::Test_Scenes()
 
 	IBLShader.SetUniform1i("albedoTex", 5);
 	IBLShader.SetUniform1i("metallicRoughnessTex", 6);
-
 	IBLShader.SetUniform1i("normalTex", 7);
+	
+
 }
 
 test::Test_Scenes::~Test_Scenes()
@@ -539,7 +539,7 @@ void test::Test_Scenes::OnRender()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	mdl.DrawShadowMap(depthMapShader, lightVP);
+	//mdl.DrawShadowMap(depthMapShader, lightVP);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -627,7 +627,7 @@ void test::Test_Scenes::OnRender()
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
 
-	mdl.DrawShadowMap(omniDepthShader, vp);
+	//mdl.DrawShadowMap(omniDepthShader, vp);
 
 	//ground
 	model = glm::mat4(1.0f);
@@ -855,7 +855,13 @@ void test::Test_Scenes::OnRender()
 	//mdl.Draw(IBLShader, vp);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(3.f, 0.f, 0.f));
-	cube.Draw(IBLShader, vp, model);
+	
+	cubeObj.modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(3.f, 0.f, 0.f));
+	sphereObj.modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 2.f, 0.f));
+
+	//cube.Draw(IBLShader, vp, model);
+	renderer.DrawScene();
+
 
 	//HDRI
 	glDisable(GL_CULL_FACE);

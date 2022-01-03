@@ -29,6 +29,7 @@
     <ClCompile Include="src\Samples\Samples.cpp" />
     <ClInclude Include="src\Samples\Samples.h" />
     <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Scenes\Scene.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\tests\Test_Instancing.cpp" />
     <ClCompile Include="src\tests\Test_Model.cpp" />

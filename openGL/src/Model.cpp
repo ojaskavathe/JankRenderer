@@ -55,7 +55,7 @@ void Model::DrawShadowMap(const Shader& shader, const glm::mat4& vp, const glm::
 
 //------------MODEL LOADING--------------//
 
-void Model::loadMesh(unsigned int meshInd)
+void Model::loadMesh(const unsigned int& meshInd)
 {
 	std::vector<Primitive> primitives;
 	json prims = JSON["meshes"][meshInd]["primitives"];
@@ -67,7 +67,7 @@ void Model::loadMesh(unsigned int meshInd)
 	m_Meshes.push_back(Mesh(primitives));
 }
 
-Primitive Model::loadPrimitive(json prim)
+Primitive Model::loadPrimitive(const json& prim)
 {
 	Primitive primitive;
 
@@ -95,7 +95,7 @@ Primitive Model::loadPrimitive(json prim)
 	return primitive;
 }
 
-void Model::traverseNode(unsigned int nextNode, const glm::mat4& mat)
+void Model::traverseNode(const unsigned int& nextNode, const glm::mat4& mat)
 {
 	json node = JSON["nodes"][nextNode];
 
@@ -177,7 +177,7 @@ std::vector<unsigned char> Model::getData()
 	return data;
 }
 
-std::vector<float> Model::getFloats(json accessor)
+std::vector<float> Model::getFloats(const json& accessor)
 {
 	std::vector<float> floatVec;
 
@@ -218,7 +218,7 @@ std::vector<float> Model::getFloats(json accessor)
 	return floatVec;
 }
 
-std::vector<unsigned int> Model::getIndices(json accessor)
+std::vector<unsigned int> Model::getIndices(const json& accessor)
 {
 	std::vector<unsigned int> indicesVec;
 
@@ -355,9 +355,9 @@ std::vector<TextureFile> Model::getTextures()
 
 std::vector<Vertex> Model::groupVertices
 (
-	std::vector<glm::vec3> positions,
-	std::vector<glm::vec3> normals,
-	std::vector<glm::vec2> UVs
+	const std::vector<glm::vec3>& positions,
+	const std::vector<glm::vec3>& normals,
+	const std::vector<glm::vec2>& UVs
 )
 {
 	std::vector<Vertex> vertices;

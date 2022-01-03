@@ -52,7 +52,7 @@ namespace Samples {
 		Material material;
 		material.albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
 		material.metallic = 0.f;
-		material.roughness = 0.5f;
+		material.roughness = 0.1f;
 
 		cube.push_back(Primitive{ vertices, indices, material });
 
@@ -62,66 +62,8 @@ namespace Samples {
 		return Model(meshes);
 	}
 
-	Mesh Sphere()
+	Model Sphere()
 	{
-		std::vector<Primitive> sphere;
-		sphere.reserve(1);
-
-		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
-
-		const unsigned int X_SEGMENTS = 64;
-		const unsigned int Y_SEGMENTS = 64;
-		const float PI = 3.14159265359;
-		for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-		{
-			for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
-			{
-				float xSegment = (float)x / (float)X_SEGMENTS;
-				float ySegment = (float)y / (float)Y_SEGMENTS;
-				float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-				float yPos = std::cos(ySegment * PI);
-				float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-
-				vertices.push_back(
-					Vertex(
-						glm::vec3(xPos, yPos, zPos),
-						glm::vec3(xPos, yPos, zPos),
-						glm::vec2(xSegment, ySegment)
-					)
-				);
-			}
-		}
-
-		bool oddRow = false;
-		for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
-		{
-			if (!oddRow) // even rows: y == 0, y == 2; and so on
-			{
-				for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-				{
-					indices.push_back(y * (X_SEGMENTS + 1) + x);
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-				}
-			}
-			else
-			{
-				for (int x = X_SEGMENTS; x >= 0; --x)
-				{
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-					indices.push_back(y * (X_SEGMENTS + 1) + x);
-				}
-			}
-			oddRow = !oddRow;
-		}
-
-		Material material;
-		material.albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
-		material.metallic = 0.f;
-		material.roughness = 0.5f;
-
-		sphere.push_back(Primitive{ vertices, indices, material });
-
-		return Mesh(sphere);
+		return Model("res/models/sphere/sphere.gltf");
 	}
 }
