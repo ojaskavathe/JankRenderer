@@ -8,7 +8,6 @@
 #include "Cubemap.h"
 #include "Camera.h"
 #include "Model.h"
-#include "Samples/Samples.h"
 
 namespace test {
 	class Test_Model : public Test
@@ -134,8 +133,6 @@ namespace test {
 		VertexArray quadVA;
 		VertexArray planeVA;
 
-		Model cube = Samples::Cube();
-
 		unsigned int sphereVAO;
 		unsigned int indexCount;
 
@@ -237,6 +234,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/voronoi/voronoi.gltf");
+		Model mdl = Model("res/models/texMat/texMat.gltf");
 	};
 }

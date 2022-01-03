@@ -852,10 +852,7 @@ void test::Test_Model::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//mdl.Draw(IBLShader, vp);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.f, 0.f, 0.f));
-	cube.Draw(IBLShader, vp, model);
+	mdl.Draw(IBLShader, vp);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);
