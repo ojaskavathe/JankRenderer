@@ -30,7 +30,6 @@ layout(std430, binding = 1) buffer lights
 	vec4 lightPos[];
 };
 
-uniform vec3 pointLightPos;
 uniform vec3 dirLightDir;
 uniform vec3 pointLightColor;
 uniform vec3 dirLightColor;
@@ -50,8 +49,9 @@ float GeometryGGX(float NdotV, float roughness);
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 
 vec3 calcPointLight(vec3 lightPosition);
+vec3 calcPointLightb(vec3 lightPosition);
 vec3 calcDirLight(vec3 lightDir);
-float CalcPointShadow();
+float CalcPointShadow(vec3 lightPosition);
 float CalcDirShadow();
 
 const float PI = 3.14159265359;
@@ -84,8 +84,9 @@ void main()
 
 	vec3 L0 = vec3(0.0); // <- total outgoing radiance or irradiance
 	
-	for(unsigned int i = 0; i < lightPos.length(); ++i)
-		L0 += calcPointLight(lightPos[i].xyz); 
+	//for(unsigned int i = 0; i < lightPos.length(); ++i)
+		L0 += calcPointLight(lightPos[0].xyz); 
+
 
 	L0 += calcDirLight(dirLightDir); 
 	
@@ -138,12 +139,40 @@ vec3 calcPointLight(vec3 lightPosition)
 	float NoL = max(dot(N, L), 0.0);
 	
 	res = ( kD * albedo / PI + specular ) * radiance * NoL;
-	return (1 - CalcPointShadow()) * res;
+	return (1 - CalcPointShadow(lightPosition)) * res;
 }
 
-float CalcPointShadow()
+vec3 calcPointLightb(vec3 lightPosition)
 {
-	vec3 lightToFrag = FragPos - pointLightPos;
+	vec3 res;
+	vec3 L = normalize(lightPosition - FragPos);
+	vec3 H = normalize(V + L);
+	float lightDist = length(lightPosition - FragPos);
+	float attenuation = 1 / ( lightDist * lightDist );
+	vec3 radiance = pointLightColor * attenuation;
+
+	float NDF = DistributionGGX(N, H, roughness);       
+	float G = GeometrySmith(N, V, L, roughness);
+	vec3 F = FresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0); // <- technically fresnel uses n dot v but ue4 uses h dot v and it kinda looks better so yeah
+
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0)  + 0.0001;
+	vec3 specular = numerator / denominator;  
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+  
+	kD *= 1.0 - metallic;
+
+	float NoL = max(dot(N, L), 0.0);
+	
+	res = ( kD * albedo / PI + specular ) * radiance * NoL;
+	return res;
+}
+
+float CalcPointShadow(vec3 lightPosition)
+{
+	vec3 lightToFrag = FragPos - lightPosition;
 	
 	float currentHitDist = length(lightToFrag);
 	

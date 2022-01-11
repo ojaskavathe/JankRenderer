@@ -561,6 +561,7 @@ void test::Test_Model::OnRender()
 
 	//iblSphere
 	IBLShader.Bind();
+	IBLShader.SetUniform3fv("pointLightColor", pointLightColor);
 	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
 	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
 	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.0f, 0.0f, 1.f));
@@ -594,9 +595,9 @@ void test::Test_Model::OnRender()
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	mdl.Draw(IBLShader, vp);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);
@@ -754,16 +755,11 @@ void test::Test_Model::OnImGuiRender()
 
 		ImGui::Begin("Model");
 
-		ImGui::SliderFloat("metallic", &metallic, 0.f, 1.f);
-		ImGui::SliderFloat("roughness", &roughness, 0.f, 1.f);
-
+		ImGui::ColorEdit3("lightColor", &pointLightColor[0]);
 		ImGui::SliderFloat("exposure", &exposure, 0.f, 1.f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-		ImGui::SliderInt("env map", &swtch, 0, 2);
-		ImGui::SliderInt("tonemapping", &mapped, 0, 1);
-		ImGui::SliderFloat("lod", &lod, 0.f, 5.f);
 		ImGui::SliderFloat("ibl Intensity", &iblIntensity, 0.f, 1.f);
 
 		ImGui::End();
