@@ -111,7 +111,6 @@ namespace test {
 		float spacing = 2.5;
 
 		Shader shader;
-		Shader PBRShader;
 		Shader IBLShader;
 		Shader lightShader;
 
@@ -132,9 +131,6 @@ namespace test {
 		VertexArray lightVA;
 		VertexArray quadVA;
 		VertexArray planeVA;
-
-		unsigned int sphereVAO;
-		unsigned int indexCount;
 
 		//shadowmap
 		FrameBuffer depthMapFB;
@@ -194,6 +190,8 @@ namespace test {
 
 		glm::vec4 clearColor = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
+		unsigned int lightPosSSBO;
+		std::vector<glm::vec4> lightPos;
 		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
 
 		glm::vec3 pointLightColor = glm::vec3(10.f);

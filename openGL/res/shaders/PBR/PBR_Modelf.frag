@@ -25,6 +25,11 @@ uniform sampler2D normalTex;
 uniform float ao;
 uniform float iblIntensity;
 
+layout(std430, binding = 1) buffer lights
+{
+	vec4 lightPos[];
+};
+
 uniform vec3 pointLightPos;
 uniform vec3 dirLightDir;
 uniform vec3 pointLightColor;
@@ -79,7 +84,9 @@ void main()
 
 	vec3 L0 = vec3(0.0); // <- total outgoing radiance or irradiance
 	
-	L0 += calcPointLight(pointLightPos); 
+	for(unsigned int i = 0; i < lightPos.length(); ++i)
+		L0 += calcPointLight(lightPos[i].xyz); 
+
 	L0 += calcDirLight(dirLightDir); 
 	
 	vec3 R = reflect(-V, N);

@@ -4,7 +4,6 @@
 
 test::Test_Model::Test_Model()
 	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
-	PBRShader("res/shaders/PBR/PBRv.vert", "res/shaders/PBR/PBRf.frag"),
 	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
@@ -60,94 +59,15 @@ test::Test_Model::Test_Model()
 	planeVA.AddBuffer(planeVB, planeLayout);
 	planeVA.Unbind();
 
-	//sphereVA
-	glGenVertexArrays(1, &sphereVAO);
-
-	unsigned int vbo, ebo;
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
-
-	std::vector<glm::vec3> positions;
-	std::vector<glm::vec2> uv;
-	std::vector<glm::vec3> normals;
-	std::vector<unsigned int> indices;
-
-	const unsigned int X_SEGMENTS = 64;
-	const unsigned int Y_SEGMENTS = 64;
-	const float PI = 3.14159265359;
-	for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-	{
-		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
-		{
-			float xSegment = (float)x / (float)X_SEGMENTS;
-			float ySegment = (float)y / (float)Y_SEGMENTS;
-			float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-			float yPos = std::cos(ySegment * PI);
-			float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-
-			positions.push_back(glm::vec3(xPos, yPos, zPos));
-			uv.push_back(glm::vec2(xSegment, ySegment));
-			normals.push_back(glm::vec3(xPos, yPos, zPos));
-		}
-	}
-
-	bool oddRow = false;
-	for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
-	{
-		if (!oddRow) // even rows: y == 0, y == 2; and so on
-		{
-			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-			{
-				indices.push_back(y * (X_SEGMENTS + 1) + x);
-				indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-			}
-		}
-		else
-		{
-			for (int x = X_SEGMENTS; x >= 0; --x)
-			{
-				indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-				indices.push_back(y * (X_SEGMENTS + 1) + x);
-			}
-		}
-		oddRow = !oddRow;
-	}
-	indexCount = indices.size();
-
-	std::vector<float> circleData;
-	for (unsigned int i = 0; i < positions.size(); ++i)
-	{
-		circleData.push_back(positions[i].x);
-		circleData.push_back(positions[i].y);
-		circleData.push_back(positions[i].z);
-		if (normals.size() > 0)
-		{
-			circleData.push_back(normals[i].x);
-			circleData.push_back(normals[i].y);
-			circleData.push_back(normals[i].z);
-		}
-		if (uv.size() > 0)
-		{
-			circleData.push_back(uv[i].x);
-			circleData.push_back(uv[i].y);
-		}
-	}
-
-	glBindVertexArray(sphereVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, circleData.size() * sizeof(float), &circleData[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-
-	unsigned int stride = (3 + 2 + 3) * sizeof(float);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+	lightPos.emplace_back(glm::vec4(1.f, 1.0f, 1.4f, 1.f));
+	lightPos.emplace_back(glm::vec4(-1.f, 1.0f, 1.4f, 1.f));
+	
+	//SSBO
+	glGenBuffers(1, &lightPosSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightPosSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, lightPos.size() * sizeof(glm::vec4), &lightPos[0], GL_STATIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, lightPosSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	//loading hdri texture
 	stbi_set_flip_vertically_on_load(true);
@@ -432,11 +352,6 @@ test::Test_Model::Test_Model()
 
 	experimental.SetUniform1f("mat.shininess", matShininess);
 
-	PBRShader.Bind();
-	PBRShader.SetUniform3fv("albedoVal", glm::vec3(0.5f, 0.0f, 0.0f));
-	PBRShader.SetUniform3fv("pointLightColor", pointLightColor);
-	PBRShader.SetUniform3fv("dirLightColor", dirLightColor);
-
 	IBLShader.Bind();
 	IBLShader.SetUniform1i("hasAlbedoTex", 0);
 	IBLShader.SetUniform1i("hasMetRoughTex", 0);
@@ -447,13 +362,14 @@ test::Test_Model::Test_Model()
 	IBLShader.SetUniform1i("irradianceMap", 0);
 	IBLShader.SetUniform1i("prefilterMap", 1);
 	IBLShader.SetUniform1i("brdfLUT", 2);
+	IBLShader.SetUniform1f("iblIntensity", iblIntensity);
+	IBLShader.SetUniform1f("ao", 1.f);
 
 	IBLShader.SetUniform1i("shadowMap", 3);
 	IBLShader.SetUniform1i("shadowCubemap", 4);
 
 	IBLShader.SetUniform1i("albedoTex", 5);
 	IBLShader.SetUniform1i("metallicRoughnessTex", 6);
-
 	IBLShader.SetUniform1i("normalTex", 7);
 }
 
@@ -478,17 +394,17 @@ void test::Test_Model::OnUpdate(float deltaTime, GLFWwindow* window)
 
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		pointLightPosition += glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
+		lightPos[0] += glm::vec4(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed, 1.f);
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		pointLightPosition -= glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed;
+		lightPos[0] -= glm::vec4(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cam.GetCamRight()) * lightSpeed, 1.f);
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		pointLightPosition -= cam.GetCamRight() * lightSpeed;
+		lightPos[0] -= glm::vec4(cam.GetCamRight() * lightSpeed, 1.f);
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		pointLightPosition += cam.GetCamRight() * lightSpeed;
+		lightPos[0] += glm::vec4(cam.GetCamRight() * lightSpeed, 1.f);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		pointLightPosition.y += lightSpeed;
+		lightPos[0].y += lightSpeed;
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		pointLightPosition.y -= lightSpeed;
+		lightPos[0].y -= lightSpeed;
 
 	if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS && inputFlag == 0)
 	{
@@ -547,63 +463,6 @@ void test::Test_Model::OnRender()
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	//axes
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	//cubes
-	va.Bind();
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
-	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-	model = glm::scale(model, glm::vec3(0.25));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	//render pointlight
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, pointLightPosition);
-	model = glm::scale(model, glm::vec3(0.2f));
-	depthMapShader.SetUniformMatrix4fv("model", model);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
 	//Framebuffer: Omni Shadowmap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
@@ -612,17 +471,17 @@ void test::Test_Model::OnRender()
 	glCullFace(GL_FRONT);
 
 	omniDepthShader.Bind();
-	omniDepthShader.SetUniform3fv("lightPos", pointLightPosition);
+	omniDepthShader.SetUniform3fv("lightPos", lightPos[0]);
 	omniDepthShader.SetUniform1f("far_plane", oFar);
 
 	//set light view projection matrices
 	std::vector<glm::mat4> oLightVP;
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-	oLightVP.push_back(shadowProj * glm::lookAt(pointLightPosition, pointLightPosition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+	oLightVP.push_back(shadowProj * glm::lookAt(glm::vec3(lightPos[0]), glm::vec3(lightPos[0]) + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 
 	for (unsigned int i = 0; i < 6; i++)
 		omniDepthShader.SetUniformMatrix4fv("lightVP[" + std::to_string(i) + "]", oLightVP[i]);
@@ -634,56 +493,6 @@ void test::Test_Model::OnRender()
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	//axes
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	//cubes
-	va.Bind();
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
-	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-	model = glm::scale(model, glm::vec3(0.25));
-	omniDepthShader.SetUniformMatrix4fv("model", model);
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	glCullFace(GL_BACK);
 
@@ -713,17 +522,23 @@ void test::Test_Model::OnRender()
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
+	//update SSBO
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightPosSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, lightPos.size() * sizeof(glm::vec4), &lightPos[0], GL_STATIC_DRAW);
+
 	//render pointlight
 	lightShader.Bind();
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, pointLightPosition);
-	model = glm::scale(model, glm::vec3(0.2f));
-	mvp = projection * view * model;
-	lightShader.SetUniformMatrix4fv("mvp", mvp);
 	lightShader.SetUniform3fv("lightColor", pointLightColor); // <- keep in mind MSAA won't work for values > 1
 	lightVA.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
+	for (auto& i : lightPos)
+	{
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(i));
+		model = glm::scale(model, glm::vec3(0.2f));
+		mvp = projection * view * model;
+		lightShader.SetUniformMatrix4fv("mvp", mvp);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
 	//set shader uniforms
 	shader.Bind();
 
@@ -743,60 +558,14 @@ void test::Test_Model::OnRender()
 
 	shader.SetUniform1i("halfkernelWidth", halfkernelWidth);
 
-	//render ground
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.2f, 1.f, 0.2f));
-	shader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	shader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	shader.SetUniformMatrix4fv("normalMatrix", normal);
-	shader.SetUniform4fv("color", glm::vec4(0.5f));
-	planeVA.Bind();
-	//glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	//pbrSphere
-	PBRShader.Bind();
-	PBRShader.SetUniform3fv("camPos", cam.GetCamPosition());
-	PBRShader.SetUniform3fv("pointLightPos", pointLightPosition);
-	PBRShader.SetUniform3fv("dirLightDir", dirLightDirection);
-	PBRShader.SetUniform1f("metallic", metallic);
-	PBRShader.SetUniform1f("roughness", roughness);
-	PBRShader.SetUniform1f("ao", 1.f);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	PBRShader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	PBRShader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	PBRShader.SetUniformMatrix4fv("normalMatrix", normal);
-	
-	glBindVertexArray(sphereVAO);
-	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//iblSphere
 	IBLShader.Bind();
 	IBLShader.SetUniform3fv("camPos", cam.GetCamPosition());
-	IBLShader.SetUniform3fv("pointLightPos", pointLightPosition);
 	IBLShader.SetUniform3fv("dirLightDir", dirLightDirection);
 	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f, 0.0f, 0.0f, 1.f));
-
-	IBLShader.SetUniform1f("metallicVal", metallic);
-	IBLShader.SetUniform1f("roughnessVal", roughness);
-	IBLShader.SetUniform1f("ao", 0.3f);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(3.0f, 1.5f, 0.f));
-	model = glm::scale(model, glm::vec3(0.5f));
-	IBLShader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	IBLShader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
 	IBLShader.SetUniform1i("irradianceMap", 0);
-
 	IBLShader.SetUniform1f("iblIntensity", iblIntensity);
-
 	IBLShader.SetUniformMatrix4fv("lightVP", lightVP);
 	IBLShader.SetUniform1f("oFar", oFar);
 
@@ -811,48 +580,23 @@ void test::Test_Model::OnRender()
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
-	//axes
+	//render ground
 	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(10.f, 0.05f, 0.05f));
+	model = glm::scale(model, glm::vec3(0.2f, 1.f, 0.2f));
 	IBLShader.SetUniformMatrix4fv("model", model);
 	mvp = projection * view * model;
 	IBLShader.SetUniformMatrix4fv("mvp", mvp);
 	normal = glm::transpose(glm::inverse(model));
 	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform4fv("albedoVal", glm::vec4(1.f, 0.f, 0.f, 1.f));
-
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 10.f, 0.05f));
-	IBLShader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	IBLShader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 1.f, 0.f, 1.f));
-
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(0.05f, 0.05f, 10.f));
-	IBLShader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	IBLShader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	IBLShader.SetUniformMatrix4fv("normalMatrix", normal);
-	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.f, 0.f, 1.f, 1.f));
-
-	va.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	IBLShader.SetUniform4fv("albedoVal", glm::vec4(0.5f));
+	IBLShader.SetUniform1f("roughnessVal", 1.f);
+	IBLShader.SetUniform1f("metallicVal", 0.5f);
+	planeVA.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	mdl.Draw(IBLShader, vp);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//HDRI
 	glDisable(GL_CULL_FACE);
@@ -893,20 +637,6 @@ void test::Test_Model::OnRender()
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-
-	shader.Bind();
-	shader.SetUniform4fv("color", glm::vec4(0.0f, 0.0f, 0.5f, 1.0f));
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	shader.SetUniformMatrix4fv("model", model);
-	mvp = projection * view * model;
-	shader.SetUniformMatrix4fv("mvp", mvp);
-	normal = glm::transpose(glm::inverse(model));
-	shader.SetUniformMatrix4fv("normalMatrix", normal);
-
-	glBindVertexArray(sphereVAO);
-	//glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 
 	//transfer data to single sample framebuffer for postprocess
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, opaqueFB.getID());
@@ -955,8 +685,8 @@ void test::Test_Model::OnRender()
 	experimental.SetUniformMatrix4fv("normalMatrix", normal);
 	experimental.SetUniform4fv("color", glm::vec4(1.0f, 0.0f, 0.0f, 0.3f));
 
-	glBindVertexArray(sphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, transparentFB.getID());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, transparentScreenFB.getID());
