@@ -9,7 +9,7 @@
 
 #include "Shader.h"
 
-Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* geometryPath)
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -69,6 +69,39 @@ Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* g
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
 	if (geometryPath != nullptr) glDeleteShader(geometry);
+}
+
+Shader::Shader(const char* computePath)
+{
+	std::string computeCode;
+	std::ifstream cShaderFile;
+
+	//exceptions
+	cShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	try {
+		cShaderFile.open(computePath);
+
+		std::stringstream cShaderStream;
+		cShaderStream << cShaderFile.rdbuf();
+
+		computeCode = cShaderStream.str();
+	}
+	catch (std::ifstream::failure)
+	{
+		std::cout << "[Shader]: Error Reading Shader." << std::endl;
+	}
+
+	const char* cShaderCode = computeCode.c_str();
+
+	unsigned int compute = CompileShader(cShaderCode, GL_COMPUTE_SHADER);
+
+	m_RendererID = glCreateProgram();
+	glAttachShader(m_RendererID, compute);
+
+	glLinkProgram(m_RendererID);
+	CheckCompileErrors(m_RendererID, "m_RendererID");
+
+	glDeleteShader(compute);
 }
 
 Shader::~Shader()

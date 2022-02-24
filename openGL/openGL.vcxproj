@@ -28,6 +28,7 @@
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\tests\Test_Compute.cpp" />
     <ClCompile Include="src\tests\Test_Instancing.cpp" />
     <ClCompile Include="src\tests\Test_Model.cpp" />
     <ClCompile Include="src\TextureFile.cpp" />
@@ -54,6 +55,7 @@
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\tests\Test.h" />
+    <ClInclude Include="src\tests\Test_Compute.h" />
     <ClInclude Include="src\tests\Test_Instancing.h" />
     <ClInclude Include="src\tests\Test_Model.h" />
     <ClInclude Include="src\TextureFile.h" />

@@ -23,7 +23,7 @@ int main()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -66,6 +66,14 @@ int main()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	glEnable(GL_MULTISAMPLE);
+
+	//int a;
+	//glGetIntegerv(GL_MINOR_VERSION, &a);
+
+	//std::cout << a << "\n";
+
+	//https://developer.nvidia.com/content/depth-precision-visualized
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); //set up for depth precision control
 
 	while (!glfwWindowShouldClose(window))
 	{	
