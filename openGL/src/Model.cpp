@@ -11,7 +11,7 @@ Model::Model(const char* path)
 	if (JSON["textures"].is_array()) m_Textures = getTextures();
 	if (JSON["materials"].is_array()) m_Materials = getMaterials();
 
-	traverseNode(JSON["nodes"].size() - 1);
+	traverseNode((unsigned int)JSON["nodes"].size() - 1);
 }
 
 void Model::Draw(Shader& shader, glm::mat4& vp)

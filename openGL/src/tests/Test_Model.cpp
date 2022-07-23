@@ -74,7 +74,7 @@ test::Test_Model::Test_Model()
 
 	const unsigned int X_SEGMENTS = 64;
 	const unsigned int Y_SEGMENTS = 64;
-	const float PI = 3.14159265359;
+	const float PI = 3.14159265359f;
 	for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
 	{
 		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
@@ -112,7 +112,7 @@ test::Test_Model::Test_Model()
 		}
 		oddRow = !oddRow;
 	}
-	indexCount = indices.size();
+	indexCount = (unsigned int)indices.size();
 
 	std::vector<float> circleData;
 	for (unsigned int i = 0; i < positions.size(); ++i)
@@ -283,8 +283,8 @@ test::Test_Model::Test_Model()
 	for (unsigned int mip = 0; mip < 5; ++mip)
 	{
 		//resize frambuffer according to mip level
-		unsigned int mipWidth = 128 * glm::pow(0.5f, mip);
-		unsigned int mipHeight = 128 * glm::pow(0.5f, mip);
+		unsigned int mipWidth = 128 * (unsigned int)glm::pow(0.5f, mip);
+		unsigned int mipHeight = 128 * (unsigned int)glm::pow(0.5f, mip);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, envRB);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);

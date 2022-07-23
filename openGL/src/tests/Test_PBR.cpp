@@ -68,7 +68,7 @@ test::Test_PBR::Test_PBR()
 
 	const unsigned int X_SEGMENTS = 64;
 	const unsigned int Y_SEGMENTS = 64;
-	const float PI = 3.14159265359;
+	const float PI = 3.14159265359f;
 	for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
 	{
 		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
@@ -106,7 +106,7 @@ test::Test_PBR::Test_PBR()
 		}
 		oddRow = !oddRow;
 	}
-	indexCount = indices.size();
+	indexCount = (unsigned int)indices.size();
 
 	std::vector<float> data;
 	for (unsigned int i = 0; i < positions.size(); ++i)
