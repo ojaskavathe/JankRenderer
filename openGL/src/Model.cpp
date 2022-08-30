@@ -19,7 +19,7 @@ Model::Model(const char* path)
 	if (JSON["textures"].is_array()) m_Textures = getTextures();
 	if (JSON["materials"].is_array()) m_Materials = getMaterials();
 
-	traverseNode(JSON["nodes"].size() - 1);
+	traverseNode((unsigned int)JSON["nodes"].size() - 1);
 }
 
 Model::Model(std::vector<Mesh>& meshes)
@@ -28,6 +28,8 @@ Model::Model(std::vector<Mesh>& meshes)
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
 		m_ModelMat.push_back(glm::mat4(1.f));
 }
+
+//-----------Drawing------------//
 
 void Model::Draw(const Shader& shader, const glm::mat4& vp)
 {
@@ -69,8 +71,6 @@ void Model::loadMesh(const unsigned int& meshInd)
 
 Primitive Model::loadPrimitive(const json& prim)
 {
-	Primitive primitive;
-
 	unsigned int posAccInd = prim["attributes"]["POSITION"];
 	unsigned int normalAccInd = prim["attributes"]["NORMAL"];
 	unsigned int texAccInd = prim["attributes"]["TEXCOORD_0"];
@@ -90,9 +90,7 @@ Primitive Model::loadPrimitive(const json& prim)
 	Material material;
 	if (matInd != -1) material = m_Materials[matInd];
 
-	primitive = Primitive{ vertices, indices, material };
-
-	return primitive;
+	return Primitive{ vertices, indices, material };
 }
 
 void Model::traverseNode(const unsigned int& nextNode, const glm::mat4& mat)
@@ -390,6 +388,7 @@ std::vector<glm::vec3> Model::groupVec3(const std::vector<float>& floatVec)
 {
 	std::vector<glm::vec3> vectors;
 	vectors.reserve(floatVec.size());
+	//don't use i++ as the glm::vec3 constructor won't know in what order to read them
 	for (unsigned int i = 0; i < floatVec.size(); i+=3)
 		vectors.emplace_back(glm::vec3(
 			floatVec[i], 

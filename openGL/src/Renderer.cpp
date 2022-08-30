@@ -2,9 +2,9 @@
 #include "Renderer.h"
 #include <stb_image/stb_image.h>
 
-std::string init = "";
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
+	static std::string init = ""; //is this really the best solution
 	if (message != init && severity != GL_DEBUG_SEVERITY_HIGH && severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
 		std::cout << "[openGL]: " << message << std::endl;
 		init = message;

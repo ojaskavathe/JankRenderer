@@ -1,8 +1,8 @@
-#include "Test_Model.h"
+#include "Test_Compute.h"
 #include "imgui/imgui.h"
 #include <stb_image/stb_image.h>
 
-test::Test_Model::Test_Model()
+test::Test_Compute::Test_Compute()
 	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
 	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
@@ -11,32 +11,23 @@ test::Test_Model::Test_Model()
 	experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag"),
 	compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
-	hdriShader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag"),
-	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag"),
-	irradianceShader("res/shaders/hdri/convolutionv.vert", "res/shaders/hdri/convolutionf.frag"),
-	prefilterShader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag"),
-	brdfShader("res/shaders/hdri/brdfConvolutionv.vert", "res/shaders/hdri/brdfConvolutionf.frag")
+	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag")
 {
-	//init arrays and buffers
+	//CUBE
 	VertexBuffer vb(vertices, (unsigned int)sizeof(vertices));
 	VertexBufferLayout layout;
-
-	//position
-	layout.Push<float>(3);
-
-	//normals
-	layout.Push<float>(3);
-
-	//textCoords
-	layout.Push<float>(2);
+	layout.Push<float>(3); //position
+	layout.Push<float>(3); //normals
+	layout.Push<float>(2); //texCoords
 	va.AddBuffer(vb, layout);
 	va.Unbind();
+	//-CUBE
 
 	//lightVertexArray
 	VertexBufferLayout lightLayout;
 	//setting light vertex attributes
 	lightLayout.Push<float>(3);
-	lightLayout.strideOverride(5, GL_FLOAT);
+	lightLayout.strideOverride(5, GL_FLOAT); //don't need the normals & UVs but still have to add them to the stride
 	lightVA.AddBuffer(vb, lightLayout);
 	lightVA.Unbind();
 
@@ -69,187 +60,12 @@ test::Test_Model::Test_Model()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, lightPosSSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-	//loading hdri texture
-	stbi_set_flip_vertically_on_load(true);
-	int width, height, num;
-	float* data = stbi_loadf("res/textures/hdri/loft.hdr", &width, &height, &num, 0);
+	EnvMap map("res/textures/hdri/loft.hdr");
 
-	if (data)
-	{
-		glGenTextures(1, &hdrTex);
-		glBindTexture(GL_TEXTURE_2D, hdrTex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Failed to load HDR image. \n";
-	}
-
-	//framebuffers for environment map
-	unsigned int textureRes = 1024;
-
-	glGenFramebuffers(1, &envFB);
-	glGenRenderbuffers(1, &envRB);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
-
-	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, textureRes, textureRes);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, envRB);
-
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); //<-enables interpolation between faces of cubemap
-
-	//environment cubemap texture
-	glGenTextures(1, &envCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, textureRes, textureRes, 0, GL_RGB, GL_FLOAT, nullptr);
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//HDRI
-	glm::mat4 hdriProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-	glm::mat4 hdriVP[] =
-	{
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	   hdriProj * glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-	};
-
-	hdriShader.Bind();
-	hdriShader.SetUniform1i("map", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrTex);
-
-	glViewport(0, 0, textureRes, textureRes);
-	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
-
-	for (int i = 0; i < 6; i++)
-	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		hdriShader.SetUniformMatrix4fv("vp", hdriVP[i]);
-		va.Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-	va.Unbind();
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-	//diffuse irradiance map
-	glGenTextures(1, &irradianceMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB32F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
-	
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
-	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-
-	irradianceShader.Bind();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	irradianceShader.SetUniform1i("environmentMap", 0);
-
-	glViewport(0, 0, 32, 32);
-	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
-
-	for (int i = 0; i < 6; i++)
-	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		irradianceShader.SetUniformMatrix4fv("vp", hdriVP[i]);
-		va.Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-	}
-	va.Unbind();
-
-	//prefilter map for specular
-	glGenTextures(1, &prefilterMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	for (unsigned int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
-	
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-	prefilterShader.Bind();
-	prefilterShader.SetUniform1i("environmentMap", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-
-	for (unsigned int mip = 0; mip < 5; ++mip)
-	{
-		//resize frambuffer according to mip level
-		unsigned int mipWidth = 128 * glm::pow(0.5f, mip);
-		unsigned int mipHeight = 128 * glm::pow(0.5f, mip);
-
-		glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
-		glViewport(0, 0, mipWidth, mipHeight);
-
-		float mipRoughness = (float)mip / (float)(maxMipLevels - 1);
-		prefilterShader.SetUniform1f("roughness", mipRoughness);
-
-		for (unsigned int i = 0; i < 6; ++i)
-		{
-			prefilterShader.SetUniformMatrix4fv("vp", hdriVP[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
-
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			va.Bind();
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-	}
-	va.Unbind();
-
-	glGenTextures(1, &brdfLUT);
-	glBindTexture(GL_TEXTURE_2D, brdfLUT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, envFB);
-	glBindRenderbuffer(GL_RENDERBUFFER, envRB);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUT, 0);
-
-	glViewport(0, 0, 512, 512);
-	brdfShader.Bind();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	quadVA.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	quadVA.Unbind();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	envCubemap = map.GetEnvCubemap();
+	irradianceMap = map.GetIrradianceMap();
+	prefilterMap = map.GetPrefilterMap();
+	brdfLUT = map.GetBRDFLUT();
 
 	//setting up framebuffers for transparency
 	opaqueFB.GenTextureBufferMS(opaqueBuffer, GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, GL_COLOR_ATTACHMENT0, 4);
@@ -373,11 +189,11 @@ test::Test_Model::Test_Model()
 	IBLShader.SetUniform1i("normalTex", 7);
 }
 
-test::Test_Model::~Test_Model()
+test::Test_Compute::~Test_Compute()
 {
 }
 
-void test::Test_Model::OnUpdate(float deltaTime, GLFWwindow* window)
+void test::Test_Compute::OnUpdate(float deltaTime, GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -429,7 +245,7 @@ void test::Test_Model::OnUpdate(float deltaTime, GLFWwindow* window)
 		inputFlag = 0;
 }
 
-void test::Test_Model::OnRender()
+void test::Test_Compute::OnRender()
 {
 	//rendering to shadowmap
 	glEnable(GL_DEPTH_TEST); //<-- keep track
@@ -463,6 +279,15 @@ void test::Test_Model::OnRender()
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
+	//transparent cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
 	//Framebuffer: Omni Shadowmap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
@@ -493,6 +318,15 @@ void test::Test_Model::OnRender()
 	omniDepthShader.SetUniformMatrix4fv("model", model);
 	planeVA.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//transparent cube
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	glCullFace(GL_BACK);
 
@@ -557,7 +391,6 @@ void test::Test_Model::OnRender()
 	shader.SetUniform3fv("pointLight.color", pointLightColor);
 
 	shader.SetUniform1i("halfkernelWidth", halfkernelWidth);
-
 
 	//iblSphere
 	IBLShader.Bind();
@@ -746,7 +579,7 @@ void test::Test_Model::OnRender()
 	//glEnable(GL_CULL_FACE);
 }
 
-void test::Test_Model::OnImGuiRender()
+void test::Test_Compute::OnImGuiRender()
 {
 	//imgui
 	{
@@ -766,13 +599,13 @@ void test::Test_Model::OnImGuiRender()
 	}
 }
 
-void test::Test_Model::CursorInput(double xPos, double yPos)
+void test::Test_Compute::CursorInput(double xPos, double yPos)
 {
 	if (mouseCtrl == 1)
 		cam.ProcessMouseInput(xPos, yPos);
 }
 
-void test::Test_Model::ScrollInput(double xOffset, double yOffset)
+void test::Test_Compute::ScrollInput(double xOffset, double yOffset)
 {
 	cam.ProcessScroll(xOffset, yOffset);
 }

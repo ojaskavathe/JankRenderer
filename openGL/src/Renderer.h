@@ -4,7 +4,6 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "IndexBuffer.h"
-#include "Camera.h"
 #include "FrameBuffer.h"
 
 #define ASSERT(x) if (!(x)) __debugbreak();

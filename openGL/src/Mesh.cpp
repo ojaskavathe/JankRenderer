@@ -11,7 +11,7 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
-const void const Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
+const void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
@@ -64,7 +64,7 @@ const void const Mesh::Draw(const Shader& shader, const glm::mat4& model, const 
 	glActiveTexture(GL_TEXTURE0);
 }
 
-const void const Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
+const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	shader.Bind();
 
@@ -89,21 +89,16 @@ void Mesh::SetupMesh()
 
 		i.vao.Bind();
 
-		/*for (const auto& j : i.vertices) {
-			std::cout << j.tangent.x << std::endl;
-		}
-		std::cout << std::endl;*/
-
 		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
 
 		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
 		VertexBufferLayout layout;
 
-		layout.Push<float>(3);
-		layout.Push<float>(3);
-		layout.Push<float>(2);
-		layout.Push<float>(3);
-		layout.Push<float>(3);
+		layout.Push<float>(3); //positions
+		layout.Push<float>(3); //normals
+		layout.Push<float>(2); //UVs
+		layout.Push<float>(3); //tangents
+		layout.Push<float>(3); //bitangents
 
 		i.vao.AddBuffer(vbo, layout);
 
@@ -118,8 +113,8 @@ void Mesh::SetupTris(Primitive& prim)
 	for (unsigned int i = 0; i < prim.indices.size() - 2; i+=3)
 	{
 		Vertex *v1 = &prim.vertices[(prim.indices[i])];
-		Vertex *v2 = &prim.vertices[(prim.indices[i + 1])];
-		Vertex *v3 = &prim.vertices[(prim.indices[i + 2])];
+		Vertex *v2 = &prim.vertices[(prim.indices[i + 1u])];
+		Vertex *v3 = &prim.vertices[(prim.indices[i + 2u])];
 
 		prim.Triangles.emplace_back(v1, v2, v3);
 	}

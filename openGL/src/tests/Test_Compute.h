@@ -8,13 +8,14 @@
 #include "Cubemap.h"
 #include "Camera.h"
 #include "Model.h"
+#include "EnvMap.h"
 
 namespace test {
-	class Test_Model : public Test
+	class Test_Compute : public Test
 	{
 	public:
-		Test_Model();
-		~Test_Model();
+		Test_Compute();
+		~Test_Compute();
 
 		void OnUpdate(float deltaTime, GLFWwindow* window) override;
 		void OnRender() override;
@@ -76,14 +77,6 @@ namespace test {
 			-1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f, 	0.0f, 1.0f
 		};
 
-		glm::vec3 cubepositions[5] = {
-			glm::vec3(3.0f, 0.0f, 0.0f),
-			glm::vec3(1.5f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(-1.5f, 0.0f, 0.0f),
-			glm::vec3(-3.0f, 0.0f, 0.0f)
-		};
-
 		float quadVerts[24] = {
 			// positions   // texCoords
 			-1.0f,  1.0f,  0.0f, 1.0f,
@@ -106,10 +99,6 @@ namespace test {
 			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 
-		int nrRows = 7;
-		int nrColumns = 7;
-		float spacing = 2.5;
-
 		Shader shader;
 		Shader IBLShader;
 		Shader lightShader;
@@ -121,11 +110,7 @@ namespace test {
 		Shader compositeShader;
 		Shader screenShader;
 
-		Shader hdriShader;
 		Shader cubemapShader;
-		Shader irradianceShader;
-		Shader prefilterShader;
-		Shader brdfShader;
 
 		VertexArray va;
 		VertexArray lightVA;
@@ -224,14 +209,11 @@ namespace test {
 		unsigned int prefilterMap;
 		unsigned int brdfLUT;
 
-		unsigned int maxMipLevels = 5;
-
-		unsigned int envFB, envRB;
 		int swtch = 0;
 		float lod = 0.f;
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/texMat/texMat.gltf");
+		Model mdl = Model("res/models/JadeToad/JadeToad.gltf");
 	};
 }

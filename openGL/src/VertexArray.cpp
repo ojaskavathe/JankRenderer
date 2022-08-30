@@ -40,3 +40,8 @@ void VertexArray::Unbind() const
 {
 	glBindVertexArray(0);
 }
+
+void VertexArray::Delete() const
+{
+	glDeleteVertexArrays(1, &m_RendererID);
+}
