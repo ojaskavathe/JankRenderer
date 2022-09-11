@@ -9,6 +9,7 @@
 #include "TextureFile.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "IndexBuffer.h"
 
 struct Vertex
 {
@@ -61,7 +62,14 @@ struct Primitive
 
 	std::vector<Triangle> Triangles;
 
+	//VertexBuffer vbo;
+	//IndexBuffer ibo;
 	VertexArray vao;
+
+	Primitive(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material mat)
+		: vertices(vertices), indices(indices), material(mat)
+	{
+	}
 };
 
 class Mesh

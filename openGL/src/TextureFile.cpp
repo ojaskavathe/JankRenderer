@@ -10,7 +10,7 @@ TextureFile::TextureFile(
 	unsigned int wrapS,
 	unsigned int wrapT
 )
-	: m_RendererID(0),m_FilePath(path), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0)
+	: m_RendererID(0), m_FilePath(path), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0)
 {
 	glGenTextures(1, &m_RendererID);
 	glBindTexture(GL_TEXTURE_2D, m_RendererID);

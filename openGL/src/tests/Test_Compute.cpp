@@ -3,8 +3,7 @@
 #include <stb_image/stb_image.h>
 
 test::Test_Compute::Test_Compute()
-	:shader("res/shaders/depthMap/Lshaderv.vert", "res/shaders/depthMap/Lshaderf.frag"),
-	IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
+	:IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),
 	lightShader("res/shaders/lightShaderv.vert", "res/shaders/lightShaderf.frag"),
 	depthMapShader("res/shaders/depthMap/depthMapv.vert", "res/shaders/depthMap/depthMapf.frag"),
 	omniDepthShader("res/shaders/omniDepthShader/oDepthMapv.vert", "res/shaders/omniDepthShader/oDepthMapf.frag", "res/shaders/omniDepthShader/oDepthMapg.geom"),
@@ -60,8 +59,18 @@ test::Test_Compute::Test_Compute()
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, lightPosSSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-	EnvMap map("res/textures/hdri/loft.hdr");
+	//compute shader texture
+	glGenTextures(1, &comp);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, comp);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	//glTexImage2D(GL_TEXTURE_2D, 1, GL_R32F)
+
+	//environment map
+	EnvMap map("res/textures/hdri/loft.hdr");
 	envCubemap = map.GetEnvCubemap();
 	irradianceMap = map.GetIrradianceMap();
 	prefilterMap = map.GetPrefilterMap();
@@ -132,22 +141,6 @@ test::Test_Compute::Test_Compute()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//default shader uniforms
-	shader.Bind();
-	shader.SetUniform1i("shadowMap", 0);
-	shader.SetUniform1i("shadowCubemap", 1);
-	shader.SetUniform3fv("dirLight.color", dirLightColor);
-	shader.SetUniform3fv("dirLight.ambient", dirLightAmbient);
-	shader.SetUniform3fv("dirLight.diffuse", dirLightDiffuse);
-	shader.SetUniform3fv("dirLight.specular", dirLightSpecular);
-
-	shader.SetUniform3fv("pointLight.color", pointLightColor);
-	shader.SetUniform3fv("pointLight.ambient", pointLightAmbient);
-	shader.SetUniform3fv("pointLight.diffuse", pointLightDiffuse);
-	shader.SetUniform3fv("pointLight.specular", pointLightSpecular);
-	shader.SetUniform3fv("pointLight.atten", attenuationParams);
-
-	shader.SetUniform1f("mat.shininess", matShininess);
-
 	experimental.Bind();
 
 	experimental.SetUniform1f("near", near);
@@ -271,6 +264,7 @@ void test::Test_Compute::OnRender()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
+	//model
 	mdl.DrawShadowMap(depthMapShader, lightVP);
 
 	//ground
@@ -374,23 +368,6 @@ void test::Test_Compute::OnRender()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 	//set shader uniforms
-	shader.Bind();
-
-	shader.SetUniformMatrix4fv("lightVP", lightVP);
-	shader.SetUniform1f("near", near);
-	shader.SetUniform1f("far", far);
-
-	shader.SetUniform1f("oFar", oFar);
-
-	shader.SetUniform3fv("viewPosition", cam.GetCamPosition());
-
-	shader.SetUniform3fv("dirLight.direction", dirLightDirection);
-	shader.SetUniform3fv("dirLight.color", dirLightColor);
-
-	shader.SetUniform3fv("pointLight.position", pointLightPosition);
-	shader.SetUniform3fv("pointLight.color", pointLightColor);
-
-	shader.SetUniform1i("halfkernelWidth", halfkernelWidth);
 
 	//iblSphere
 	IBLShader.Bind();

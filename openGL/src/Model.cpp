@@ -90,7 +90,7 @@ Primitive Model::loadPrimitive(const json& prim)
 	Material material;
 	if (matInd != -1) material = m_Materials[matInd];
 
-	return Primitive{ vertices, indices, material };
+	return Primitive(vertices, indices, material);
 }
 
 void Model::traverseNode(const unsigned int& nextNode, const glm::mat4& mat)
@@ -208,6 +208,8 @@ std::vector<float> Model::getFloats(const json& accessor)
 			m_Data[i++],
 			m_Data[i++]
 		};
+		//this seems kinda sketchy, might be an issue with ordering, but it works for now
+
 		float value;
 		std::memcpy(&value, &bytes, sizeof(float));
 		floatVec.emplace_back(value);

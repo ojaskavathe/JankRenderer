@@ -64,7 +64,7 @@ test::Test_Instancing::Test_Instancing()
 		modelColor[i] = (glm::vec3(distr(gen) / 500, distr(gen) / 500, distr(gen) / 500));
 	}
 
-	cubeInstanceVB.BindData(modelMatrices, (amount) * sizeof(glm::mat4));
+	VertexBuffer cubeInstanceVB(modelMatrices, (amount) * sizeof(glm::mat4));
 
 	layout.Push<float>(4);
 	layout.Push<float>(4);

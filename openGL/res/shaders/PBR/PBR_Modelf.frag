@@ -235,26 +235,32 @@ float CalcDirShadow()
 {
 	vec3 projected = lightSpaceFragPos.xyz / lightSpaceFragPos.w;
 	projected = projected * 0.5f + 0.5f;
+	
+	float shadow = 0.0;
+	
+	if(projected.z > 1.0f)
+	{
+		shadow = 0.0f;
+		return shadow;
+	}
+	
 	//float firstHitDist = texture(shadowMap, projected.xy).r; // -> first fragment hit (to be lit)
 	float currentHitDist = projected.z;
 
 	float bias = max(0.001f * (1.0f - dot(N, -normalize(dirLightDir))), 0.00f);
 
-	float shadow = 0.0;
 	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
 	for(int x = -halfkernelWidth; x <= halfkernelWidth; ++x)
 	{
 		for(int y = -halfkernelWidth; y <= halfkernelWidth; ++y)
 		{
 			float pcfDepth = texture(shadowMap, projected.xy + vec2(x, y) * texelSize).r;
-			shadow += currentHitDist - bias > pcfDepth ? 0.5 : 0.0;
+			shadow += (currentHitDist - bias) > pcfDepth ? 0.5 : 0.0;
 		}
 	}
 	shadow /= ((halfkernelWidth*2+1)*(halfkernelWidth*2+1));
 
 	//float shadow = currentHitDist - bias > firstHitDist ? 1.0f : 0.0f;
-	if(projected.z > 1.0f) shadow = 0.0f;
-
 	return shadow;
 }
 

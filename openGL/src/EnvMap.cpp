@@ -28,10 +28,11 @@ EnvMap::EnvMap(const char* path)
 	m_QuadVA.AddBuffer(QuadVB, quadLayout);
 	m_QuadVA.Unbind();
 	//-QUAD
-	
-	stbi_set_flip_vertically_on_load(true);
+
 	int width, height, num;
+	stbi_set_flip_vertically_on_load(true);
 	float* data = stbi_loadf("res/textures/hdri/loft.hdr", &width, &height, &num, 0);
+	stbi_set_flip_vertically_on_load(false);
 
 	if (data)
 	{

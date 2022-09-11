@@ -99,7 +99,6 @@ namespace test {
 			25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
 		};
 
-		Shader shader;
 		Shader IBLShader;
 		Shader lightShader;
 
@@ -208,6 +207,8 @@ namespace test {
 		unsigned int irradianceMap;
 		unsigned int prefilterMap;
 		unsigned int brdfLUT;
+
+		unsigned int comp;
 
 		int swtch = 0;
 		float lod = 0.f;

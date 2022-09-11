@@ -61,6 +61,7 @@ const void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::m
 	shader.SetUniform1i("hasNormalTex", 0);
 
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glActiveTexture(GL_TEXTURE0);
 }
 
@@ -77,6 +78,7 @@ const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, con
 	}
 
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glActiveTexture(GL_TEXTURE0);
 }
 
@@ -89,9 +91,7 @@ void Mesh::SetupMesh()
 
 		i.vao.Bind();
 
-		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
-
-		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
+		VertexBuffer vbo(&i.vertices[0], (unsigned int)i.vertices.size() * sizeof(Vertex));
 		VertexBufferLayout layout;
 
 		layout.Push<float>(3); //positions
@@ -101,6 +101,9 @@ void Mesh::SetupMesh()
 		layout.Push<float>(3); //bitangents
 
 		i.vao.AddBuffer(vbo, layout);
+
+		IndexBuffer ibo(&i.indices[0], (unsigned int)i.indices.size());
+		ibo.Bind();
 
 		i.vao.Unbind();
 	}

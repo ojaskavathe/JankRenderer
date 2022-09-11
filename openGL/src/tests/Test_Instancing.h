@@ -78,7 +78,7 @@ namespace test {
 
 		VertexArray va;
 
-		VertexBuffer cubeInstanceVB; //<- this needs to be here instead of in the constructer for instancing to work with AMD gpus
+		//VertexBuffer cubeInstanceVB; //<- this needs to be here instead of in the constructer for instancing to work with AMD gpus
 
 		unsigned int amount = 100000;
 

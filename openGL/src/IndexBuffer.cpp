@@ -1,11 +1,6 @@
 #include "IndexBuffer.h"
 #include <glad/glad.h>
 
-IndexBuffer::IndexBuffer()
-{
-	glGenBuffers(1, &m_RendererID);
-}
-
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count)
 	: m_Count(count)
 {

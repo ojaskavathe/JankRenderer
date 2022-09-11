@@ -80,6 +80,7 @@
     <None Include="res\shaders\basicv.vert" />
     <None Include="res\shaders\compositeShaderf.frag" />
     <None Include="res\shaders\compositeShaderv.vert" />
+    <None Include="res\shaders\compute\basic.comp" />
     <None Include="res\shaders\cubemapf.frag" />
     <None Include="res\shaders\cubemapv.vert" />
     <None Include="res\shaders\debug\debugf.frag" />

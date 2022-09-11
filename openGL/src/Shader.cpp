@@ -21,6 +21,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geo
 	//exceptions
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	try {
 		vShaderFile.open(vertexPath);
 		fShaderFile.open(fragmentPath);
@@ -88,7 +89,7 @@ Shader::Shader(const char* computePath)
 	}
 	catch (std::ifstream::failure)
 	{
-		std::cout << "[Shader]: Error Reading Shader." << std::endl;
+		std::cout << "[Compute Shader]: Error Reading Shader. \n Path: " << computePath << "\n";
 	}
 
 	const char* cShaderCode = computeCode.c_str();
