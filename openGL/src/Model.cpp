@@ -25,6 +25,7 @@ Model::Model(const char* path)
 Model::Model(std::vector<Mesh>& meshes)
 	:m_Meshes(meshes)
 {
+	m_ModelMat.reserve(m_Meshes.size());
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
 		m_ModelMat.push_back(glm::mat4(1.f));
 }
@@ -63,10 +64,10 @@ void Model::loadMesh(const unsigned int& meshInd)
 	json prims = JSON["meshes"][meshInd]["primitives"];
 	primitives.reserve(prims.size());
 
-	for (auto &i : prims)
+	for (auto& i : prims)
 		primitives.emplace_back(loadPrimitive(i));
 
-	m_Meshes.push_back(Mesh(primitives));
+	m_Meshes.emplace_back(primitives);
 }
 
 Primitive Model::loadPrimitive(const json& prim)

@@ -11,13 +11,19 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
+Mesh::~Mesh()
+{
+	for (auto &i : m_Primitives)
+		i.~Primitive();
+}
+
 const void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		i.vao.Bind();
 		Material mat = i.material;
@@ -69,17 +75,13 @@ const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, con
 {
 	shader.Bind();
 
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		i.vao.Bind();
 
 		shader.SetUniformMatrix4fv("model", model);
 		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::SetupMesh()
@@ -91,7 +93,7 @@ void Mesh::SetupMesh()
 
 		i.vao.Bind();
 
-		VertexBuffer vbo(&i.vertices[0], (unsigned int)i.vertices.size() * sizeof(Vertex));
+		i.vbo = VertexBuffer(&i.vertices[0], (unsigned int)i.vertices.size() * sizeof(Vertex));
 		VertexBufferLayout layout;
 
 		layout.Push<float>(3); //positions
@@ -100,10 +102,10 @@ void Mesh::SetupMesh()
 		layout.Push<float>(3); //tangents
 		layout.Push<float>(3); //bitangents
 
-		i.vao.AddBuffer(vbo, layout);
+		i.vao.AddBuffer(i.vbo, layout);
 
-		IndexBuffer ibo(&i.indices[0], (unsigned int)i.indices.size());
-		ibo.Bind();
+		i.ibo = IndexBuffer(&i.indices[0], (unsigned int)i.indices.size());
+		i.ibo.Bind();
 
 		i.vao.Unbind();
 	}
@@ -138,8 +140,8 @@ void Mesh::InitTangentBasis(Primitive& prim)
 		// Edges of the triangle : position delta
 		glm::vec3 deltaPos1 = v1 - v0;
 		glm::vec3 deltaPos2 = v2 - v0;
-
 		// UV delta
+
 		glm::vec2 deltaUV1 = uv1 - uv0;
 		glm::vec2 deltaUV2 = uv2 - uv0;
 

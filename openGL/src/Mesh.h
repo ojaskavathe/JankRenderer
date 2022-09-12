@@ -62,13 +62,27 @@ struct Primitive
 
 	std::vector<Triangle> Triangles;
 
-	//VertexBuffer vbo;
-	//IndexBuffer ibo;
+	VertexBuffer vbo;
+	IndexBuffer ibo;
 	VertexArray vao;
 
 	Primitive(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material mat)
 		: vertices(vertices), indices(indices), material(mat)
+		//vbo(&vertices[0], (unsigned int)vertices.size() * sizeof(Vertex)),
+		//ibo(&indices[0], (unsigned int)indices.size())
 	{
+	}
+
+	Primitive(const Primitive& prim)
+		: vertices(prim.vertices), indices(prim.indices), material(prim.material)
+	{
+	}
+
+	~Primitive()
+	{
+		vbo.Delete();
+		ibo.Delete();
+		vao.Delete();
 	}
 };
 
@@ -82,6 +96,7 @@ class Mesh
 
 public:
 	Mesh(std::vector<Primitive> primitives);
+	~Mesh();
 	const void Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
 	const void DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
 };

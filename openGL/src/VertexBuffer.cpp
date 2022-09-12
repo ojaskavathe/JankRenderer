@@ -1,6 +1,10 @@
 #include "VertexBuffer.h"
 #include <glad/glad.h>
 
+VertexBuffer::VertexBuffer()
+{
+}
+
 VertexBuffer::VertexBuffer(const void * data, unsigned int size)
 {
 	glGenBuffers(1, &m_RendererID);
@@ -8,10 +12,15 @@ VertexBuffer::VertexBuffer(const void * data, unsigned int size)
 	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 }
 
+VertexBuffer::VertexBuffer(const VertexBuffer& vbo)
+{
+	m_RendererID = vbo.GetID();
+}
+
 VertexBuffer::~VertexBuffer()
 {
 	//buffer gets deleted at the end of its scope which doesn't work with radeon drivers but somehow works with nvidia drivers???
-	glDeleteBuffers(1, &m_RendererID);
+	//glDeleteBuffers(1, &m_RendererID);
 }
 
 void VertexBuffer::BindData(const void * data, unsigned int size)
@@ -28,4 +37,9 @@ void VertexBuffer::Bind() const
 void VertexBuffer::Unbind() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void VertexBuffer::Delete() const
+{
+	glDeleteBuffers(1, &m_RendererID);
 }

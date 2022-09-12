@@ -24,7 +24,6 @@ test::Test_Compute::Test_Compute()
 
 	//lightVertexArray
 	VertexBufferLayout lightLayout;
-	//setting light vertex attributes
 	lightLayout.Push<float>(3);
 	lightLayout.strideOverride(5, GL_FLOAT); //don't need the normals & UVs but still have to add them to the stride
 	lightVA.AddBuffer(vb, lightLayout);
