@@ -56,6 +56,7 @@ TextureFile::TextureFile()
 
 TextureFile::~TextureFile()
 {
+	//FIX PLS
 	//Textures have the same problem as VA's where they need to last longer than their scope
 	//glDeleteTextures(1, &m_RendererID);
 }

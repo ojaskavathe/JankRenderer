@@ -4,10 +4,10 @@
 class TextureFile
 {
 private:
-	unsigned int m_RendererID;
+	unsigned int m_RendererID = 0;
 	std::string m_FilePath;
-	unsigned char* m_LocalBuffer;
-	int m_Width, m_Height, m_BPP;
+	unsigned char* m_LocalBuffer = NULL;
+	int m_Width = 0, m_Height = 0, m_BPP = 0;
 
 public:
 	TextureFile(
@@ -17,6 +17,7 @@ public:
 		unsigned int wrapS = 0x2901, //GL_REPEAT
 		unsigned int wrapT = 0x2901 //GL_REPEAT
 	);
+	//TextureFile(const TextureFile& textureFile);
 	TextureFile();
 	~TextureFile();
 

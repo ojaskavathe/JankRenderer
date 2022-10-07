@@ -5,6 +5,12 @@ IndexBuffer::IndexBuffer()
 {
 }
 
+IndexBuffer::IndexBuffer(const IndexBuffer& ibo)
+{
+	m_RendererID = ibo.getID();
+	m_Count = ibo.getCount();
+}
+
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned int count)
 	: m_Count(count)
 {

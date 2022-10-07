@@ -215,6 +215,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/JadeToad/JadeToad.gltf");
+		Model mdl = Model("res/models/glaive/glaive.gltf");
 	};
 }

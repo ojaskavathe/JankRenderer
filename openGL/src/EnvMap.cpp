@@ -11,21 +11,21 @@ EnvMap::EnvMap(const char* path)
 {
 
 	//CUBE
-	VertexBuffer CubeVB(m_CubeVertices, (unsigned int)sizeof(m_CubeVertices));
+	m_CubeVB = VertexBuffer(m_CubeVertices, (unsigned int)sizeof(m_CubeVertices));
 	VertexBufferLayout cubeLayout;
 	cubeLayout.Push<float>(3); //position
 	cubeLayout.Push<float>(3); //normals
 	cubeLayout.Push<float>(2); //texCoords
-	m_CubeVA.AddBuffer(CubeVB, cubeLayout);
+	m_CubeVA.AddBuffer(m_CubeVB, cubeLayout);
 	m_CubeVA.Unbind();
 	//-CUBE
 
 	//QUAD
-	VertexBuffer QuadVB(m_QuadVertices, (unsigned int)sizeof(m_QuadVertices));
+	m_QuadVB = VertexBuffer(m_QuadVertices, (unsigned int)sizeof(m_QuadVertices));
 	VertexBufferLayout quadLayout;
 	quadLayout.Push<float>(2); //positions
 	quadLayout.Push<float>(2); //texCoords
-	m_QuadVA.AddBuffer(QuadVB, quadLayout);
+	m_QuadVA.AddBuffer(m_QuadVB, quadLayout);
 	m_QuadVA.Unbind();
 	//-QUAD
 
@@ -215,7 +215,10 @@ EnvMap::EnvMap(const char* path)
 EnvMap::~EnvMap()
 {
 	m_CubeVA.Delete();
+	m_CubeVB.Delete();
+
 	m_QuadVA.Delete();
+	m_QuadVB.Delete();
 }
 
 unsigned int EnvMap::GetEnvCubemap() const

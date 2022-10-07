@@ -11,6 +11,13 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
+//NEED this as meshes get moved whenever they're pushed/emplaced into models
+Mesh::Mesh(const Mesh& mesh)
+	: m_Primitives(mesh.m_Primitives)
+{
+	SetupMesh();
+}
+
 Mesh::~Mesh()
 {
 	for (auto &i : m_Primitives)
@@ -71,7 +78,7 @@ const void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::m
 	glActiveTexture(GL_TEXTURE0);
 }
 
-const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
+const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model)
 {
 	shader.Bind();
 
@@ -127,7 +134,7 @@ void Mesh::SetupTris(Primitive& prim)
 
 void Mesh::InitTangentBasis(Primitive& prim)
 {
-	//for (const auto& j : prim.Triangles) {
+	//for (const auto& j : prim.Triangles)
 	for (unsigned int i = 0; i < prim.Triangles.size(); ++i) {
 		glm::vec3 v0 = prim.Triangles[i].v1.position;
 		glm::vec3 v1 = prim.Triangles[i].v2.position;

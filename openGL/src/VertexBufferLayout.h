@@ -31,10 +31,15 @@ public:
 	VertexBufferLayout()
 		:m_Stride(0) {}
 
+	//https://stackoverflow.com/questions/14637356/static-assert-fails-compilation-even-though-template-function-is-called-nowhere
+	template<typename T>
+	struct foobar : std::false_type
+	{ };
+
 	template<typename T>
 	void Push(unsigned int count) 
 	{
-		static_assert(false);
+		static_assert(foobar<T>::value, "Invalid Type of Vertex Buffer Element");
 	}
 	
 	template<>

@@ -8,11 +8,11 @@
 class EnvMap
 {
 private:
-	unsigned int m_hdrTex;
-	unsigned int m_envCubemap;
-	unsigned int m_irradianceMap;
-	unsigned int m_prefilterMap;
-	unsigned int m_brdfLUT;
+	unsigned int m_hdrTex = 0;
+	unsigned int m_envCubemap = 0;
+	unsigned int m_irradianceMap = 0;
+	unsigned int m_prefilterMap = 0;
+	unsigned int m_brdfLUT = 0;
 	unsigned int m_maxMipLevels = 5;
 
 	Shader hdriShader;
@@ -66,6 +66,7 @@ private:
 		 1.0f,  1.0,  1.0f,  0.0f,  1.0f,  0.0f,	1.0f, 0.0f,
 		-1.0f,  1.0, -1.0f,  0.0f,  1.0f,  0.0f, 	0.0f, 1.0f
 	};
+	VertexBuffer m_CubeVB;
 
 	VertexArray m_QuadVA;
 	float m_QuadVertices[24] = {
@@ -78,8 +79,9 @@ private:
 		 1.0f, -1.0f,  1.0f, 0.0f,
 		 1.0f,  1.0f,  1.0f, 1.0f
 	};
+	VertexBuffer m_QuadVB;
 
-	unsigned int m_envFB, m_envRB;
+	unsigned int m_envFB = 0, m_envRB = 0;
 
 public:
 	EnvMap(const char* path);

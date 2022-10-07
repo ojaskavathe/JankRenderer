@@ -10,6 +10,7 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 		init = message;
 	}
 
+	//just for breakpoints
 	if (message != init && severity == GL_DEBUG_SEVERITY_HIGH) {
 		std::cout << "[openGL]: " << message << std::endl;
 		init = message;

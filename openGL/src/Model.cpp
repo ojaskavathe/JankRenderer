@@ -47,13 +47,13 @@ void Model::Draw(const Shader& shader, const glm::mat4& vp, const glm::mat4& mod
 void Model::DrawShadowMap(const Shader& shader, const glm::mat4& vp)
 {
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
-		m_Meshes[i].DrawShadowMap(shader, m_ModelMat[i], vp);
+		m_Meshes[i].DrawShadowMap(shader, m_ModelMat[i]);
 }
 
 void Model::DrawShadowMap(const Shader& shader, const glm::mat4& vp, const glm::mat4& model)
 {
 	for (unsigned int i = 0; i < m_Meshes.size(); ++i)
-		m_Meshes[i].DrawShadowMap(shader, (m_ModelMat[i] * model), vp);
+		m_Meshes[i].DrawShadowMap(shader, (m_ModelMat[i] * model));
 }
 
 //------------MODEL LOADING--------------//
@@ -65,7 +65,7 @@ void Model::loadMesh(const unsigned int& meshInd)
 	primitives.reserve(prims.size());
 
 	for (auto& i : prims)
-		primitives.emplace_back(loadPrimitive(i));
+		primitives.push_back(loadPrimitive(i));
 
 	m_Meshes.emplace_back(primitives);
 }
@@ -140,6 +140,7 @@ void Model::traverseNode(const unsigned int& nextNode, const glm::mat4& mat)
 	}
 
 	if (node["children"].is_array()) {
+		//SUPER SKETCH PLSSSS FIX
 		std::cout << m_CurrIndent;
 		m_CurrIndent += "        ";
 		std::string name = node["name"];

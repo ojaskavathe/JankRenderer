@@ -1,7 +1,6 @@
 #include "VertexArray.h"
 
 VertexArray::VertexArray()
-	:currentPos(0)
 {
 	glGenVertexArrays(1, &m_RendererID);
 	glBindVertexArray(m_RendererID);

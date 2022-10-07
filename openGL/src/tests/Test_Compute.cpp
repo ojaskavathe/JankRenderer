@@ -48,6 +48,10 @@ test::Test_Compute::Test_Compute()
 	planeVA.AddBuffer(planeVB, planeLayout);
 	planeVA.Unbind();
 
+	vb.Delete();
+	quadVB.Delete();
+	planeVB.Delete();
+
 	lightPos.emplace_back(glm::vec4(1.f, 1.0f, 1.4f, 1.f));
 	lightPos.emplace_back(glm::vec4(-1.f, 1.0f, 1.4f, 1.f));
 	
