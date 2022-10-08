@@ -11,10 +11,17 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
-//NEED this as meshes get moved whenever they're pushed/emplaced into models
 Mesh::Mesh(const Mesh& mesh)
 	: m_Primitives(mesh.m_Primitives)
 {
+	SetupMesh();
+}
+
+//NEED this as meshes get moved whenever they're pushed/emplaced into models
+Mesh::Mesh(Mesh&& mesh) noexcept // <- vector reallocator checks if move constructor is nothrow
+	: m_Primitives(mesh.m_Primitives)
+{
+	std::cout << "Moved\n";
 	SetupMesh();
 }
 
