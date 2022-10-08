@@ -21,7 +21,6 @@ Mesh::Mesh(const Mesh& mesh)
 Mesh::Mesh(Mesh&& mesh) noexcept // <- vector reallocator checks if move constructor is nothrow
 	: m_Primitives(mesh.m_Primitives)
 {
-	std::cout << "Moved\n";
 	SetupMesh();
 }
 

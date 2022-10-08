@@ -13,6 +13,8 @@ private:
 	unsigned int m_WrapS = 0x2901; //GL_REPEAT
 	unsigned int m_WrapT = 0x2901; //GL_REPEAT
 
+	void SetupTexture();
+
 public:
 	TextureFile(
 		const std::string& path,
@@ -22,6 +24,9 @@ public:
 		unsigned int wrapT = 0x2901 //GL_REPEAT
 	);
 	//TextureFile(const TextureFile& textureFile);
+	//TextureFile(TextureFile&& textureFile) noexcept;
+	//TextureFile& operator=(const TextureFile&) = default;
+
 	TextureFile();
 	~TextureFile();
 
