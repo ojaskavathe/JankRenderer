@@ -8,6 +8,7 @@
 #include "Cubemap.h"
 #include "Camera.h"
 #include "Model.h"
+#include "loaders/GLTFLoader.h"
 #include "EnvMap.h"
 
 namespace test {
@@ -215,6 +216,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/glaive/glaive.gltf");
+		Model mdl = Load::GLTF("res/models/glaive/glaive.gltf");
 	};
 }

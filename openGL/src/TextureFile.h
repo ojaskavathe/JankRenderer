@@ -25,7 +25,7 @@ public:
 	);
 	//TextureFile(const TextureFile& textureFile);
 	//TextureFile(TextureFile&& textureFile) noexcept;
-	//TextureFile& operator=(const TextureFile&) = default;
+	//TextureFile& operator=(const TextureFile& textureFile);
 
 	TextureFile();
 	~TextureFile();

@@ -19,25 +19,30 @@ TextureFile::TextureFile(
 	SetupTexture();
 }
 
-//TextureFile::TextureFile(const TextureFile& textureFile)
-//	:m_RendererID(0), m_FilePath(textureFile.m_FilePath), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0),
-//	m_MagFilter(textureFile.m_MagFilter),
-//	m_MinFilter(textureFile.m_MinFilter),
-//	m_WrapS(textureFile.m_WrapS),
-//	m_WrapT(textureFile.m_WrapT)
-//{
-//	SetupTexture();
-//}
-//
-//TextureFile::TextureFile(TextureFile&& textureFile) noexcept
-//	:m_RendererID(0), m_FilePath(textureFile.m_FilePath), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0),
-//	m_MagFilter(textureFile.m_MagFilter),
-//	m_MinFilter(textureFile.m_MinFilter),
-//	m_WrapS(textureFile.m_WrapS),
-//	m_WrapT(textureFile.m_WrapT)
-//{
-//	SetupTexture();
-//}
+/*TextureFile::TextureFile(const TextureFile& textureFile)
+	:m_RendererID(0), m_FilePath(textureFile.m_FilePath), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0),
+	m_MagFilter(textureFile.m_MagFilter),
+	m_MinFilter(textureFile.m_MinFilter),
+	m_WrapS(textureFile.m_WrapS),
+	m_WrapT(textureFile.m_WrapT)
+{
+	SetupTexture();
+}
+
+TextureFile::TextureFile(TextureFile&& textureFile) noexcept
+	:m_RendererID(0), m_FilePath(textureFile.m_FilePath), m_LocalBuffer(NULL), m_Width(0), m_Height(0), m_BPP(0),
+	m_MagFilter(textureFile.m_MagFilter),
+	m_MinFilter(textureFile.m_MinFilter),
+	m_WrapS(textureFile.m_WrapS),
+	m_WrapT(textureFile.m_WrapT)
+{
+	SetupTexture();
+}
+
+TextureFile& TextureFile::operator=(const TextureFile& textureFile)
+{
+	return TextureFile(textureFile);
+}*/
 
 TextureFile::TextureFile()
 {

@@ -8,6 +8,7 @@
 #include "Cubemap.h"
 #include "Camera.h"
 #include "Model.h"
+#include "loaders/GLTFLoader.h"
 
 namespace test {
 	class Test_Model : public Test
@@ -232,6 +233,6 @@ namespace test {
 		int mapped = 0;
 		float iblIntensity = 1.f;
 
-		Model mdl = Model("res/models/texMat/texMat.gltf");
+		Model mdl = Load::GLTF("res/models/texMat/texMat.gltf");
 	};
 }
