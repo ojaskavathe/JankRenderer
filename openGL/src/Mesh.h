@@ -8,6 +8,7 @@
 
 #include "TextureFile.h"
 #include "VertexArray.h"
+#include "VertexBuffer.h"
 #include "Shader.h"
 #include "IndexBuffer.h"
 

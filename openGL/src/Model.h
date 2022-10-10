@@ -1,7 +1,12 @@
 #pragma once
 
-#include "Shader.h"
-#include "Mesh.h"
+#include <vector>
+#include <glm\gtc\matrix_transform.hpp>
+
+#include "Mesh.h" 
+
+class Shader;
+class Mesh;
 
 class Model
 {

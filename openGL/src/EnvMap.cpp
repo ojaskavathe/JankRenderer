@@ -1,6 +1,9 @@
-#include <iostream>
 #include "EnvMap.h"
+
+#include <iostream>
 #include <stb_image/stb_image.h>
+
+#include "VertexBufferLayout.h"
 
 EnvMap::EnvMap(const char* path)
 	:hdriShader("res/shaders/hdri/hdriToCubemapv.vert", "res/shaders/hdri/hdriToCubemapf.frag"),
@@ -9,7 +12,6 @@ EnvMap::EnvMap(const char* path)
 	prefilterShader("res/shaders/hdri/prefilterv.vert", "res/shaders/hdri/prefilterf.frag"),
 	brdfShader("res/shaders/hdri/brdfConvolutionv.vert", "res/shaders/hdri/brdfConvolutionf.frag")
 {
-
 	//CUBE
 	m_CubeVB = VertexBuffer(m_CubeVertices, (unsigned int)sizeof(m_CubeVertices));
 	VertexBufferLayout cubeLayout;

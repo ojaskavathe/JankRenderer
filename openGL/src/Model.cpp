@@ -1,13 +1,11 @@
-#include <fstream>
-#include <iterator> //for getFileContents
-#include <string>
-#include <algorithm> //for std::remove
+#include "Model.h"
 
 #include <stb_image/stb_image.h>
-#include <glm/gtc/quaternion.hpp>
+
+#include "Shader.h"
+#include "Mesh.h"
 
 #include "loaders/GLTFLoader.h"
-#include "Model.h"
 
 Model::Model(const Model& model)
 	:m_Meshes(model.m_Meshes), m_ModelMat(model.m_ModelMat)

@@ -1,8 +1,11 @@
 #pragma once
+
 #include <vector>
 #include <string>
+
 #include "VertexArray.h"
-#include "Shader.h"
+
+class Shader;
 
 class Cubemap
 {

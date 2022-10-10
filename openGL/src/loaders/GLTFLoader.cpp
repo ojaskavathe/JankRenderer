@@ -368,10 +368,10 @@ std::vector<TextureFile> GLTFLoader::getTextures()
 		std::string texPath = JSON["images"][image]["uri"];
 
 		unsigned int sampler = i["sampler"];
-		unsigned int mag = JSON["samplers"][sampler].value("magFilter", GL_LINEAR);
-		unsigned int min = JSON["samplers"][sampler].value("minFilter", GL_LINEAR_MIPMAP_LINEAR);
-		unsigned int wrapS = JSON["samplers"][sampler].value("wrapS", GL_REPEAT);
-		unsigned int wrapT = JSON["samplers"][sampler].value("wrapT", GL_REPEAT);
+		unsigned int mag = JSON["samplers"][sampler].value("magFilter", 0x2601); //GL_LINEAR
+		unsigned int min = JSON["samplers"][sampler].value("minFilter", 0X2703); //GL_LINEAR_MIPMAP_LINEAR
+		unsigned int wrapS = JSON["samplers"][sampler].value("wrapS", 0x2901); //GL_REPEAT
+		unsigned int wrapT = JSON["samplers"][sampler].value("wrapT", 0x2901); //GL_REPEAT
 		textures.emplace_back((fileDir + texPath), mag, min, wrapS, wrapT);
 	}
 

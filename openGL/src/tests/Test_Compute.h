@@ -1,15 +1,17 @@
 #pragma once
+#include <vector>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 
-#include "Renderer.h"
-#include "Test.h"
-#include "FrameBuffer.h"
-#include "Cubemap.h"
-#include "Camera.h"
-#include "Model.h"
 #include "loaders/GLTFLoader.h"
-#include "EnvMap.h"
+
+#include "Shader.h"
+#include "VertexArray.h"
+#include "FrameBuffer.h"
+#include "Model.h"
+#include "Camera.h"
+
+#include "Test.h"
 
 namespace test {
 	class Test_Compute : public Test

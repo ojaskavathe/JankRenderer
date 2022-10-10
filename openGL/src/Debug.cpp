@@ -1,7 +1,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Renderer.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "VertexBufferLayout.h"
+#include "Shader.h"
+
 #include "Camera.h"
 #include "Debug.h"
 

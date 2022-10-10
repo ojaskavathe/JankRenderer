@@ -1,7 +1,16 @@
+#include "Cubemap.h"
+
+#include <glad/glad.h>
 #include <iostream>
 #include <stb_image/stb_image.h>
 
-#include "Cubemap.h"
+#include <vector>
+#include <string>
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "VertexBufferLayout.h"
+#include "Shader.h"
+
 
 Cubemap::Cubemap()
 {

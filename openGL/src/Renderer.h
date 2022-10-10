@@ -1,10 +1,6 @@
 #pragma once
 #include <memory>
-
-#include "VertexArray.h"
-#include "Shader.h"
-#include "IndexBuffer.h"
-#include "FrameBuffer.h"
+#include <glad/glad.h>
 
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define WINDOW_WIDTH 800
@@ -13,6 +9,10 @@
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
 void SetDebugCallback();
+
+class VertexArray;
+class Shader;
+class IndexBuffer;
 
 class Renderer
 {

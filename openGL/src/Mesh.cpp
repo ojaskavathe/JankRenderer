@@ -1,7 +1,9 @@
+#include <glad/glad.h>
 #include <iostream>
 #include <string>
 #include <glm\gtc\matrix_transform.hpp>
 
+#include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
 #include "Mesh.h"
 

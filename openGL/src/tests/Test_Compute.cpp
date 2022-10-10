@@ -1,6 +1,24 @@
+#include <glad/glad.h>
 #include "Test_Compute.h"
 #include "imgui/imgui.h"
 #include <stb_image/stb_image.h>
+
+#include <string> // for to_string
+
+#include "Renderer.h"
+
+#include "Shader.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexBufferLayout.h"
+
+#include "FrameBuffer.h"
+#include "Cubemap.h"
+#include "Camera.h"
+#include "Model.h"
+#include "EnvMap.h"
+
 
 test::Test_Compute::Test_Compute()
 	:IBLShader("res/shaders/PBR/PBR_Modelv.vert", "res/shaders/PBR/PBR_Modelf.frag"),

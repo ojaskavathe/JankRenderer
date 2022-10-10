@@ -31,8 +31,6 @@
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\tests\Test_Compute.cpp" />
-    <ClCompile Include="src\tests\Test_Instancing.cpp" />
-    <ClCompile Include="src\tests\Test_Model.cpp" />
     <ClCompile Include="src\TextureFile.cpp" />
     <ClCompile Include="src\vendor\glad.c" />
     <ClCompile Include="src\vendor\imgui\imgui.cpp" />
@@ -60,8 +58,6 @@
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\tests\Test.h" />
     <ClInclude Include="src\tests\Test_Compute.h" />
-    <ClInclude Include="src\tests\Test_Instancing.h" />
-    <ClInclude Include="src\tests\Test_Model.h" />
     <ClInclude Include="src\TextureFile.h" />
     <ClInclude Include="src\vendor\imgui\imconfig.h" />
     <ClInclude Include="src\vendor\imgui\imgui.h" />

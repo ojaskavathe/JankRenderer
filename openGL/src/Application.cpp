@@ -1,6 +1,6 @@
-#include "Renderer.h"
-#include <GLFW\glfw3.h>
 #include <iostream>
+
+#include "Renderer.h"
 #include "Camera.h"
 
 #include "imgui/imgui.h"
@@ -8,6 +8,7 @@
 #include "imgui/imgui_impl_glfw.h"
 
 #include "tests/Test_Compute.h"
+#include <GLFW\glfw3.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
