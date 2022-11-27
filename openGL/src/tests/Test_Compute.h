@@ -27,7 +27,7 @@ namespace test {
 		void CursorInput(double xPos, double yPos) override;
 		void ScrollInput(double xOffset, double yOffset) override;
 
-		Camera cam;
+		Camera cam = Camera(glm::vec3(2, 2, 0), glm::vec3(0, 1, 0), 180.f);
 
 	private:
 
@@ -179,7 +179,6 @@ namespace test {
 
 		unsigned int lightPosSSBO;
 		std::vector<glm::vec4> lightPos;
-		glm::vec3 pointLightPosition = glm::vec3(1.2f, 3.0f, 2.0f);
 
 		glm::vec3 pointLightColor = glm::vec3(10.f);
 		glm::vec3 pointLightAmbient = glm::vec3(0.2f);
@@ -216,8 +215,8 @@ namespace test {
 		int swtch = 0;
 		float lod = 0.f;
 		int mapped = 0;
-		float iblIntensity = 1.f;
+		float iblIntensity = 0.02f;
 
-		Model mdl = Load::GLTF("res/models/glaive/glaive.gltf");
+		Model mdl = Load::GLTF("res/models/Sponza/Sponza.gltf");
 	};
 }

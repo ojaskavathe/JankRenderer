@@ -67,7 +67,11 @@ float roughness = roughnessVal;
 
 void main()
 {
-	if ( hasAlbedoTex ) albedo = vec3(texture(albedoTex, TexCoords).rgb);
+	if ( hasAlbedoTex )
+	{
+		albedo = vec3(texture(albedoTex, TexCoords).rgb);
+		if(texture(albedoTex, TexCoords).a < 0.01) discard; //clip transparent backgrounds
+	}
 
 	if ( hasMetRoughTex ) {
 		metallic = texture(metallicRoughnessTex, TexCoords).b * metallicVal;

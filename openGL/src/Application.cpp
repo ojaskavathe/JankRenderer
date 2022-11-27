@@ -10,6 +10,8 @@
 #include "tests/Test_Compute.h"
 #include <GLFW\glfw3.h>
 
+#include <windows.h> // for nvidia optimus
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
@@ -19,6 +21,11 @@ test::Test* mTest;
 
 float deltaTime = 0.0f;
 float LastFrame = 0.0f;
+
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 1;
+	_declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
 
 int main()
 {
@@ -70,6 +77,8 @@ int main()
 
 	//https://developer.nvidia.com/content/depth-precision-visualized
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); //set up for depth precision control
+
+	std::cout << glGetString(GL_RENDERER) << "\n";
 
 	while (!glfwWindowShouldClose(window))
 	{	

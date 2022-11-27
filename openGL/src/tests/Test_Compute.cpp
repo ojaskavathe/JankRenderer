@@ -70,8 +70,7 @@ test::Test_Compute::Test_Compute()
 	quadVB.Delete();
 	planeVB.Delete();
 
-	lightPos.emplace_back(glm::vec4(1.f, 1.0f, 1.4f, 1.f));
-	lightPos.emplace_back(glm::vec4(-1.f, 1.0f, 1.4f, 1.f));
+	lightPos.emplace_back(glm::vec4(-3.f, 3.0f, -0.2f, 1.f));
 	
 	//SSBO
 	glGenBuffers(1, &lightPosSSBO);
@@ -303,6 +302,33 @@ void test::Test_Compute::OnRender()
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 
+	//red one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, -0.8f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//blue one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, 0.2f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//green one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.f, 1.0f, -0.3f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	depthMapShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
 	//Framebuffer: Omni Shadowmap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, oDepthMapFB);
@@ -335,8 +361,27 @@ void test::Test_Compute::OnRender()
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//transparent cube
+	//red one
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, -0.8f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//blue one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, 0.2f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	omniDepthShader.SetUniformMatrix4fv("model", model);
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//green one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.f, 1.0f, -0.3f));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	omniDepthShader.SetUniformMatrix4fv("model", model);
@@ -500,14 +545,15 @@ void test::Test_Compute::OnRender()
 	experimental.SetUniform3fv("dirLight.color", dirLightColor);
 
 	experimental.SetUniform3fv("pointLight.color", pointLightColor);
-	experimental.SetUniform3fv("pointLight.position", pointLightPosition);
+	experimental.SetUniform3fv("pointLight.position", lightPos[0]);
 
 	experimental.SetUniform1f("mat.shininess", matShininess);
 
 	glDisable(GL_CULL_FACE); //<-disable face culling for transparent rendering
 
+	//red one
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, -0.8f));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	experimental.SetUniformMatrix4fv("model", model);
@@ -516,6 +562,36 @@ void test::Test_Compute::OnRender()
 	normal = glm::transpose(glm::inverse(model));
 	experimental.SetUniformMatrix4fv("normalMatrix", normal);
 	experimental.SetUniform4fv("color", glm::vec4(1.0f, 0.0f, 0.0f, 0.3f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//blue one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-3.f, 1.0f, 0.2f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	experimental.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	experimental.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	experimental.SetUniformMatrix4fv("normalMatrix", normal);
+	experimental.SetUniform4fv("color", glm::vec4(0.0f, 0.0f, 1.0f, 0.3f));
+
+	va.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//green one
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-4.f, 1.0f, -0.3f));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	experimental.SetUniformMatrix4fv("model", model);
+	mvp = projection * view * model;
+	experimental.SetUniformMatrix4fv("mvp", mvp);
+	normal = glm::transpose(glm::inverse(model));
+	experimental.SetUniformMatrix4fv("normalMatrix", normal);
+	experimental.SetUniform4fv("color", glm::vec4(0.0f, 1.0f, 0.0f, 0.3f));
 
 	va.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);

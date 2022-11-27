@@ -164,20 +164,20 @@ void GLTFLoader::traverseNode(const unsigned int& nextNode, const glm::mat4& mat
 
 	if (node["children"].is_array()) {
 		//SUPER SKETCH PLSSSS FIX
-		std::cout << m_CurrIndent;
+		//std::cout << m_CurrIndent;
 		m_CurrIndent += "        ";
 		std::string name = node["name"];
-		std::cout << name << "\n";
+		//std::cout << name << "\n";
 		for (unsigned int i = 0; i < node["children"].size(); ++i) {
 			unsigned int childNum = node["children"][i];
-			if (!(JSON["nodes"][childNum]["children"].is_array())) {
+			/*if (!(JSON["nodes"][childNum]["children"].is_array())) {
 				std::string childName = JSON["nodes"][childNum]["name"];
 				std::cout << m_CurrIndent;
 				std::cout << childName << "\n";
-			}
+			}*/
 			traverseNode(node["children"][i], matNextNode);
 		}
-		m_CurrIndent.erase(std::remove(m_CurrIndent.end() - 8, m_CurrIndent.end(), ' '), m_CurrIndent.end());
+		//m_CurrIndent.erase(std::remove(m_CurrIndent.end() - 8, m_CurrIndent.end(), ' '), m_CurrIndent.end());
 	}
 	/*else if (JSON["nodes"][(signed int)nextNode - 1].is_object()) {
 		isChild = false;
