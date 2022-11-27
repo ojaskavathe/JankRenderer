@@ -1,36 +1,29 @@
 #pragma once
-#include <glad\glad.h>
-
 #include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
-#include <iostream>
 #include <string>
-#include <fstream>
-#include <sstream>
 
 class Shader
 {
 private:
-	const void CheckCompileErrors(unsigned int Shader, const std::string& type);
+	const void CheckCompileErrors(unsigned int& Shader, const std::string& type) const;
 
 public:
 
 	unsigned int m_RendererID;
 	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+	Shader(const char* computePath);
 	~Shader();
 
-	unsigned int CompileShader(const char* shaderCode, unsigned int shaderType);
+	const unsigned int CompileShader(const char* shaderCode, unsigned int shaderType) const;
 
-	void Bind();
-	void Unbind();
+	const void Bind() const;
+	const void Unbind() const;
 
-	void SetUniform1i(const std::string& name, int value);
-	void SetUniform1f(const std::string& name, float value);
-	void SetUniform3fv(const std::string& name, glm::vec3 value);
-	void SetUniform4fv(const std::string& name, glm::vec4 value);
-	void SetUniform1fv(const std::string& name, glm::vec3 value);
-	void SetUniformMatrix4fv(const std::string& name, glm::mat4 value);
+	const void SetUniform1i(const std::string& name, const int& value) const;
+	const void SetUniform1f(const std::string& name, const float& value) const;
+	const void SetUniform3fv(const std::string& name, const glm::vec3& value) const;
+	const void SetUniform4fv(const std::string& name, const glm::vec4& value) const;
+	const void SetUniform1fv(const std::string& name, const glm::vec3& value) const;
+	const void SetUniformMatrix4fv(const std::string& name, const glm::mat4& value) const;
 };
 

@@ -1,3 +1,10 @@
+#include <glad/glad.h>
+#include <iostream>
+#include <string>
+#include <glm\gtc\matrix_transform.hpp>
+
+#include "VertexBufferLayout.h"
+#include "IndexBuffer.h"
 #include "Mesh.h"
 
 Mesh::Mesh(std::vector<Primitive> primitives)
@@ -6,13 +13,32 @@ Mesh::Mesh(std::vector<Primitive> primitives)
 	SetupMesh();
 }
 
-void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
+Mesh::Mesh(const Mesh& mesh)
+	: m_Primitives(mesh.m_Primitives)
+{
+	SetupMesh();
+}
+
+//NEED this as meshes get moved whenever they're pushed/emplaced into models
+Mesh::Mesh(Mesh&& mesh) noexcept // <- vector reallocator checks if move constructor is nothrow
+	: m_Primitives(mesh.m_Primitives)
+{
+	SetupMesh();
+}
+
+Mesh::~Mesh()
+{
+	for (auto &i : m_Primitives)
+		i.~Primitive();
+}
+
+const void Mesh::Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp)
 {
 	glm::mat4 mvp = vp * model;
 	glm::mat4 normalMat = glm::transpose(glm::inverse(model));
 	shader.Bind();
 
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		i.vao.Bind();
 		Material mat = i.material;
@@ -50,52 +76,51 @@ void Mesh::Draw(Shader& shader, glm::mat4& model, glm::mat4& vp)
 
 		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
-	
+
 	shader.SetUniform1i("hasAlbedoTex", 0);
 	shader.SetUniform1i("hasMetRoughTex", 0);
 	shader.SetUniform1i("hasNormalTex", 0);
 
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp)
+const void Mesh::DrawShadowMap(const Shader& shader, const glm::mat4& model)
 {
 	shader.Bind();
 
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		i.vao.Bind();
 
 		shader.SetUniformMatrix4fv("model", model);
 		glDrawElements(GL_TRIANGLES, unsigned int(i.indices.size()), GL_UNSIGNED_INT, 0);
 	}
-
-	glBindVertexArray(0);
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::SetupMesh()
 {
-	for (auto i : m_Primitives)
+	for (auto& i : m_Primitives)
 	{
 		SetupTris(i);
 		InitTangentBasis(i);
 
 		i.vao.Bind();
 
-		IndexBuffer ibo(&i.indices[0], unsigned int(i.indices.size()));
-
-		VertexBuffer vbo(&i.vertices[0], unsigned int(i.vertices.size()) * sizeof(Vertex));
+		i.vbo = VertexBuffer(&i.vertices[0], (unsigned int)i.vertices.size() * sizeof(Vertex));
 		VertexBufferLayout layout;
 
-		layout.Push<float>(3);
-		layout.Push<float>(3);
-		layout.Push<float>(2);
-		layout.Push<float>(3);
-		layout.Push<float>(3);
+		layout.Push<float>(3); //positions
+		layout.Push<float>(3); //normals
+		layout.Push<float>(2); //UVs
+		layout.Push<float>(3); //tangents
+		layout.Push<float>(3); //bitangents
 
-		i.vao.AddBuffer(vbo, layout);
+		i.vao.AddBuffer(i.vbo, layout);
+
+		i.ibo = IndexBuffer(&i.indices[0], (unsigned int)i.indices.size());
+		i.ibo.Bind();
 
 		i.vao.Unbind();
 	}
@@ -103,19 +128,21 @@ void Mesh::SetupMesh()
 
 void Mesh::SetupTris(Primitive& prim)
 {
+	prim.Triangles.reserve(prim.indices.size() / 3);
+
 	for (unsigned int i = 0; i < prim.indices.size() - 2; i+=3)
 	{
 		Vertex *v1 = &prim.vertices[(prim.indices[i])];
-		Vertex *v2 = &prim.vertices[(prim.indices[i + 1])];
-		Vertex *v3 = &prim.vertices[(prim.indices[i + 2])];
+		Vertex *v2 = &prim.vertices[(prim.indices[i + 1u])];
+		Vertex *v3 = &prim.vertices[(prim.indices[i + 2u])];
 
-		prim.Triangles.push_back(Triangle{*v1, *v2, *v3});
+		prim.Triangles.emplace_back(v1, v2, v3);
 	}
 }
 
 void Mesh::InitTangentBasis(Primitive& prim)
 {
-	//for (const auto& j : prim.Triangles) {
+	//for (const auto& j : prim.Triangles)
 	for (unsigned int i = 0; i < prim.Triangles.size(); ++i) {
 		glm::vec3 v0 = prim.Triangles[i].v1.position;
 		glm::vec3 v1 = prim.Triangles[i].v2.position;
@@ -128,8 +155,8 @@ void Mesh::InitTangentBasis(Primitive& prim)
 		// Edges of the triangle : position delta
 		glm::vec3 deltaPos1 = v1 - v0;
 		glm::vec3 deltaPos2 = v2 - v0;
-
 		// UV delta
+
 		glm::vec2 deltaUV1 = uv1 - uv0;
 		glm::vec2 deltaUV2 = uv2 - uv0;
 
@@ -137,6 +164,7 @@ void Mesh::InitTangentBasis(Primitive& prim)
 		glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
 		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
 
+		//since the triangle vertices are just references, setting them sets the actual vertices
 		prim.Triangles[i].v1.tangent = tangent;
 		prim.Triangles[i].v2.tangent = tangent;
 		prim.Triangles[i].v3.tangent = tangent;

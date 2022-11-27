@@ -7,9 +7,10 @@
 #include <vector>
 
 #include "TextureFile.h"
-#include "Renderer.h"
-#include "VertexBufferLayout.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
 #include "Shader.h"
+#include "IndexBuffer.h"
 
 struct Vertex
 {
@@ -19,6 +20,11 @@ struct Vertex
 
 	glm::vec3 tangent;
 	glm::vec3 bitangent;
+
+	Vertex(const glm::vec3& pos, const glm::vec3& norm, const glm::vec2& uv) 
+		: position(pos), normal(norm), texCoord(uv), tangent(glm::vec3(0)), bitangent(glm::vec3(0))
+	{
+	}
 };
 
 struct Triangle
@@ -26,13 +32,18 @@ struct Triangle
 	Vertex &v1;
 	Vertex &v2;
 	Vertex &v3;
+
+	Triangle(Vertex* first, Vertex* second, Vertex* third)
+		:v1(*first), v2(*second), v3(*third)
+	{
+	}
 };
 
 struct Material
 {
-	glm::vec4 albedo;
-	float metallic;
-	float roughness;
+	glm::vec4 albedo = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
+	float metallic = 0.f;
+	float roughness = 0.1f;
 
 	bool hasAlbedoTex = false;
 	bool hasMetRoughTex = false;
@@ -41,10 +52,6 @@ struct Material
 	TextureFile albedoTex;
 	TextureFile metallicRoughnessTex;
 	TextureFile normalTex;
-
-	/*Material(glm::vec4 albedo, float metallic, float roughness)
-		: albedo(albedo), metallic(metallic), roughness(roughness)
-	{};*/
 };
 
 struct Primitive
@@ -56,7 +63,28 @@ struct Primitive
 
 	std::vector<Triangle> Triangles;
 
+	VertexBuffer vbo;
+	IndexBuffer ibo;
 	VertexArray vao;
+
+	Primitive(std::vector<Vertex> vertices, std::vector<unsigned int> indices, Material mat)
+		: vertices(vertices), indices(indices), material(mat)
+	{
+	}
+
+	Primitive(const Primitive& prim)
+		: vertices(prim.vertices),
+		indices(prim.indices),
+		material(prim.material)
+	{
+	}
+
+	~Primitive() 
+	{
+		vao.Delete();
+		vbo.Delete();
+		ibo.Delete();
+	}
 };
 
 class Mesh
@@ -69,6 +97,9 @@ class Mesh
 
 public:
 	Mesh(std::vector<Primitive> primitives);
-	void Draw(Shader& shader, glm::mat4& model, glm::mat4& vp);
-	void DrawShadowMap(Shader& shader, glm::mat4& model, glm::mat4& vp);
+	Mesh(const Mesh& mesh);
+	Mesh(Mesh&& mesh) noexcept;
+	~Mesh();
+	const void Draw(const Shader& shader, const glm::mat4& model, const glm::mat4& vp);
+	const void DrawShadowMap(const Shader& shader, const glm::mat4& model);
 };

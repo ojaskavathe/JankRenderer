@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "Renderer.h"
+#include <glad/glad.h>
 
 struct VertexBufferElement 
 {
@@ -17,7 +17,7 @@ struct VertexBufferElement
 		case GL_UNSIGNED_INT:	return 4;
 		case GL_UNSIGNED_BYTE:	return 1;
 		}
-		ASSERT(false);
+		__debugbreak();
 		return 0;
 	}
 };
@@ -31,10 +31,15 @@ public:
 	VertexBufferLayout()
 		:m_Stride(0) {}
 
+	//https://stackoverflow.com/questions/14637356/static-assert-fails-compilation-even-though-template-function-is-called-nowhere
 	template<typename T>
-	void Push( unsigned int count) 
+	struct foobar : std::false_type
+	{ };
+
+	template<typename T>
+	void Push(unsigned int count) 
 	{
-		//static_assert(false); // <- why is this throwing an error?
+		static_assert(foobar<T>::value, "Invalid Type of Vertex Buffer Element");
 	}
 	
 	template<>

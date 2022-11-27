@@ -1,9 +1,9 @@
 #include "VertexArray.h"
+
+#include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
-#include "Renderer.h"
 
 VertexArray::VertexArray()
-	:currentPos(0)
 {
 	glGenVertexArrays(1, &m_RendererID);
 	glBindVertexArray(m_RendererID);
@@ -41,4 +41,9 @@ void VertexArray::Bind() const
 void VertexArray::Unbind() const
 {
 	glBindVertexArray(0);
+}
+
+void VertexArray::Delete() const
+{
+	glDeleteVertexArrays(1, &m_RendererID);
 }

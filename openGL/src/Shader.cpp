@@ -1,6 +1,16 @@
+#include <glad\glad.h>
+
+#include <glm\glm.hpp>
+#include <glm\gtc\type_ptr.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
 #include "Shader.h"
 
-Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* geometryPath)
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -12,6 +22,7 @@ Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* g
 	//exceptions
 	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	try {
 		vShaderFile.open(vertexPath);
 		fShaderFile.open(fragmentPath);
@@ -62,12 +73,45 @@ Shader::Shader(const char * vertexPath, const char * fragmentPath, const char* g
 	if (geometryPath != nullptr) glDeleteShader(geometry);
 }
 
+Shader::Shader(const char* computePath)
+{
+	std::string computeCode;
+	std::ifstream cShaderFile;
+
+	//exceptions
+	cShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	try {
+		cShaderFile.open(computePath);
+
+		std::stringstream cShaderStream;
+		cShaderStream << cShaderFile.rdbuf();
+
+		computeCode = cShaderStream.str();
+	}
+	catch (std::ifstream::failure)
+	{
+		std::cout << "[Compute Shader]: Error Reading Shader. \n Path: " << computePath << "\n";
+	}
+
+	const char* cShaderCode = computeCode.c_str();
+
+	unsigned int compute = CompileShader(cShaderCode, GL_COMPUTE_SHADER);
+
+	m_RendererID = glCreateProgram();
+	glAttachShader(m_RendererID, compute);
+
+	glLinkProgram(m_RendererID);
+	CheckCompileErrors(m_RendererID, "m_RendererID");
+
+	glDeleteShader(compute);
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(m_RendererID);
 }
 
-unsigned int Shader::CompileShader(const char * shaderCode, unsigned int shaderType)
+const unsigned int Shader::CompileShader(const char * shaderCode, unsigned int shaderType) const
 {
 	unsigned int shader = glCreateShader(shaderType);
 	glShaderSource(shader, 1, &shaderCode, NULL);
@@ -76,46 +120,47 @@ unsigned int Shader::CompileShader(const char * shaderCode, unsigned int shaderT
 	return shader;
 }
 
-void Shader::Bind()
+const void Shader::Bind() const
 {
 	glUseProgram(m_RendererID);
 }
 
-void Shader::Unbind()
+const void Shader::Unbind() const
 {
 	glUseProgram(0);
 }
 
-void Shader::SetUniform1i(const std::string& name, int value)
+const void Shader::SetUniform1i(const std::string& name, const int& value) const
 {
 	glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
 }
 
-void Shader::SetUniform1f(const std::string& name, float value)
+const void Shader::SetUniform1f(const std::string& name, const float& value) const
 {
 	glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
 }
 
-void Shader::SetUniform3fv(const std::string& name, glm::vec3 value)
+const void Shader::SetUniform3fv(const std::string& name, const glm::vec3& value) const
 {
 	glUniform3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform4fv(const std::string& name, glm::vec4 value)
+const void Shader::SetUniform4fv(const std::string& name, const glm::vec4& value) const
 {
 	glUniform4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform1fv(const std::string& name, glm::vec3 value)
+const void Shader::SetUniform1fv(const std::string& name, const glm::vec3& value) const
 {
 	glUniform1fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniformMatrix4fv(const std::string& name, glm::mat4 value) {
+const void Shader::SetUniformMatrix4fv(const std::string& name, const glm::mat4& value) const 
+{
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-const void Shader::CheckCompileErrors(unsigned int Shader, const std::string& type)
+const void Shader::CheckCompileErrors(unsigned int& Shader, const std::string& type) const
 {
 	int success;
 	char infolog[1024];

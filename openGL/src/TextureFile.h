@@ -1,23 +1,32 @@
 #pragma once
-
-#include "Renderer.h"
+#include <string>
 
 class TextureFile
 {
 private:
-	unsigned int m_RendererID;
+	unsigned int m_RendererID = 0;
 	std::string m_FilePath;
-	unsigned char* m_LocalBuffer;
-	int m_Width, m_Height, m_BPP;
+	unsigned char* m_LocalBuffer = NULL;
+	int m_Width = 0, m_Height = 0, m_BPP = 0;
+	unsigned int m_MagFilter = 0x2601; //GL_LINEAR
+	unsigned int m_MinFilter = 0X2703; //GL_LINEAR_MIPMAP_LINEAR
+	unsigned int m_WrapS = 0x2901; //GL_REPEAT
+	unsigned int m_WrapT = 0x2901; //GL_REPEAT
+
+	void SetupTexture();
 
 public:
 	TextureFile(
 		const std::string& path,
-		unsigned int magFilter = GL_LINEAR,
-		unsigned int minFilter = GL_LINEAR_MIPMAP_LINEAR,
-		unsigned int wrapS = GL_REPEAT,
-		unsigned int wrapT = GL_REPEAT
+		unsigned int magFilter = 0x2601, //GL_LINEAR
+		unsigned int minFilter = 0X2703, //GL_LINEAR_MIPMAP_LINEAR
+		unsigned int wrapS = 0x2901, //GL_REPEAT
+		unsigned int wrapT = 0x2901 //GL_REPEAT
 	);
+	//TextureFile(const TextureFile& textureFile);
+	//TextureFile(TextureFile&& textureFile) noexcept;
+	//TextureFile& operator=(const TextureFile& textureFile);
+
 	TextureFile();
 	~TextureFile();
 

@@ -1,16 +1,14 @@
-#include <glad\glad.h>
-#include <GLFW\glfw3.h>
-
-#include "Camera.h"
+#include <iostream>
 
 #include "Renderer.h"
+#include "Camera.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_opengl3.h"
 #include "imgui/imgui_impl_glfw.h"
 
-#include "tests/Test_Model.h"
-#include "tests/Test_PBR.h"
+#include "tests/Test_Compute.h"
+#include <GLFW\glfw3.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -26,9 +24,8 @@ int main()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	glfwWindowHint(GLFW_SAMPLES, 4);// <- Add samples for MSAA
@@ -56,7 +53,7 @@ int main()
 	SetDebugCallback();
 
 	//set current test
-	test::Test_Model test1;
+	test::Test_Compute test1;
 
 	mTest = &test1;
 	Renderer renderer;
@@ -70,6 +67,9 @@ int main()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	glEnable(GL_MULTISAMPLE);
+
+	//https://developer.nvidia.com/content/depth-precision-visualized
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); //set up for depth precision control
 
 	while (!glfwWindowShouldClose(window))
 	{	

@@ -1,14 +1,13 @@
 #pragma once
 
-#include "VertexBuffer.h"
-
+class VertexBuffer;
 class VertexBufferLayout;
 
 class VertexArray
 {
 private:
-	unsigned int m_RendererID;
-	unsigned int currentPos;
+	unsigned int m_RendererID = 0;
+	unsigned int currentPos = 0;
 public:
 	VertexArray();
 	~VertexArray();
@@ -17,5 +16,6 @@ public:
 
 	void Bind() const;
 	void Unbind() const;
+	void Delete() const;
 	inline const unsigned int* GetID() const { return &m_RendererID; }
 };

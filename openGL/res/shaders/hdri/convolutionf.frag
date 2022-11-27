@@ -80,6 +80,8 @@ void main()
     }
     irradiance = (PI * irradiance) / totalWeight;
     
+    //if(length(irradiance) > 100.f) irradiance = vec3(0.f, 1.f, 0.f);
+
     FragColor = vec4(irradiance, 1.0);
 }
 
