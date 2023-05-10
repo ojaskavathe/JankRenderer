@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "Renderer.h"
+#include <Renderer.h>
+#include "Settings.h"
 #include "Camera.h"
 
 #include "imgui/imgui.h"
@@ -8,9 +9,11 @@
 #include "imgui/imgui_impl_glfw.h"
 
 #include "tests/Test_Compute.h"
-#include <GLFW\glfw3.h>
 
-#include <windows.h> // for nvidia optimus
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
+// #include <windows.h> // for nvidia optimus
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -22,10 +25,10 @@ test::Test* mTest;
 float deltaTime = 0.0f;
 float LastFrame = 0.0f;
 
-extern "C" {
-	_declspec(dllexport) DWORD NvOptimusEnablement = 1;
-	_declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
+// extern "C" {
+// 	_declspec(dllexport) DWORD NvOptimusEnablement = 1;
+// 	_declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+// }
 
 int main()
 {
@@ -50,11 +53,13 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "GLAD failed to load" << std::endl;
-		return -1;
-	}
+	// Load OpenGL functions, gladLoadGL returns the loaded version, 0 on error.
+    int version = gladLoadGL(glfwGetProcAddress);
+    if (version == 0)
+    {
+        std::cout << "Failed to initialize OpenGL context" << std::endl;
+        return -1;
+    }
 
 	//enable gl debugging
 	SetDebugCallback();
@@ -76,7 +81,7 @@ int main()
 	glEnable(GL_MULTISAMPLE);
 
 	//https://developer.nvidia.com/content/depth-precision-visualized
-	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); //set up for depth precision control
+	// glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); //set up for depth precision control
 
 	std::cout << glGetString(GL_RENDERER) << "\n";
 

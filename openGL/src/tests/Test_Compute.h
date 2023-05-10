@@ -5,6 +5,8 @@
 
 #include "loaders/GLTFLoader.h"
 
+#include "Settings.h"
+
 #include "Shader.h"
 #include "VertexArray.h"
 #include "FrameBuffer.h"
@@ -27,7 +29,7 @@ namespace test {
 		void CursorInput(double xPos, double yPos) override;
 		void ScrollInput(double xOffset, double yOffset) override;
 
-		Camera cam = Camera(glm::vec3(2, 2, 0), glm::vec3(0, 1, 0), 180.f);
+		Camera cam = Camera(glm::vec3(0, 2, 5), glm::vec3(0, 1, 0), 270.f);
 
 	private:
 
@@ -147,7 +149,7 @@ namespace test {
 		//set projection matrices
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float)800 / 600, near, far);
+		glm::mat4 projection = glm::perspective(glm::radians(cam.GetFov()), (float) WINDOW_WIDTH / WINDOW_HEIGHT, near, far);
 
 		glm::mat4 mvp = glm::mat4(1.0f);
 		glm::mat4 vp = glm::mat4(1.0f);
@@ -215,8 +217,8 @@ namespace test {
 		int swtch = 0;
 		float lod = 0.f;
 		int mapped = 0;
-		float iblIntensity = 0.02f;
+		float iblIntensity = 0.6f;
 
-		Model mdl = Load::GLTF("res/models/Sponza/Sponza.gltf");
+		Model mdl = Load::GLTF("res/models/JadeToad/JadeToad.gltf");
 	};
 }

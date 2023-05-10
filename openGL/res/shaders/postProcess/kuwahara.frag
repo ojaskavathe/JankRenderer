@@ -6,7 +6,7 @@ in vec2 texCoords;
 uniform sampler2D screenTexture;
 
 const vec2 iResolution = vec2(800, 600);
-uniform int radius = 7;
+uniform int radius = 2;
 
 void main() 
 {

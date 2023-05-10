@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include "Test_Compute.h"
 #include "imgui/imgui.h"
 #include <stb_image/stb_image.h>
@@ -6,6 +6,7 @@
 #include <string> // for to_string
 
 #include "Renderer.h"
+#include "Settings.h"
 
 #include "Shader.h"
 #include "VertexArray.h"
@@ -28,6 +29,7 @@ test::Test_Compute::Test_Compute()
 	experimental("res/shaders/shaderv.vert", "res/shaders/experimentalf.frag"),
 	compositeShader("res/shaders/compositeShaderv.vert", "res/shaders/compositeShaderf.frag"),
 	screenShader("res/shaders/screenShaderv.vert", "res/shaders/screenShaderf.frag"),
+	//screenShader("res/shaders/screenShaderv.vert", "res/shaders/postProcess/kuwahara.frag"),
 	cubemapShader("res/shaders/cubemapv.vert", "res/shaders/cubemapf.frag")
 {
 	//CUBE
@@ -636,10 +638,10 @@ void test::Test_Compute::OnRender()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// use screen shader
-	screenShader.Bind();
+	screenShader.Bind();/*
 	screenShader.SetUniform1f("gamma", 2.2f);
 	screenShader.SetUniform1f("exposure", exposure);
-	screenShader.SetUniform1i("tonemap", mapped);
+	screenShader.SetUniform1i("tonemap", mapped);*/
 
 	// draw final screen quad
 	glActiveTexture(GL_TEXTURE0);

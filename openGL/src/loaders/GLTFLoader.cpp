@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include <json/json.h>
+#include <json.h>
 
 #include "Shader.h"
 #include "Mesh.h"

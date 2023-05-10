@@ -4,10 +4,10 @@ out vec4 FragColor;
 in vec2 texCoords;
 
 uniform sampler2D screenTexture;
-uniform float gamma;
-uniform float exposure;
+uniform float gamma = 2.2f;
+uniform float exposure = 0.4f;
 
-uniform int tonemap;
+uniform int tonemap = 0;
 
 vec3 ACESFilm(vec3 x)
 {

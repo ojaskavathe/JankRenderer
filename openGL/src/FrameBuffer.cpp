@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include "FrameBuffer.h"
 
 FrameBuffer::FrameBuffer()
@@ -33,7 +33,7 @@ void FrameBuffer::GenTextureBufferMS(unsigned int& buffer, unsigned int internal
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenTextures(1, &buffer);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, buffer);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, 800, 600, GL_TRUE);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, WINDOW_WIDTH, WINDOW_HEIGHT, GL_TRUE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -61,7 +61,7 @@ void FrameBuffer::GenRenderBuffer(unsigned int& buffer, unsigned int internalFor
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	glGenRenderbuffers(1, &buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, buffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//assigns renderbuffer to framebuffer
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer);

@@ -1,6 +1,7 @@
 #pragma once
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
+#include "Settings.h"
 
 //defaults
 const float d_Yaw = -90.0f;
@@ -28,7 +29,7 @@ private:
 	float m_MoveSpeed;
 
 	bool m_MouseFirst = true;
-	float m_lastX = 400.0f, m_lastY = 300.0f;
+	float m_lastX = WINDOW_WIDTH / 2, m_lastY = WINDOW_HEIGHT / 2;
 	
 public:
 	enum m_MovementStates 
